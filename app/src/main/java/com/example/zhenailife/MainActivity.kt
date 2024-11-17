@@ -36,6 +36,7 @@ import com.example.zhenailife.ui.theme.ZHENAILifeTheme
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import android.app.ActivityManager
 
 class MainActivity : ComponentActivity() {
 
@@ -45,6 +46,11 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 檢查是否從通知中啟動
+        if (intent.getBooleanExtra("FROM_NOTIFICATION", false)) {
+            // stopMusicService()
+        }
 
         // 創建通知頻道
         createNotificationChannel()
@@ -96,16 +102,45 @@ class MainActivity : ComponentActivity() {
                         if (isAccessibilityEnabled(this, MyAccessibilityService::class.java)) {
                             startCountdown(timeInMillis)
                             showToast("Countdown started")
+
+                            // 創建一個返回主頁的 Intent
+                            val startMain = Intent(Intent.ACTION_MAIN)
+                            startMain.addCategory(Intent.CATEGORY_HOME)
+                            startMain.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(startMain)
                         } else {
                             showToast("Please grant accessibility permission")
                             requestAccessibilityPermission() // 跳转到设置页面授予权限
                         }
-
                     },
                     showToast = { message -> showToast(message) }
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        stopMusicIfPlaying()
+    }
+
+    private fun stopMusicIfPlaying() {
+        // 檢查音樂服務是否正在運行
+        if (isMusicServiceRunning()) {
+            stopMusicService()
+        }
+    }
+
+    private fun isMusicServiceRunning(): Boolean {
+        // 檢查音樂服務是否正在運行的邏輯
+        // 這裡可以使用 ActivityManager 來檢查服務狀態
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
+            if (MusicService::class.java.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun requestAccessibilityPermission() {
@@ -192,7 +227,10 @@ class MainActivity : ComponentActivity() {
                     showNotification("Time is running out!", "5 minutes left", true)
                     notificationShown = true // 設置為 true，保通知只顯示一次
                     toggleFilter(true)
-                    mediaPlayer.start()
+
+                    // 啟動音樂服務
+                    val musicIntent = Intent(this@MainActivity, MusicService::class.java)
+                    startService(musicIntent)
                 }
             }
 
@@ -205,7 +243,9 @@ class MainActivity : ComponentActivity() {
     private fun showNotification(title: String, content: String, isFiveMinutesLeft: Boolean) {
         // 檢查是否已獲得通知權限
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("FROM_NOTIFICATION", true) // 添加標誌
+            }
             val pendingIntent = PendingIntent.getActivity(
                 this, 
                 0, 
@@ -294,6 +334,11 @@ class MainActivity : ComponentActivity() {
         val notificationManager: NotificationManager =
             getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun stopMusicService() {
+        val musicIntent = Intent(this, MusicService::class.java)
+        stopService(musicIntent)
     }
 }
 
