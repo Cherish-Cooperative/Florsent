@@ -36,21 +36,22 @@ import com.example.zhenailife.ui.theme.ZHENAILifeTheme
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import android.app.ActivityManager
 
 class MainActivity : ComponentActivity() {
 
     private var filterEnabled = false
     private lateinit var mediaPlayer: MediaPlayer
+    private var countDownTimer: CountDownTimer? = null // 新增：記錄倒數計時器
+    private var notificationShown: Boolean = false // 新增：追蹤通知是否已顯示
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 檢查是否從通知中啟動
-        if (intent.getBooleanExtra("FROM_NOTIFICATION", false)) {
-            // stopMusicService()
-        }
+        // // 檢查是否從通知中啟動
+        // if (intent.getBooleanExtra("FROM_NOTIFICATION", false)) {
+        //     stopMusicService()
+        // }
 
         // 創建通知頻道
         createNotificationChannel()
@@ -91,11 +92,11 @@ class MainActivity : ComponentActivity() {
                         if (isAccessibilityEnabled(this, MyAccessibilityService::class.java)) {
                             filterEnabled = isChecked
                             toggleFilter(isChecked)
-                            updateSwitch(isChecked) // 同步更新 Switch 状态
+                            updateSwitch(isChecked) // 同步更新 Switch 狀態
                         } else {
                             showToast("Please grant accessibility permission")
-                            updateSwitch(false) // 恢复 Switch 状态为 "off"
-                            requestAccessibilityPermission() // 跳转到设置页面授予权限
+                            updateSwitch(false) // 恢復 Switch 狀態為 "off"
+                            requestAccessibilityPermission() // 跳轉到設定頁面授予權限
                         }
                     },
                     onStartCountdown = { timeInMillis ->
@@ -110,7 +111,7 @@ class MainActivity : ComponentActivity() {
                             startActivity(startMain)
                         } else {
                             showToast("Please grant accessibility permission")
-                            requestAccessibilityPermission() // 跳转到设置页面授予权限
+                            requestAccessibilityPermission() // 跳轉到設定頁面授予權限
                         }
                     },
                     showToast = { message -> showToast(message) }
@@ -119,29 +120,62 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        stopMusicIfPlaying()
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
     }
 
-    private fun stopMusicIfPlaying() {
-        // 檢查音樂服務是否正在運行
-        if (isMusicServiceRunning()) {
-            stopMusicService()
-        }
-    }
-
-    private fun isMusicServiceRunning(): Boolean {
-        // 檢查音樂服務是否正在運行的邏輯
-        // 這裡可以使用 ActivityManager 來檢查服務狀態
-        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
-            if (MusicService::class.java.name == service.service.className) {
-                return true
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == "com.example.zhenailife.ACTION_EXTEND_COUNTDOWN") {
+            val extendTime = intent.getLongExtra("EXTRA_EXTEND_TIME", 0L)
+            if (extendTime > 0L) {
+                startCountdown(extendTime)
+                showToast("倒數計時延長五分鐘")
             }
         }
-        return false
     }
+
+    // 新增：啟動倒數計時器
+    private fun startCountdown(timeInMillis: Long) {
+        stopCountdown() // 確保之前的計時器已停止
+        notificationShown = false // 重置通知標記
+
+        countDownTimer = object : CountDownTimer(timeInMillis, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                if (millisUntilFinished <= 5 * 60 * 1000 && !notificationShown) {
+                    showNotification("時間快到了！", "剩餘 5 分鐘", true)
+                    notificationShown = true // 用於追蹤通知是否已顯示
+                    toggleFilter(true)
+
+                    // 啟動音樂服務
+                    val musicIntent = Intent(this@MainActivity, MusicService::class.java)
+                    startService(musicIntent)
+                }
+
+                // 您可以在這裡更新 UI 或其他操作
+            }
+
+            override fun onFinish() {
+                showNotification("時間到！", "倒數結束", false)
+            }
+        }.start()
+    }
+
+    // 新增：停止倒數計時器
+    private fun stopCountdown() {
+        countDownTimer?.cancel()
+        countDownTimer = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        stopCountdown() // 在 onResume 時停止倒數計時器
+        stopMusicService() // 停止音樂服務
+        toggleFilter(false) // 停止濾鏡
+        notificationShown = false // 重置通知標記
+    }
+
 
     private fun requestAccessibilityPermission() {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
@@ -218,28 +252,6 @@ class MainActivity : ComponentActivity() {
         return false
     }
 
-    fun startCountdown(timeInMillis: Long) {
-        var notificationShown = false // 用於追蹤通知是否已顯示
-
-        object : CountDownTimer(timeInMillis, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                if (millisUntilFinished <= 5 * 60 * 1000 && !notificationShown) {
-                    showNotification("Time is running out!", "5 minutes left", true)
-                    notificationShown = true // 設置為 true，保通知只顯示一次
-                    toggleFilter(true)
-
-                    // 啟動音樂服務
-                    val musicIntent = Intent(this@MainActivity, MusicService::class.java)
-                    startService(musicIntent)
-                }
-            }
-
-            override fun onFinish() {
-                showNotification("Time's up!", "Countdown finished", false)
-            }
-        }.start()
-    }
-
     private fun showNotification(title: String, content: String, isFiveMinutesLeft: Boolean) {
         // 檢查是否已獲得通知權限
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
@@ -307,6 +319,7 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         unregisterReceiver(notificationReceiver)
         unregisterReceiver(localReceiver)
+        stopCountdown()
         mediaPlayer.release()
     }
 
@@ -360,25 +373,25 @@ fun MainScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // 检查服务是否启用的按钮
+        // 檢查服務是否啟用的按鈕
         Button(onClick = { onCheckServiceStatus() }) {
             Text(text = "Check Accessibility Service Status")
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 引导启用服务的按钮
+        // 引導啟用服務的按鈕
         Button(onClick = { onRequestAccessibilityPermission() }) {
             Text(text = "Enable Accessibility Service")
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 切换滤镜的开关
+        // 切換濾鏡的開關
         Switch(
             checked = filterChecked,
             onCheckedChange = { isChecked ->
-                // 立即更新 Switch 状态
+                // 立即更新 Switch 狀態
                 filterChecked = isChecked
-                // 调用 onToggleFilter，并将恢复 Switch 状态的逻辑传递给它
+                // 呼叫 onToggleFilter，並傳遞更新 Switch 狀態的邏輯
                 onToggleFilter(isChecked) { updatedChecked ->
                     filterChecked = updatedChecked
                 }
