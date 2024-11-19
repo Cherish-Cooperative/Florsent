@@ -49,11 +49,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // // 檢查是否從通知中啟動
-        // if (intent.getBooleanExtra("FROM_NOTIFICATION", false)) {
-        //     stopMusicService()
-        // }
-
         // 創建通知頻道
         createNotificationChannel()
 
@@ -84,9 +79,9 @@ class MainActivity : ComponentActivity() {
                     onCheckServiceStatus = {
                         val isEnabled = isAccessibilityEnabled(this, MyAccessibilityService::class.java)
                         if (isEnabled) {
-                            showToast("Accessibility Service is enabled")
+                            showToast("Accessibility Service 已啟用")
                         } else {
-                            showToast("Accessibility Service is not enabled")
+                            showToast("Accessibility Service 未啟用")
                         }
                     },
                     onToggleFilter = { isChecked, updateSwitch ->
@@ -95,15 +90,15 @@ class MainActivity : ComponentActivity() {
                             toggleFilter(isChecked)
                             updateSwitch(isChecked) // 同步更新 Switch 狀態
                         } else {
-                            showToast("Please grant accessibility permission")
-                            updateSwitch(false) // 恢復 Switch 狀態為 "off"
-                            requestAccessibilityPermission() // 跳轉到設定頁面授予權限
+                            showToast("請授予 Accessibility 權限")
+                            updateSwitch(false)
+                            requestAccessibilityPermission()
                         }
                     },
                     onStartCountdown = { timeInMillis ->
                         if (isAccessibilityEnabled(this, MyAccessibilityService::class.java)) {
                             startCountdown(timeInMillis)
-                            showToast("Countdown started")
+                            showToast("倒數計時開始")
 
                             // 創建一個返回主頁的 Intent
                             val startMain = Intent(Intent.ACTION_MAIN)
@@ -111,8 +106,8 @@ class MainActivity : ComponentActivity() {
                             startMain.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             startActivity(startMain)
                         } else {
-                            showToast("Please grant accessibility permission")
-                            requestAccessibilityPermission() // 跳轉到設定頁面授予權限
+                            showToast("請授予 Accessibility 權限")
+                            requestAccessibilityPermission()
                         }
                     },
                     showToast = { message -> showToast(message) }
@@ -154,7 +149,7 @@ class MainActivity : ComponentActivity() {
                     startService(musicIntent)
                 }
 
-                // 您可以在這裡更新 UI 或其他操作
+                // 更新 UI 或其他操作
             }
 
             override fun onFinish() {
@@ -203,10 +198,8 @@ class MainActivity : ComponentActivity() {
     private fun isAccessibilityEnabled(context: Context, service: Class<out AccessibilityService>): Boolean {
         var accessibilityEnabled = 0
         val accessibilityServiceName = service.canonicalName
-        // "com.example.zhenailife/com.example.zhenailife.MyAccessibilityService"
 
         try {
-            // 检查无障碍功能是否启用
             accessibilityEnabled = Settings.Secure.getInt(
                 context.contentResolver,
                 Settings.Secure.ACCESSIBILITY_ENABLED
@@ -216,28 +209,23 @@ class MainActivity : ComponentActivity() {
             Log.d("AccessibilityCheck", "Error finding setting: ${e.message}")
         }
 
-        // 创建一个 ':' 分隔符的字符串拆分器
         val mStringColonSplitter = TextUtils.SimpleStringSplitter(':')
 
-        // 检查无障碍服务是否开启
         if (accessibilityEnabled == 1) {
             Log.d("AccessibilityCheck", "***ACCESSIBILITY IS ENABLED***")
 
-            // 获取当前启用的无障碍服务列表
             val settingValue = Settings.Secure.getString(
                 context.contentResolver,
                 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
             )
             Log.d("AccessibilityCheck", "Setting: $settingValue")
 
-            // 如果有启用的服务，检查是否包含我们的服务
             if (settingValue != null) {
                 mStringColonSplitter.setString(settingValue)
                 while (mStringColonSplitter.hasNext()) {
-                    val accessibilityService = mStringColonSplitter.next().split("/").toTypedArray()[1]
+                    val accessibilityService = mStringColonSplitter.next().split("/".toRegex()).toTypedArray()[1]
                     Log.d("AccessibilityCheck", "Service: $accessibilityService")
 
-                    // 比较服务名是否匹配
                     if (accessibilityService.equals(accessibilityServiceName, ignoreCase = true)) {
                         Log.d("AccessibilityCheck", "We've found the correct service!")
                         return true
@@ -257,7 +245,7 @@ class MainActivity : ComponentActivity() {
         // 檢查是否已獲得通知權限
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
             val intent = Intent(this, MainActivity::class.java).apply {
-                putExtra("FROM_NOTIFICATION", true) // 添加標誌
+                putExtra("FROM_NOTIFICATION", true)
             }
             val pendingIntent = PendingIntent.getActivity(
                 this, 
@@ -270,9 +258,12 @@ class MainActivity : ComponentActivity() {
                 .setSmallIcon(R.mipmap.ic_notification)
                 .setContentTitle(title)
                 .setContentText(content)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX) // 設置優先級為最高
+                .setCategory(NotificationCompat.CATEGORY_ALARM) // 設置類別為警報
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
+                .setSound(null) // 移除聲音
+                .setVibrate(longArrayOf()) // 移除振動
 
             if (!isFiveMinutesLeft) {
                 val snoozeIntent = Intent(this, NotificationReceiver::class.java).apply {
@@ -290,9 +281,21 @@ class MainActivity : ComponentActivity() {
             with(NotificationManagerCompat.from(this)) {
                 notify(1, builder.build())
             }
+
+            // 檢查頻道是否可以繞過 DND 不要刪除此註解
+            // val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            // val channel = manager.getNotificationChannel("countdown_channel")
+            // if (channel != null && !channel.canBypassDnd()) {
+            //     showToast("請在系統設置中允許應用繞過請勿打擾模式")
+            //     // 可選：引導用戶前往設置頁面
+            //     val intentSettings = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).apply {
+            //         putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            //         putExtra(Settings.EXTRA_CHANNEL_ID, "countdown_channel")
+            //     }
+            //     startActivity(intentSettings)
+            // }
         } else {
-            // 處理未獲得權限的情況
-            showToast("Notification permission is not granted")
+            showToast("通知權限未授予")
         }
     }
 
@@ -330,24 +333,25 @@ class MainActivity : ComponentActivity() {
         if (requestCode == 1) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 // 權限已授予
-                showToast("Notification permission granted")
+                showToast("通知權限已授予")
             } else {
                 // 權限被拒絕
-                showToast("Notification permission denied")
+                showToast("通知權限被拒絕")
             }
         }
     }
 
     private fun createNotificationChannel() {
-        val name = "Countdown Channel"
-        val descriptionText = "Channel for countdown notifications"
+        val name = "倒數計時頻道"
+        val descriptionText = "用於倒數計時的通知頻道，能繞過請勿打擾模式"
         val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel("countdown_channel", name, importance).apply {
             description = descriptionText
+            setSound(null, null) // 不發出音效
+            enableVibration(false) // 不震動
         }
-        // Register the channel with the system
         val notificationManager: NotificationManager =
-            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
 
@@ -377,13 +381,13 @@ fun MainScreen(
     ) {
         // 檢查服務是否啟用的按鈕
         Button(onClick = { onCheckServiceStatus() }) {
-            Text(text = "Check Accessibility Service Status")
+            Text(text = "檢查 Accessibility Service 狀態")
         }
         Spacer(modifier = Modifier.height(16.dp))
 
         // 引導啟用服務的按鈕
         Button(onClick = { onRequestAccessibilityPermission() }) {
-            Text(text = "Enable Accessibility Service")
+            Text(text = "啟用 Accessibility Service")
         }
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -391,21 +395,19 @@ fun MainScreen(
         Switch(
             checked = filterChecked,
             onCheckedChange = { isChecked ->
-                // 立即更新 Switch 狀態
                 filterChecked = isChecked
-                // 呼叫 onToggleFilter，並傳遞更新 Switch 狀態的邏輯
                 onToggleFilter(isChecked) { updatedChecked ->
                     filterChecked = updatedChecked
                 }
             }
         )
-        Text(text = if (filterChecked) "Filter Enabled" else "Filter Disabled")
+        Text(text = if (filterChecked) "濾鏡已啟用" else "濾鏡已禁用")
 
         // 倒數計時輸入框和按鈕
         OutlinedTextField(
             value = countdownTime,
             onValueChange = { countdownTime = it },
-            label = { Text("Enter countdown time (minutes)") }
+            label = { Text("輸入倒數時間（分鐘）") }
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
@@ -413,10 +415,10 @@ fun MainScreen(
             if (timeInMillis > 0) {
                 onStartCountdown(timeInMillis)
             } else {
-                showToast("Please enter a valid time")
+                showToast("請輸入有效時間")
             }
         }) {
-            Text("Start Countdown")
+            Text("開始倒數計時")
         }
     }
 }

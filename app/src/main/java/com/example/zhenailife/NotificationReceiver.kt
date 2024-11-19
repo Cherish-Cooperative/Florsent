@@ -3,7 +3,6 @@ package com.example.zhenailife
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.core.content.ContextCompat
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -12,9 +11,8 @@ class NotificationReceiver : BroadcastReceiver() {
             val extendIntent = Intent(context, MainActivity::class.java).apply {
                 action = "com.example.zhenailife.ACTION_EXTEND_COUNTDOWN"
                 putExtra("EXTRA_EXTEND_TIME", 5 * 60 * 1000L) // 延長五分鐘
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // 確保 Activity 可以從非 Activity 環境啟動
             }
-            // 使用 FLAG_ACTIVITY_NEW_TASK 確保 Activity 可以從非 Activity 環境啟動
-            extendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context?.startActivity(extendIntent)
         }
     }
