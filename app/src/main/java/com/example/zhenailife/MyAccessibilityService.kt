@@ -18,11 +18,6 @@ class MyAccessibilityService : AccessibilityService() {
     private val animationDuration = 60_000L // 一分鐘
     private val updateInterval = 1000L // 每秒更新一次
 
-    override fun onServiceConnected() {
-        super.onServiceConnected()
-        // 初始化滤镜或其他逻辑
-    }
-
     override fun onAccessibilityEvent(event: android.view.accessibility.AccessibilityEvent?) {
         // 处理无障碍事件（不需要修改）
     }
@@ -77,7 +72,7 @@ class MyAccessibilityService : AccessibilityService() {
     private fun startColorAnimation() {
         var elapsed = 0L
         val totalSteps = (animationDuration / updateInterval).toInt()
-        val increment = 100 / totalSteps // 每步增加的透明度
+        100 / totalSteps // 每步增加的透明度
 
         updateRunnable = object : Runnable {
             override fun run() {

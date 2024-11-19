@@ -37,6 +37,7 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 
+@Suppress("DEPRECATION")
 class MainActivity : ComponentActivity() {
 
     private var filterEnabled = false
@@ -201,7 +202,7 @@ class MainActivity : ComponentActivity() {
 
     private fun isAccessibilityEnabled(context: Context, service: Class<out AccessibilityService>): Boolean {
         var accessibilityEnabled = 0
-        val accessibility_service_name = service.canonicalName
+        val accessibilityServiceName = service.canonicalName
         // "com.example.zhenailife/com.example.zhenailife.MyAccessibilityService"
 
         try {
@@ -237,7 +238,7 @@ class MainActivity : ComponentActivity() {
                     Log.d("AccessibilityCheck", "Service: $accessibilityService")
 
                     // 比较服务名是否匹配
-                    if (accessibilityService.equals(accessibility_service_name, ignoreCase = true)) {
+                    if (accessibilityService.equals(accessibilityServiceName, ignoreCase = true)) {
                         Log.d("AccessibilityCheck", "We've found the correct service!")
                         return true
                     }
@@ -323,6 +324,7 @@ class MainActivity : ComponentActivity() {
         mediaPlayer.release()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1) {
