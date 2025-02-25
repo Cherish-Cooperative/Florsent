@@ -36,6 +36,25 @@ import com.example.zhenailife.ui.theme.ZHENAILifeTheme
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+// wheel picker
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+// 自動對齊、選擇
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import kotlinx.coroutines.launch
 
 @Suppress("DEPRECATION")
 class MainActivity : ComponentActivity() {
@@ -370,7 +389,7 @@ fun MainScreen(
     showToast: (String) -> Unit
 ) {
     var filterChecked by remember { mutableStateOf(false) }
-    var countdownTime by remember { mutableStateOf("") }
+    var selectedMinutes by remember { mutableStateOf(1) }
 
     Column(
         modifier = Modifier
@@ -403,19 +422,127 @@ fun MainScreen(
         )
         Text(text = if (filterChecked) "濾鏡已啟用" else "濾鏡已禁用")
 
-        // 倒數計時輸入框和按鈕
-        OutlinedTextField(
-            value = countdownTime,
-            onValueChange = { countdownTime = it },
-            label = { Text("輸入倒數時間（分鐘）") }
+        // 直接顯示滾輪選擇器
+        @OptIn(ExperimentalFoundationApi::class)
+        @Composable
+        fun WheelTimePicker(
+            value: Int,
+            onValueChange: (Int) -> Unit,
+            range: IntRange
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // 添加當前選擇值的顯示
+                Text(
+                    text = "已選擇：$value 分鐘",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                val listState = rememberLazyListState(
+                    initialFirstVisibleItemIndex = (value - range.first).coerceAtLeast(0)
+                )
+                val scope = rememberCoroutineScope()
+                val itemHeightDp = 50.dp
+                val visibleItems = 5
+
+                // 使用 derivedStateOf 來追蹤中間項目
+                val centerItemIndex = remember(listState.firstVisibleItemIndex) {
+                    listState.firstVisibleItemIndex 
+                }
+
+                // 只在滾動停止時更新值
+                LaunchedEffect(listState.isScrollInProgress) {
+                    if (!listState.isScrollInProgress) {
+                        val newValue = (centerItemIndex + range.first).coerceIn(range)
+                        if (newValue != value) {
+                            onValueChange(newValue)
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .height(itemHeightDp * visibleItems)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // 背景裝飾
+                    Card(
+                        modifier = Modifier
+                            .height(itemHeightDp)
+                            .fillMaxWidth(0.5f),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        )
+                    ) { }
+
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .height(itemHeightDp * visibleItems)
+                            .fillMaxWidth(0.5f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+                    ) {
+                        // 添加頂部填充項
+                        items(2) {
+                            Spacer(modifier = Modifier.height(itemHeightDp))
+                        }
+                        
+                        // 實際的數字項目
+                        items(range.last - range.first + 1) { index ->
+                            val itemValue = index + range.first
+                            Box(
+                                modifier = Modifier
+                                    .height(itemHeightDp)
+                                    .fillMaxWidth()
+                                    .clickable { 
+                                        scope.launch {
+                                            listState.animateScrollToItem(index)
+                                            onValueChange(itemValue)
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "$itemValue 分鐘",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = if (itemValue == value) 
+                                        MaterialTheme.colorScheme.primary 
+                                    else 
+                                        MaterialTheme.colorScheme.onSurface,
+                                    fontSize = if (itemValue == value) 18.sp else 16.sp,
+                                    fontWeight = if (itemValue == value) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                        }
+                        
+                        // 添加底部填充項
+                        items(2) {
+                            Spacer(modifier = Modifier.height(itemHeightDp))
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        WheelTimePicker(
+            value = selectedMinutes,
+            onValueChange = { selectedMinutes = it },
+            range = 1..120
         )
+
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            val timeInMillis = countdownTime.toLongOrNull()?.times(60 * 1000) ?: 0L
-            if (timeInMillis > 0) {
-                onStartCountdown(timeInMillis)
+            if (selectedMinutes > 0) {
+                onStartCountdown(selectedMinutes * 60L * 1000L)
             } else {
-                showToast("請輸入有效時間")
+                showToast("請選擇有效時間")
             }
         }) {
             Text("開始倒數計時")
