@@ -398,17 +398,18 @@ fun MainScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // 檢查服務是否啟用的按鈕
+        // 註解掉檢查服務按鈕
+        /*
         Button(onClick = { onCheckServiceStatus() }) {
             Text(text = "檢查 Accessibility Service 狀態")
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 引導啟用服務的按鈕
         Button(onClick = { onRequestAccessibilityPermission() }) {
             Text(text = "啟用 Accessibility Service")
         }
         Spacer(modifier = Modifier.height(16.dp))
+        
 
         // 切換濾鏡的開關
         Switch(
@@ -420,7 +421,9 @@ fun MainScreen(
                 }
             }
         )
+        
         Text(text = if (filterChecked) "濾鏡已啟用" else "濾鏡已禁用")
+        */
 
         // 直接顯示滾輪選擇器
         @OptIn(ExperimentalFoundationApi::class)
@@ -434,14 +437,6 @@ fun MainScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // 添加當前選擇值的顯示
-                Text(
-                    text = "已選擇：$value 分鐘",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
                 val listState = rememberLazyListState(
                     initialFirstVisibleItemIndex = (value - range.first).coerceAtLeast(0)
                 )
@@ -449,83 +444,103 @@ fun MainScreen(
                 val itemHeightDp = 50.dp
                 val visibleItems = 5
 
-                // 使用 derivedStateOf 來追蹤中間項目
-                val centerItemIndex = remember(listState.firstVisibleItemIndex) {
-                    listState.firstVisibleItemIndex 
+                val centerItemIndex = remember {
+                    derivedStateOf {
+                        val firstVisible = listState.firstVisibleItemIndex
+                        val offset = listState.firstVisibleItemScrollOffset
+                        val itemHeight = listState.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 0
+                        if (itemHeight > 0) {
+                            firstVisible + (offset + itemHeight / 2) / itemHeight
+                        } else {
+                            firstVisible
+                        }
+                    }
                 }
 
-                // 只在滾動停止時更新值
                 LaunchedEffect(listState.isScrollInProgress) {
                     if (!listState.isScrollInProgress) {
-                        val newValue = (centerItemIndex + range.first).coerceIn(range)
+                        val newValue = (centerItemIndex.value + range.first).coerceIn(range)
                         if (newValue != value) {
                             onValueChange(newValue)
                         }
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .height(itemHeightDp * visibleItems)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // 背景裝飾
-                    Card(
-                        modifier = Modifier
-                            .height(itemHeightDp)
-                            .fillMaxWidth(0.5f),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                        )
-                    ) { }
-
-                    LazyColumn(
-                        state = listState,
+                    Box(
                         modifier = Modifier
                             .height(itemHeightDp * visibleItems)
-                            .fillMaxWidth(0.5f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+                            .fillMaxWidth(0.3f),
+                        contentAlignment = Alignment.Center
                     ) {
-                        // 添加頂部填充項
-                        items(2) {
-                            Spacer(modifier = Modifier.height(itemHeightDp))
-                        }
-                        
-                        // 實際的數字項目
-                        items(range.last - range.first + 1) { index ->
-                            val itemValue = index + range.first
-                            Box(
-                                modifier = Modifier
-                                    .height(itemHeightDp)
-                                    .fillMaxWidth()
-                                    .clickable { 
-                                        scope.launch {
-                                            listState.animateScrollToItem(index)
-                                            onValueChange(itemValue)
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "$itemValue 分鐘",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = if (itemValue == value) 
-                                        MaterialTheme.colorScheme.primary 
-                                    else 
-                                        MaterialTheme.colorScheme.onSurface,
-                                    fontSize = if (itemValue == value) 18.sp else 16.sp,
-                                    fontWeight = if (itemValue == value) FontWeight.Bold else FontWeight.Normal
-                                )
+                        // 背景裝飾
+                        Card(
+                            modifier = Modifier
+                                .height(itemHeightDp)
+                                .fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                            )
+                        ) { }
+
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .height(itemHeightDp * visibleItems)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+                        ) {
+                            // 添加頂部填充項
+                            items(2) {
+                                Spacer(modifier = Modifier.height(itemHeightDp))
+                            }
+                            
+                            // 實際的數字項目
+                            items(range.last - range.first + 1) { index ->
+                                val itemValue = index + range.first
+                                Box(
+                                    modifier = Modifier
+                                        .height(itemHeightDp)
+                                        .fillMaxWidth()
+                                        .clickable { 
+                                            scope.launch {
+                                                listState.animateScrollToItem(index)
+                                                onValueChange(itemValue)
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "$itemValue",  // 只顯示數字
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = if (itemValue == value) 
+                                            MaterialTheme.colorScheme.primary 
+                                        else 
+                                            MaterialTheme.colorScheme.onSurface,
+                                        fontSize = if (itemValue == value) 18.sp else 16.sp,
+                                        fontWeight = if (itemValue == value) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            }
+                            
+                            // 添加底部填充項
+                            items(2) {
+                                Spacer(modifier = Modifier.height(itemHeightDp))
                             }
                         }
-                        
-                        // 添加底部填充項
-                        items(2) {
-                            Spacer(modifier = Modifier.height(itemHeightDp))
-                        }
                     }
+                    
+                    // 在滾輪旁邊顯示"分鐘"文字
+                    Text(
+                        text = "分鐘",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
                 }
             }
         }
@@ -545,7 +560,7 @@ fun MainScreen(
                 showToast("請選擇有效時間")
             }
         }) {
-            Text("開始倒數計時")
+            Text("Start!")
         }
     }
 }
