@@ -267,9 +267,9 @@ class MainActivity : ComponentActivity() {
                 putExtra("FROM_NOTIFICATION", true)
             }
             val pendingIntent = PendingIntent.getActivity(
-                this, 
-                0, 
-                intent, 
+                this,
+                0,
+                intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
@@ -289,9 +289,9 @@ class MainActivity : ComponentActivity() {
                     action = "com.example.zhenailife.ACTION_SNOOZE"
                 }
                 val snoozePendingIntent: PendingIntent = PendingIntent.getBroadcast(
-                    this, 
-                    0, 
-                    snoozeIntent, 
+                    this,
+                    0,
+                    snoozeIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 builder.addAction(R.mipmap.ic_snooze, "再五分鐘", snoozePendingIntent)
@@ -499,7 +499,7 @@ fun MainScreen(
                             items(2) {
                                 Spacer(modifier = Modifier.height(itemHeightDp))
                             }
-                            
+
                             // 實際的數字項目
                             items(range.last - range.first + 1) { index ->
                                 val itemValue = index + range.first
@@ -507,7 +507,7 @@ fun MainScreen(
                                     modifier = Modifier
                                         .height(itemHeightDp)
                                         .fillMaxWidth()
-                                        .clickable { 
+                                        .clickable {
                                             scope.launch {
                                                 listState.animateScrollToItem(index)
                                                 onValueChange(itemValue)
@@ -518,23 +518,23 @@ fun MainScreen(
                                     Text(
                                         text = "$itemValue",  // 只顯示數字
                                         style = MaterialTheme.typography.bodyLarge,
-                                        color = if (itemValue == value) 
-                                            MaterialTheme.colorScheme.primary 
-                                        else 
+                                        color = if (itemValue == value)
+                                            MaterialTheme.colorScheme.primary
+                                        else
                                             MaterialTheme.colorScheme.onSurface,
                                         fontSize = if (itemValue == value) 18.sp else 16.sp,
                                         fontWeight = if (itemValue == value) FontWeight.Bold else FontWeight.Normal
                                     )
                                 }
                             }
-                            
+
                             // 添加底部填充項
                             items(2) {
                                 Spacer(modifier = Modifier.height(itemHeightDp))
                             }
                         }
                     }
-                    
+
                     // 在滾輪旁邊顯示"分鐘"文字
                     Text(
                         text = "分鐘",
