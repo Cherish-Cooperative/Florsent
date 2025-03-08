@@ -170,6 +170,9 @@ class MainActivity : ComponentActivity() {
         stopMusicService() // 停止音樂服務
         toggleFilter(false) // 停止濾鏡
         notificationShown = false // 重置通知標記
+        
+        // 取消所有通知
+        NotificationManagerCompat.from(this).cancel(1)
     }
 
 
