@@ -35,6 +35,8 @@ import android.util.Log
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import kotlin.random.Random
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.withFrameNanos
 /**
  * 視差滾動滑雪畫布
  * 實現背景、雪地、地面和角色的視差效果及呼吸引導動畫
@@ -45,6 +47,9 @@ fun ParallaxSkiingCanvas(
     breathingController: BreathingController
 ) {
     val context = LocalContext.current
+    
+    // 新增canvasSize狀態變數用於跟踪畫布尺寸
+    val canvasSize = remember { mutableStateOf(Size.Zero) }
     
     // 載入WebP格式的資源圖片，使用高縮放係數
     val backgroundBitmap = remember {
@@ -145,7 +150,7 @@ fun ParallaxSkiingCanvas(
                 Plant(
                     xPosition = 1.2f, // 從畫面右側外生成
                     size = Random.nextFloat() * 0.005f + 0.005f, // 隨機大小
-                    speed = Random.nextFloat() * 0.0005f + 0.0005f // 隨機移動速度
+                    speed = 0f  // 速度改為0，由另一個LaunchedEffect更新
                 )
             )
             
@@ -153,11 +158,6 @@ fun ParallaxSkiingCanvas(
             if (plants.size > 20) {
                 plants.removeAt(0)
             }
-        }
-        
-        // 更新所有植物的位置
-        plants.forEach { plant ->
-            plant.xPosition -= plant.speed
         }
         
         // 移除已經移出畫面的植物
@@ -170,9 +170,10 @@ fun ParallaxSkiingCanvas(
     }
     
     Canvas(modifier = modifier) {
-        // 獲取畫布尺寸
+        // 獲取畫布尺寸並更新canvasSize
         val width = size.width
         val height = size.height
+        canvasSize.value = Size(width, height)
         
         // 移除呼吸狀態對應的亮度調整，改為固定亮度
         val brightness = 0.3f // 固定亮度值
@@ -181,7 +182,8 @@ fun ParallaxSkiingCanvas(
         val snowScale = height / snowAndroidBitmap.height.toFloat()  // 使用畫布高度作為縮放依據
         val snowScaledHeight = snowAndroidBitmap.height * snowScale
         val snowAdjustedY = (height - snowScaledHeight) / 2
-        val snowEdgeLine = snowAdjustedY + (snowScaledHeight * snowEdgeRatio)
+        // 根據預處理數據，取雪層最右邊的邊緣作為植物的Y座標參考
+        val plantY = snowAdjustedY + (snowEdgeHeights.last() * snowScale)
         
         // 計算雪層水平滾動偏移
         val snowScaledWidth = snowAndroidBitmap.width * snowScale
@@ -231,14 +233,14 @@ fun ParallaxSkiingCanvas(
             fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
         )
         
-        // 在雪地上繪製植物
+        // 在雪地上繪製植物，使用plantY作為植物的固定Y座標
         plants.forEach { plant ->
             val plantX = width * plant.xPosition
             val plantSize = width * plant.size * 3  // 放大3倍
             drawPlant(
                 bitmap = plantBitmap,
                 x = plantX,
-                y = snowEdgeLine + (height * 0.05f), // 使用雪邊緣作為基準
+                y = plantY,
                 width = plantSize,
                 height = plantSize * 1.5f
             )
@@ -252,6 +254,7 @@ fun ParallaxSkiingCanvas(
             width = 300f,  // 放大5倍
             height = 300f   // 放大5倍
         )
+
         
         // 繪製地面層 (最近，移動最快) - 移到最後繪製，確保顯示在所有元素之上
         drawParallaxLayer(
@@ -263,13 +266,41 @@ fun ParallaxSkiingCanvas(
             fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
         )
     }
+    
+    // 新增正確的LaunchedEffect，放在Canvas外部來更新植物位置
+    LaunchedEffect(canvasSize.value) {
+        var lastFrameTime = 0L
+        while (true) {
+            val frameTime = withFrameNanos { frameTime -> frameTime }
+            
+            if (lastFrameTime != 0L && canvasSize.value.width > 0f) {
+                val dtMillis = ((frameTime - lastFrameTime).toFloat()) / 1_000_000f
+                // 計算雪層縮放比例
+                val snowScale = canvasSize.value.height / snowAndroidBitmap.height.toFloat()
+                val snowScaledWidth = snowAndroidBitmap.width.toFloat() * snowScale
+                // 雪層從0到1的動畫週期為20000ms，計算每毫秒的移動比例
+                val snowSpeedPixelsPerMs = snowScaledWidth / 20000f
+                // 轉換成相對於畫布寬度的比例
+                val speedFraction = snowSpeedPixelsPerMs / canvasSize.value.width
+                
+                // 更新所有植物的位置
+                plants.forEach { plant ->
+                    plant.xPosition -= speedFraction * dtMillis
+                }
+                // 移除已經移出畫面的植物
+                plants.removeAll { it.xPosition < -0.2f }
+            }
+            
+            lastFrameTime = frameTime
+        }
+    }
 }
 
 // 植物數據類
 data class Plant(
     var xPosition: Float, // 0-1範圍的x座標比例
     val size: Float,      // 大小比例
-    val speed: Float      // 移動速度
+    val speed: Float      // 移動速度，注意：此屬性不再使用，但保留以避免改變構造函數
 )
 
 // 填充模式枚舉
@@ -434,33 +465,6 @@ private fun DrawScope.drawPlant(
         }
     } catch (e: Exception) {
         Log.e("ParallaxCanvas", "Error drawing plant: ${e.message}")
-    }
-}
-
-/**
- * 繪製呼吸特效
- */
-private fun DrawScope.drawBreathingEffect(
-    canvasWidth: Float,
-    canvasHeight: Float,
-    progress: Float
-) {
-    // 吐氣階段的霧氣效果
-    drawIntoCanvas { canvas ->
-        val paint = Paint().apply {
-            color = Color.argb(
-                (100 * progress).toInt(),
-                255, 255, 255
-            )
-            style = Paint.Style.FILL
-        }
-        
-        // 霧氣從角色嘴部擴散
-        val centerX = canvasWidth * 0.5f  // 調整為畫面中央
-        val centerY = canvasHeight * 0.45f // 調整為與角色嘴部高度相近的位置
-        val radius = 20.dp.toPx() * progress
-        
-        canvas.nativeCanvas.drawCircle(centerX, centerY, radius, paint)
     }
 }
 
