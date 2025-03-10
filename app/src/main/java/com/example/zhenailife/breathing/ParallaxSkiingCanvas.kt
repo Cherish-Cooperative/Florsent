@@ -37,6 +37,10 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import kotlin.random.Random
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.withFrameNanos
+
+// 移除全域的downwardOffset定義
+// val downwardOffset = with(LocalDensity.current) { 20.dp.toPx() }
+
 /**
  * 視差滾動滑雪畫布
  * 實現背景、雪地、地面和角色的視差效果及呼吸引導動畫
@@ -47,6 +51,9 @@ fun ParallaxSkiingCanvas(
     breathingController: BreathingController
 ) {
     val context = LocalContext.current
+    
+    // 在Composable函數內部計算downwardOffset
+    val downwardOffset = with(LocalDensity.current) { 250.dp.toPx() }
     
     // 新增canvasSize狀態變數用於跟踪畫布尺寸
     val canvasSize = remember { mutableStateOf(Size.Zero) }
@@ -145,12 +152,19 @@ fun ParallaxSkiingCanvas(
     // 控制植物生成
     LaunchedEffect(plantGenerationTimer) {
         // 每2秒有30%機率生成一個新植物
-        if (plantGenerationTimer > 0.95f && Random.nextFloat() < 0.3f) {
+        // 這裡根據當下的canvas尺寸與雪層狀態計算生成時的y座標
+        val currentCanvas = canvasSize.value
+        if (plantGenerationTimer > 0.95f && Random.nextFloat() < 0.3f && currentCanvas.width > 0f) {
+            val localSnowScale = currentCanvas.height / snowAndroidBitmap.height.toFloat()
+            val localSnowScaledHeight = snowAndroidBitmap.height * localSnowScale
+            val localSnowAdjustedY = (currentCanvas.height - localSnowScaledHeight) / 2
+            val currentPlantY = localSnowAdjustedY + (snowEdgeHeights.last() * localSnowScale) + downwardOffset
             plants.add(
                 Plant(
                     xPosition = 1.2f, // 從畫面右側外生成
                     size = Random.nextFloat() * 0.005f + 0.005f, // 隨機大小
-                    speed = 0f  // 速度改為0，由另一個LaunchedEffect更新
+                    speed = 0f,  // 速度改為0，由另一個LaunchedEffect更新
+                    yPosition = currentPlantY
                 )
             )
             
@@ -205,7 +219,7 @@ fun ParallaxSkiingCanvas(
         
         // 若角色目前高度偏高（即顯示在畫面太上方），加上一個垂直偏移來讓角色更貼近雪面
         val verticalAdjustment = height * 0.32f  // 可根據需要調整此參數
-        val verticalPosition = dynamicSnowEdgeY + verticalAdjustment
+        val verticalPosition = dynamicSnowEdgeY + downwardOffset
         
         // 繪製全畫面的藍天背景色 (確保沒有空白區域)
         drawRect(
@@ -240,7 +254,7 @@ fun ParallaxSkiingCanvas(
             drawPlant(
                 bitmap = plantBitmap,
                 x = plantX,
-                y = plantY,
+                y = plant.yPosition,
                 width = plantSize,
                 height = plantSize * 1.5f
             )
@@ -300,7 +314,8 @@ fun ParallaxSkiingCanvas(
 data class Plant(
     var xPosition: Float, // 0-1範圍的x座標比例
     val size: Float,      // 大小比例
-    val speed: Float      // 移動速度，注意：此屬性不再使用，但保留以避免改變構造函數
+    val speed: Float,     // 移動速度，注意：此屬性不再使用，但保留以避免改變構造函數
+    val yPosition: Float  // 植物生成時固定的y座標
 )
 
 // 填充模式枚舉
