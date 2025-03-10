@@ -42,6 +42,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlin.math.ceil
 /**
  * 視差滾動滑雪畫布
  * 實現背景、雪地、地面和角色的視差效果及呼吸引導動畫
@@ -57,35 +58,35 @@ fun ParallaxSkiingCanvas(
     // 載入WebP格式的資源圖片，使用高縮放係數
     val backgroundBitmap = remember {
         val options = BitmapFactory.Options().apply {
-            inSampleSize = 4
+            inSampleSize = 1
         }
         BitmapFactory.decodeResource(context.resources, R.drawable.bg3, options).asImageBitmap()
     }
     
     val snowBitmap = remember {
         val options = BitmapFactory.Options().apply {
-            inSampleSize = 4
+            inSampleSize = 1
         }
         BitmapFactory.decodeResource(context.resources, R.drawable.snow, options).asImageBitmap()
     }
     
     val groundBitmap = remember {
         val options = BitmapFactory.Options().apply {
-            inSampleSize = 4
+            inSampleSize = 1
         }
         BitmapFactory.decodeResource(context.resources, R.drawable.ground, options).asImageBitmap()
     }
     
     val skierBitmap = remember {
         val options = BitmapFactory.Options().apply {
-            inSampleSize = 2
+            inSampleSize = 1
         }
         BitmapFactory.decodeResource(context.resources, R.drawable.ski, options).asImageBitmap()
     }
     
     val plantBitmap = remember {
         val options = BitmapFactory.Options().apply {
-            inSampleSize = 2
+            inSampleSize = 1
         }
         BitmapFactory.decodeResource(context.resources, R.drawable.plant2, options).asImageBitmap()
     }
@@ -169,7 +170,7 @@ fun ParallaxSkiingCanvas(
         }
         
         // 調整滑雪者應該在的位置，移到畫布的更中間位置
-        val snowLinePosition = height * 0.55f
+        val snowLinePosition = height * 0.5f
         
         // 計算角色的當前垂直位置
         val verticalPosition = calculateSkierVerticalPosition(
@@ -192,7 +193,7 @@ fun ParallaxSkiingCanvas(
             offset = backgroundOffset,
             scrollSpeed = 0.2f,  // 減慢背景滾動速度
             brightness = brightness,
-            fillMode = FillMode.FILL_BOTH // 確保寬度和高度都被填滿
+            fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
         )
         
         // 繪製雪地層 (中間距離，移動中速)
@@ -203,7 +204,7 @@ fun ParallaxSkiingCanvas(
             offset = snowOffset,
             scrollSpeed = 1.0f,
             brightness = 0f,
-            fillMode = FillMode.FILL_BOTH // 確保寬度和高度都被填滿
+            fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
         )
         
         // 在雪地上繪製植物
@@ -227,7 +228,7 @@ fun ParallaxSkiingCanvas(
             offset = groundOffset,
             scrollSpeed = 2.0f,
             brightness = 0f,
-            fillMode = FillMode.FILL_BOTH // 確保寬度和高度都被填滿
+            fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
         )
         
         // 繪製滑雪角色 (中央，放大5倍)
@@ -301,32 +302,18 @@ private fun DrawScope.drawParallaxLayer(
         // 計算縮放比例
         val scaleX = canvasWidth / bitmapWidth
         val scaleY = canvasHeight / bitmapHeight
-        
-        // 根據填充模式選擇合適的縮放比例，並增加覆蓋保證因子
         val scale = when (fillMode) {
             FillMode.FILL_WIDTH -> scaleX
             FillMode.FILL_HEIGHT -> scaleY
-            FillMode.FILL_BOTH -> maxOf(scaleX, scaleY) * 1.1f // 增加到10%的額外覆蓋
+            FillMode.FILL_BOTH -> maxOf(scaleX, scaleY)
         }
         
         // 計算縮放後的圖片尺寸
         val scaledWidth = bitmapWidth * scale
         val scaledHeight = bitmapHeight * scale
         
-        // 重新計算垂直位置 - 確保圖片在垂直方向上真正居中
-        // 調整位置向下移動約30%，解決圖片顯示偏上問題
-        val yPosition = when (fillMode) {
-            FillMode.FILL_WIDTH -> (canvasHeight - scaledHeight) / 2
-            FillMode.FILL_HEIGHT -> canvasHeight * 0.3f // 從頂部下移30%
-            FillMode.FILL_BOTH -> (canvasHeight - scaledHeight) / 2 // 保持基本居中計算
-        }
-        
-        // 對所有填充模式都應用額外下移
-        val adjustedYPosition = when (fillMode) {
-            FillMode.FILL_BOTH -> yPosition + (canvasHeight * 0.3f) // 向下偏移30%
-            FillMode.FILL_HEIGHT -> yPosition // 已經有30%偏移
-            FillMode.FILL_WIDTH -> yPosition + (canvasHeight * 0.3f) // 也向下偏移30%
-        }
+        // 將圖片置中顯示，確保完整填滿畫面
+        val adjustedYPosition = (canvasHeight - scaledHeight) / 2
         
         // 應用亮度調整
         val colorMatrix = if (brightness != 0f) {
@@ -337,20 +324,15 @@ private fun DrawScope.drawParallaxLayer(
             null
         }
         
-        // 改進滾動偏移計算，確保平滑循環
-        // 為不同速度的層計算單獨的偏移量
-        val tileWidth = scaledWidth
+        // 改進滾動偏移計算，確保真正的無縫循環
+        val scrollDistance = - offset * scrollSpeed * scaledWidth
+        val normalizedOffset = ((scrollDistance % scaledWidth) + scaledWidth) % scaledWidth
         
-        // 關鍵改進：確保每一幀偏移量增量很小，避免跳變
-        // 對不同速度的層使用連續偏移而不是百分比位置
-        val totalScrollDistance = offset * scrollSpeed * canvasWidth
-        val normalizedOffset = totalScrollDistance % tileWidth
-        
-        // 預繪第一張圖片前的圖片（確保左邊無縫連接）
-        val xPositionBefore = -normalizedOffset - tileWidth
-        if (xPositionBefore + tileWidth > 0) {
+        // 從左側開始繪製，確保覆蓋整個畫布
+        var xPosition = -scaledWidth + normalizedOffset
+        while (xPosition < canvasWidth) {
             withTransform({
-                translate(left = xPositionBefore, top = adjustedYPosition)
+                translate(left = xPosition, top = adjustedYPosition)
                 scale(scale, scale)
             }) {
                 drawImage(
@@ -360,52 +342,8 @@ private fun DrawScope.drawParallaxLayer(
                     colorFilter = colorMatrix?.let { ColorFilter.colorMatrix(it) }
                 )
             }
+            xPosition += scaledWidth
         }
-        
-        // 繪製主要可見圖片
-        withTransform({
-            translate(left = -normalizedOffset, top = adjustedYPosition)
-            scale(scale, scale)
-        }) {
-            drawImage(
-                image = bitmap,
-                topLeft = Offset.Zero,
-                alpha = 1.0f,
-                colorFilter = colorMatrix?.let { ColorFilter.colorMatrix(it) }
-            )
-        }
-        
-        // 計算後續需要的圖片數量，確保完全覆蓋畫布
-        // 始終保持至少一張額外的圖片，確保右側無縫連接
-        val numAdditionalImages = Math.ceil((canvasWidth / tileWidth).toDouble()).toInt() + 1
-        
-        // 循環繪製額外的圖片，確保無縫連接
-        for (i in 1 until numAdditionalImages) {
-            val xPosition = -normalizedOffset + (i * tileWidth)
-            
-            // 確保只繪製可能可見的圖片（性能優化）
-            if (xPosition < canvasWidth) {
-                withTransform({
-                    translate(left = xPosition, top = adjustedYPosition)
-                    scale(scale, scale)
-                }) {
-                    drawImage(
-                        image = bitmap,
-                        topLeft = Offset.Zero,
-                        alpha = 1.0f,
-                        colorFilter = colorMatrix?.let { ColorFilter.colorMatrix(it) }
-                    )
-                }
-            }
-        }
-        
-        // 用於調試的輔助標記（註釋掉，不在正式顯示中顯示）
-        // drawLine(
-        //     color = Color.Red,
-        //     start = Offset(0f, canvasHeight / 2),
-        //     end = Offset(canvasWidth, canvasHeight / 2),
-        //     strokeWidth = 5f
-        // )
     } catch (e: Exception) {
         Log.e("ParallaxCanvas", "Error drawing layer: ${e.message}")
     }
@@ -434,7 +372,7 @@ private fun DrawScope.drawSkier(
         scale(scaleX, scaleY, Offset(left, top)) {
             drawImage(
                 image = bitmap,
-                topLeft = Offset(0f, 0f),
+                topLeft = Offset(0f, 0f), 
                 alpha = 1.0f
             )
         }
