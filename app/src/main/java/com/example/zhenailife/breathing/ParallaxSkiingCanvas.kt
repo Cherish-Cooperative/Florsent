@@ -64,12 +64,12 @@ fun ParallaxSkiingCanvas(
         BitmapFactory.decodeResource(context.resources, R.drawable.bg3, options).asImageBitmap()
     }
     
-    val snowBitmap = remember {
-        val options = BitmapFactory.Options().apply {
-            inSampleSize = 1
-        }
-        BitmapFactory.decodeResource(context.resources, R.drawable.snow, options).asImageBitmap()
+    val snowAndroidBitmap = remember {
+        val options = BitmapFactory.Options().apply { inSampleSize = 1 }
+        BitmapFactory.decodeResource(context.resources, R.drawable.snow, options)
     }
+    val snowBitmap = remember { snowAndroidBitmap.asImageBitmap() }
+    val snowEdgeRatio = remember { calculateSnowEdgeRatio(snowAndroidBitmap) }
     
     val groundBitmap = remember {
         val options = BitmapFactory.Options().apply {
@@ -170,15 +170,20 @@ fun ParallaxSkiingCanvas(
             BreathingPhase.RELAX -> 0.3f
         }
         
-        // 調整滑雪者應該在的位置，移到畫布的更中間位置
-        val snowLinePosition = height * 0.5f
+        // 計算雪相關位置
+        val snowScale = height / snowAndroidBitmap.height.toFloat()  // 使用畫布高度作為縮放依據
+        val snowScaledHeight = snowAndroidBitmap.height * snowScale
+        val snowAdjustedY = (height - snowScaledHeight) / 2
+        val snowEdgeLine = snowAdjustedY + (snowScaledHeight * snowEdgeRatio)
         
-        // 計算角色的當前垂直位置
-        val verticalPosition = calculateSkierVerticalPosition(
-            phase = breathingController.currentPhase.value,
-            progress = breathingProgress,
-            basePosition = snowLinePosition
-        )
+        // 計算雪層水平滾動偏移
+        val snowScaledWidth = snowAndroidBitmap.width * snowScale
+        val snowScrollDistance = - snowOffset * snowScaledWidth
+        val normalizedSnowOffset = ((snowScrollDistance % snowScaledWidth) + snowScaledWidth) % snowScaledWidth
+        val snowTranslationX = -snowScaledWidth + normalizedSnowOffset
+        
+        // 固定滑雪者位置在雪的邊緣，不隨呼吸改變
+        val verticalPosition = snowEdgeLine
         
         // 繪製全畫面的藍天背景色 (確保沒有空白區域)
         drawRect(
@@ -208,12 +213,12 @@ fun ParallaxSkiingCanvas(
         
         // 在雪地上繪製植物
         plants.forEach { (xRatio, sizeRatio) ->
-            val plantX = width * xRatio
-            val plantSize = width * sizeRatio
+            val plantX = (width * xRatio) + snowTranslationX
+            val plantSize = (width * sizeRatio) * 3  // 放大3倍
             drawPlant(
                 bitmap = plantBitmap,
                 x = plantX,
-                y = snowLinePosition + (height * 0.05f), // 調整植物位置，更接近雪地線
+                y = snowEdgeLine + (height * 0.05f), // 使用雪邊緣作為基準
                 width = plantSize,
                 height = plantSize * 1.5f
             )
@@ -435,4 +440,20 @@ private fun DrawScope.drawBreathingEffect(
         
         canvas.nativeCanvas.drawCircle(centerX, centerY, radius, paint)
     }
+}
+
+/**
+ * 透過檢查圖片中正中央從上往下第一個非透明的像素，
+ * 計算雪圖片中白色與透明分界的比例（介於0與1）。
+ */
+private fun calculateSnowEdgeRatio(bitmap: Bitmap): Float {
+    val centerX = bitmap.width / 2
+    for (y in 0 until bitmap.height) {
+        val pixel = bitmap.getPixel(centerX, y)
+        val alpha = (pixel shr 24) and 0xff
+        if (alpha > 0) {
+            return y.toFloat() / bitmap.height.toFloat()
+        }
+    }
+    return 1f
 } 
