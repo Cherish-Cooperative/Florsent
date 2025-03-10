@@ -36,6 +36,9 @@ import com.example.zhenailife.ui.theme.ZHENAILifeTheme
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.layout.Box
 
 @Suppress("DEPRECATION")
 class MainActivity : ComponentActivity() {
@@ -72,46 +75,85 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ZHENAILifeTheme {
-                MainScreen(
-                    onRequestAccessibilityPermission = {
-                        requestAccessibilityPermission()
-                    },
-                    onCheckServiceStatus = {
-                        val isEnabled = isAccessibilityEnabled(this, MyAccessibilityService::class.java)
-                        if (isEnabled) {
-                            showToast("Accessibility Service 已啟用")
-                        } else {
-                            showToast("Accessibility Service 未啟用")
-                        }
-                    },
-                    onToggleFilter = { isChecked, updateSwitch ->
-                        if (isAccessibilityEnabled(this, MyAccessibilityService::class.java)) {
-                            filterEnabled = isChecked
-                            toggleFilter(isChecked)
-                            updateSwitch(isChecked) // 同步更新 Switch 狀態
-                        } else {
-                            showToast("請授予 Accessibility 權限")
-                            updateSwitch(false)
-                            requestAccessibilityPermission()
-                        }
-                    },
-                    onStartCountdown = { timeInMillis ->
-                        if (isAccessibilityEnabled(this, MyAccessibilityService::class.java)) {
-                            startCountdown(timeInMillis)
-                            showToast("倒數計時開始")
+                // 使用可組合式狀態管理導航
+                var currentScreen by remember { mutableStateOf("main") }
 
-                            // 創建一個返回主頁的 Intent
-                            val startMain = Intent(Intent.ACTION_MAIN)
-                            startMain.addCategory(Intent.CATEGORY_HOME)
-                            startMain.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            startActivity(startMain)
-                        } else {
-                            showToast("請授予 Accessibility 權限")
-                            requestAccessibilityPermission()
+                when (currentScreen) {
+                    "main" -> {
+                        MainScreen(
+                            onRequestAccessibilityPermission = {
+                                requestAccessibilityPermission()
+                            },
+                            onCheckServiceStatus = {
+                                val isEnabled = isAccessibilityEnabled(this, MyAccessibilityService::class.java)
+                                if (isEnabled) {
+                                    showToast("Accessibility Service 已啟用")
+                                } else {
+                                    showToast("Accessibility Service 未啟用")
+                                }
+                            },
+                            onToggleFilter = { isChecked, updateSwitch ->
+                                if (isAccessibilityEnabled(this, MyAccessibilityService::class.java)) {
+                                    filterEnabled = isChecked
+                                    toggleFilter(isChecked)
+                                    updateSwitch(isChecked) // 同步更新 Switch 狀態
+                                } else {
+                                    showToast("請授予 Accessibility 權限")
+                                    updateSwitch(false)
+                                    requestAccessibilityPermission()
+                                }
+                            },
+                            onStartCountdown = { timeInMillis ->
+                                if (isAccessibilityEnabled(this, MyAccessibilityService::class.java)) {
+                                    startCountdown(timeInMillis)
+                                    showToast("倒數計時開始")
+
+                                    // 創建一個返回主頁的 Intent
+                                    val startMain = Intent(Intent.ACTION_MAIN)
+                                    startMain.addCategory(Intent.CATEGORY_HOME)
+                                    startMain.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    startActivity(startMain)
+                                } else {
+                                    showToast("請授予 Accessibility 權限")
+                                    requestAccessibilityPermission()
+                                }
+                            },
+                            onNavigateToBreathing = {
+                                currentScreen = "breathing_navigation"
+                            },
+                            showToast = { message -> showToast(message) }
+                        )
+                    }
+                    "breathing_navigation" -> {
+                        // 呼吸引導導航頁面
+                        com.example.zhenailife.breathing.BreathingNavigationScreen(
+                            onStartBreathingExercise = {
+                                currentScreen = "breathing_animation"
+                            }
+                        )
+                    }
+                    "breathing_animation" -> {
+                        // 呼吸動畫頁面
+                        com.example.zhenailife.breathing.BreathingAnimationScreen(
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        
+                        // 添加返回按鈕（可選）
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            IconButton(
+                                onClick = { currentScreen = "main" },
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(16.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = "返回"
+                                )
+                            }
                         }
-                    },
-                    showToast = { message -> showToast(message) }
-                )
+                    }
+                }
             }
         }
     }
@@ -370,6 +412,7 @@ fun MainScreen(
     onCheckServiceStatus: () -> Unit,
     onToggleFilter: (Boolean, (Boolean) -> Unit) -> Unit,
     onStartCountdown: (Long) -> Unit,
+    onNavigateToBreathing: () -> Unit,
     showToast: (String) -> Unit
 ) {
     var filterChecked by remember { mutableStateOf(false) }
@@ -423,6 +466,12 @@ fun MainScreen(
         }) {
             Text("開始倒數計時")
         }
+        
+        // 新增：呼吸引導按鈕
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = { onNavigateToBreathing() }) {
+            Text("呼吸引導練習")
+        }
     }
 }
 
@@ -430,6 +479,13 @@ fun MainScreen(
 @Composable
 fun DefaultPreview() {
     ZHENAILifeTheme {
-        MainScreen({}, {}, { _, _ -> }, { _ -> }, { _ -> })
+        MainScreen(
+            onRequestAccessibilityPermission = {},
+            onCheckServiceStatus = {},
+            onToggleFilter = { _, _ -> },
+            onStartCountdown = { _ -> },
+            onNavigateToBreathing = {},
+            showToast = { _ -> }
+        )
     }
 }
