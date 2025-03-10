@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
@@ -30,20 +29,12 @@ import androidx.compose.ui.unit.IntSize
 import com.example.zhenailife.R
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.RectF
 import android.util.Log
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.graphics.drawscope.withTransform
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.roundToInt
 import kotlin.random.Random
-import kotlin.math.ceil
 /**
  * 視差滾動滑雪畫布
  * 實現背景、雪地、地面和角色的視差效果及呼吸引導動畫
@@ -54,7 +45,6 @@ fun ParallaxSkiingCanvas(
     breathingController: BreathingController
 ) {
     val context = LocalContext.current
-    val density = LocalDensity.current
     
     // 載入WebP格式的資源圖片，使用高縮放係數
     val backgroundBitmap = remember {
@@ -70,6 +60,9 @@ fun ParallaxSkiingCanvas(
     }
     val snowBitmap = remember { snowAndroidBitmap.asImageBitmap() }
     val snowEdgeRatio = remember { calculateSnowEdgeRatio(snowAndroidBitmap) }
+    
+    // 預處理雪邊界高度
+    val snowEdgeHeights = remember { preprocessSnowEdgeHeights(snowAndroidBitmap) }
     
     val groundBitmap = remember {
         val options = BitmapFactory.Options().apply {
@@ -144,12 +137,45 @@ fun ParallaxSkiingCanvas(
     
     // 產生隨機植物位置（每個植物尺寸更加一致，總體縮小）
     val plants = remember {
-        List(8) {
-            Pair(
-                Random.nextFloat() * 0.8f + 0.1f,  // x位置 (0.1-0.9)
-                Random.nextFloat() * 0.005f + 0.005f   // 植物大小調整為更適中的值
+        mutableListOf<Plant>()
+    }
+    
+    // 植物生成時間控制
+    val plantGenerationTimer by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "plantGeneration"
+    )
+    
+    // 控制植物生成
+    LaunchedEffect(plantGenerationTimer) {
+        // 每2秒有30%機率生成一個新植物
+        if (plantGenerationTimer > 0.95f && Random.nextFloat() < 0.3f) {
+            plants.add(
+                Plant(
+                    xPosition = 1.2f, // 從畫面右側外生成
+                    size = Random.nextFloat() * 0.005f + 0.005f, // 隨機大小
+                    speed = Random.nextFloat() * 0.0005f + 0.0005f // 隨機移動速度
+                )
             )
+            
+            // 限制植物數量，超過20個時移除最早的植物
+            if (plants.size > 20) {
+                plants.removeAt(0)
+            }
         }
+        
+        // 更新所有植物的位置
+        plants.forEach { plant ->
+            plant.xPosition -= plant.speed
+        }
+        
+        // 移除已經移出畫面的植物
+        plants.removeAll { it.xPosition < -0.2f }
     }
     
     // 實現呼吸階段的環境效果
@@ -157,18 +183,13 @@ fun ParallaxSkiingCanvas(
         breathingController.startBreathingCycle()
     }
     
-    Canvas(modifier = modifier.systemBarsPadding()) {
+    Canvas(modifier = modifier) {
         // 獲取畫布尺寸
         val width = size.width
         val height = size.height
         
-        // 計算呼吸狀態對應的亮度調整和高度變化
-        val brightness = when (breathingController.currentPhase.value) {
-            BreathingPhase.INHALE -> 0.2f + (0.3f * breathingProgress)
-            BreathingPhase.HOLD -> 0.5f
-            BreathingPhase.EXHALE -> 0.5f - (0.2f * breathingProgress)
-            BreathingPhase.RELAX -> 0.3f
-        }
+        // 移除呼吸狀態對應的亮度調整，改為固定亮度
+        val brightness = 0.3f // 固定亮度值
         
         // 計算雪相關位置
         val snowScale = height / snowAndroidBitmap.height.toFloat()  // 使用畫布高度作為縮放依據
@@ -182,12 +203,24 @@ fun ParallaxSkiingCanvas(
         val normalizedSnowOffset = ((snowScrollDistance % snowScaledWidth) + snowScaledWidth) % snowScaledWidth
         val snowTranslationX = -snowScaledWidth + normalizedSnowOffset
         
-        // 固定滑雪者位置在雪的邊緣，不隨呼吸改變
-        val verticalPosition = snowEdgeLine
+        // 計算畫面中滑雪者的水平位置（假設固定在畫面中間）
+        val skierX = width * 0.5f
+        
+        // 將 canvas 上的 skierX 映射到雪圖片坐標，考慮雪層水平偏移
+        val effectiveX = (skierX - snowTranslationX) % snowScaledWidth
+        val effectiveXMod = if (effectiveX < 0) effectiveX + snowScaledWidth else effectiveX
+        val skierXRaw = (effectiveXMod / snowScale).toInt().coerceIn(0, snowAndroidBitmap.width - 1)
+        
+        // 從預處理結果取得對應 X 座標處的雪邊緣 Y 值，再轉換為 canvas 坐標
+        val rawSnowY = snowEdgeHeights[skierXRaw]
+        val dynamicSnowEdgeY = snowAdjustedY + (rawSnowY * snowScale)
+        
+        // 使用此動態計算的雪高度作為滑雪者的垂直位置
+        val verticalPosition = dynamicSnowEdgeY
         
         // 繪製全畫面的藍天背景色 (確保沒有空白區域)
         drawRect(
-            color = Color(0xFF8DD0D0),
+            color = androidx.compose.ui.graphics.Color(0xFF8DD0D0),
             size = Size(width, height)
         )
         
@@ -212,9 +245,9 @@ fun ParallaxSkiingCanvas(
         )
         
         // 在雪地上繪製植物
-        plants.forEach { (xRatio, sizeRatio) ->
-            val plantX = (width * xRatio) + snowTranslationX
-            val plantSize = (width * sizeRatio) * 3  // 放大3倍
+        plants.forEach { plant ->
+            val plantX = width * plant.xPosition
+            val plantSize = width * plant.size * 3  // 放大3倍
             drawPlant(
                 bitmap = plantBitmap,
                 x = plantX,
@@ -249,6 +282,13 @@ fun ParallaxSkiingCanvas(
         }
     }
 }
+
+// 植物數據類
+data class Plant(
+    var xPosition: Float, // 0-1範圍的x座標比例
+    val size: Float,      // 大小比例
+    val speed: Float      // 移動速度
+)
 
 // 填充模式枚舉
 enum class FillMode {
@@ -426,7 +466,7 @@ private fun DrawScope.drawBreathingEffect(
     // 吐氣階段的霧氣效果
     drawIntoCanvas { canvas ->
         val paint = Paint().apply {
-            color = android.graphics.Color.argb(
+            color = Color.argb(
                 (100 * progress).toInt(),
                 255, 255, 255
             )
@@ -443,17 +483,158 @@ private fun DrawScope.drawBreathingEffect(
 }
 
 /**
- * 透過檢查圖片中正中央從上往下第一個非透明的像素，
- * 計算雪圖片中白色與透明分界的比例（介於0與1）。
+ * 透過檢查圖片中多個取樣點，計算透明與不透明分界線的位置
+ * 使用改進後的取樣和分析方法
  */
 private fun calculateSnowEdgeRatio(bitmap: Bitmap): Float {
-    val centerX = bitmap.width / 2
-    for (y in 0 until bitmap.height) {
-        val pixel = bitmap.getPixel(centerX, y)
-        val alpha = (pixel shr 24) and 0xff
-        if (alpha > 0) {
-            return y.toFloat() / bitmap.height.toFloat()
+    // 輸出圖片基本資訊
+    Log.d("SnowEdge", "開始分析圖片：寬度=${bitmap.width}, 高度=${bitmap.height}")
+    
+    val numSamples = 7  // 增加取樣點數量以提高準確性
+    val samplePoints = List(numSamples) { index ->
+        bitmap.width * (index + 1) / (numSamples + 1)  // 均勻分布的取樣點
+    }
+    
+    // 輸出取樣點位置
+    Log.d("SnowEdge", "取樣點位置: $samplePoints")
+    
+    var totalY = 0f
+    var validSamples = 0
+    
+    // 針對每個取樣點 x 坐標
+    for (x in samplePoints) {
+        Log.d("SnowEdge", "分析取樣點 x=$x")
+        var foundEdge = false
+        
+        // 從圖片頂部向下掃描
+        scanLoop@ for (y in 0 until bitmap.height) {
+            // 每隔50個像素輸出一次當前掃描位置
+            if (y % 50 == 0) {
+                Log.d("SnowEdge", "  掃描位置 y=$y")
+            }
+            
+            // 判斷當前像素是否不透明
+            val pixel = bitmap.getPixel(x, y)
+            val alpha = Color.alpha(pixel)
+            
+            // 輸出特定位置的像素透明度
+            if (y % 50 == 0) {
+                Log.d("SnowEdge", "  位置(x=$x, y=$y)的像素透明度: alpha=$alpha")
+            }
+            
+            if (alpha > 0) {  // 使用 Color.alpha 檢查透明度
+                Log.d("SnowEdge", "  發現不透明像素：位置(x=$x, y=$y), 透明度=$alpha")
+                
+                // 為避免誤差，檢查下方連續幾個像素是否也為不透明
+                var isValidEdge = true
+                val checkRange = 5
+                Log.d("SnowEdge", "  檢查下方 $checkRange 個像素")
+                
+                for (checkY in y + 1 until minOf(y + checkRange, bitmap.height)) {
+                    val checkPixel = bitmap.getPixel(x, checkY)
+                    val checkAlpha = Color.alpha(checkPixel)
+                    Log.d("SnowEdge", "    檢查位置(x=$x, y=$checkY)的像素透明度: alpha=$checkAlpha")
+                    
+                    if (checkAlpha == 0) {
+                        Log.d("SnowEdge", "    發現透明像素，不是有效邊界")
+                        isValidEdge = false
+                        break
+                    }
+                }
+                
+                if (isValidEdge) {
+                    totalY += y.toFloat()
+                    validSamples++
+                    foundEdge = true
+                    
+                    // 輸出調試信息
+                    Log.d("SnowEdge", "  找到有效邊界點：x=$x, y=$y")
+                    break@scanLoop
+                } else {
+                    Log.d("SnowEdge", "  此位置不是有效邊界，繼續向下掃描")
+                }
+            }
+        }
+        
+        if (!foundEdge) {
+            Log.d("SnowEdge", "  未在取樣點 x=$x 找到有效邊界")
         }
     }
-    return 1f
+    
+    // 如果沒有找到有效的樣本，返回預設值
+    if (validSamples == 0) {
+        Log.d("SnowEdge", "未找到任何有效邊界點，使用預設值0.5f")
+        return 0.5f
+    }
+    
+    // 返回平均高度比例
+    val ratio = (totalY / validSamples) / bitmap.height.toFloat()
+    Log.d("SnowEdge", "計算出的雪地邊界比例：$ratio (總高度=${totalY}, 有效樣本數=${validSamples})")
+    return ratio
+}
+
+/**
+ * 預處理雪邊界高度，計算每個X座標對應的雪邊緣Y座標
+ */
+private fun preprocessSnowEdgeHeights(bitmap: Bitmap): IntArray {
+    val width = bitmap.width
+    val height = bitmap.height
+    
+    Log.d("SnowEdge", "開始預處理雪邊界高度：寬度=${width}, 高度=${height}")
+    
+    // 預設為底部高度
+    val edgeHeights = IntArray(width) { height / 2 }
+    
+    // 對每個X座標
+    for (x in 0 until width) {
+        // 每100個像素輸出一次進度
+        if (x % 100 == 0) {
+            Log.d("SnowEdge", "預處理進度: ${x}/${width}")
+        }
+        
+        // 從上到下掃描
+        var foundEdge = false
+        for (y in 0 until height) {
+            val pixel = bitmap.getPixel(x, y)
+            val alpha = Color.alpha(pixel)
+            
+            if (alpha > 0) { // 找到第一個不透明像素
+                // 驗證這不是噪點 - 檢查附近像素
+                var isValidEdge = true
+                val checkRange = 5
+                
+                for (checkY in y + 1 until minOf(y + checkRange, height)) {
+                    val checkPixel = bitmap.getPixel(x, checkY)
+                    if (Color.alpha(checkPixel) == 0) {
+                        isValidEdge = false
+                        break
+                    }
+                }
+                
+                if (isValidEdge) {
+                    edgeHeights[x] = y
+                    foundEdge = true
+                    
+                    // 每100個像素輸出一個發現的邊緣
+                    if (x % 100 == 0) {
+                        Log.d("SnowEdge", "在X=${x}找到邊緣Y=${y}")
+                    }
+                    break
+                }
+            }
+        }
+        
+        if (!foundEdge && x % 100 == 0) {
+            Log.d("SnowEdge", "在X=${x}未找到有效邊緣，使用預設值")
+        }
+    }
+    
+    // 輸出一些統計訊息
+    val minHeight = edgeHeights.minOrNull() ?: height / 2
+    val maxHeight = edgeHeights.maxOrNull() ?: height / 2
+    val avgHeight = edgeHeights.average()
+    
+    Log.d("SnowEdge", "預處理完成: 最小高度=${minHeight}, 最大高度=${maxHeight}, 平均高度=${avgHeight}")
+    
+    return edgeHeights
 } 
