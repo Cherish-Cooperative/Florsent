@@ -34,6 +34,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Log
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.inset
@@ -156,7 +157,7 @@ fun ParallaxSkiingCanvas(
         breathingController.startBreathingCycle()
     }
     
-    Canvas(modifier = modifier) {
+    Canvas(modifier = modifier.systemBarsPadding()) {
         // 獲取畫布尺寸
         val width = size.width
         val height = size.height
@@ -176,7 +177,7 @@ fun ParallaxSkiingCanvas(
         val verticalPosition = calculateSkierVerticalPosition(
             phase = breathingController.currentPhase.value,
             progress = breathingProgress,
-            basePosition = snowLinePosition // 修改基準位置
+            basePosition = snowLinePosition
         )
         
         // 繪製全畫面的藍天背景色 (確保沒有空白區域)
@@ -191,7 +192,6 @@ fun ParallaxSkiingCanvas(
             canvasWidth = width,
             canvasHeight = height,
             offset = backgroundOffset,
-            scrollSpeed = 0.2f,  // 減慢背景滾動速度
             brightness = brightness,
             fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
         )
@@ -202,7 +202,6 @@ fun ParallaxSkiingCanvas(
             canvasWidth = width,
             canvasHeight = height,
             offset = snowOffset,
-            scrollSpeed = 1.0f,
             brightness = 0f,
             fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
         )
@@ -226,7 +225,6 @@ fun ParallaxSkiingCanvas(
             canvasWidth = width,
             canvasHeight = height,
             offset = groundOffset,
-            scrollSpeed = 2.0f,
             brightness = 0f,
             fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
         )
@@ -291,7 +289,6 @@ private fun DrawScope.drawParallaxLayer(
     canvasWidth: Float,
     canvasHeight: Float,
     offset: Float,
-    scrollSpeed: Float,
     brightness: Float,
     fillMode: FillMode = FillMode.FILL_WIDTH
 ) {
@@ -305,7 +302,7 @@ private fun DrawScope.drawParallaxLayer(
         val scale = when (fillMode) {
             FillMode.FILL_WIDTH -> scaleX
             FillMode.FILL_HEIGHT -> scaleY
-            FillMode.FILL_BOTH -> maxOf(scaleX, scaleY)
+            FillMode.FILL_BOTH -> scaleY
         }
         
         // 計算縮放後的圖片尺寸
@@ -325,7 +322,7 @@ private fun DrawScope.drawParallaxLayer(
         }
         
         // 改進滾動偏移計算，確保真正的無縫循環
-        val scrollDistance = - offset * scrollSpeed * scaledWidth
+        val scrollDistance = - offset * scaledWidth
         val normalizedOffset = ((scrollDistance % scaledWidth) + scaledWidth) % scaledWidth
         
         // 從左側開始繪製，確保覆蓋整個畫布
