@@ -121,20 +121,6 @@ fun ParallaxSkiingCanvas(
         label = "groundScroll"
     )
     
-    // 呼吸動畫進度
-    val breathingProgress by breathingController.breathingProgress
-    
-    // 角色垂直位置動畫
-    val skierVerticalOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(breathingController.totalCycleDuration.toInt()),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "skierPosition"
-    )
-    
     // 產生隨機植物位置（每個植物尺寸更加一致，總體縮小）
     val plants = remember {
         mutableListOf<Plant>()
@@ -258,16 +244,6 @@ fun ParallaxSkiingCanvas(
             )
         }
         
-        // 繪製地面層 (最近，移動最快)
-        drawParallaxLayer(
-            bitmap = groundBitmap,
-            canvasWidth = width,
-            canvasHeight = height,
-            offset = groundOffset,
-            brightness = 0f,
-            fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
-        )
-        
         // 繪製滑雪角色 (中央，放大5倍)
         drawSkier(
             bitmap = skierBitmap,
@@ -277,10 +253,15 @@ fun ParallaxSkiingCanvas(
             height = 300f   // 放大5倍
         )
         
-        // 根據呼吸階段繪製特效（如吐氣階段的霧氣）
-        if (breathingController.currentPhase.value == BreathingPhase.EXHALE) {
-            drawBreathingEffect(width, height, breathingProgress)
-        }
+        // 繪製地面層 (最近，移動最快) - 移到最後繪製，確保顯示在所有元素之上
+        drawParallaxLayer(
+            bitmap = groundBitmap,
+            canvasWidth = width,
+            canvasHeight = height,
+            offset = groundOffset,
+            brightness = 0f,
+            fillMode = FillMode.FILL_BOTH // 使用FILL_BOTH確保完全覆蓋
+        )
     }
 }
 
