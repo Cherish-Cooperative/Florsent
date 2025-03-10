@@ -215,8 +215,9 @@ fun ParallaxSkiingCanvas(
         val rawSnowY = snowEdgeHeights[skierXRaw]
         val dynamicSnowEdgeY = snowAdjustedY + (rawSnowY * snowScale)
         
-        // 使用此動態計算的雪高度作為滑雪者的垂直位置
-        val verticalPosition = dynamicSnowEdgeY
+        // 若角色目前高度偏高（即顯示在畫面太上方），加上一個垂直偏移來讓角色更貼近雪面
+        val verticalAdjustment = height * 0.32f  // 可根據需要調整此參數
+        val verticalPosition = dynamicSnowEdgeY + verticalAdjustment
         
         // 繪製全畫面的藍天背景色 (確保沒有空白區域)
         drawRect(
@@ -574,6 +575,26 @@ private fun calculateSnowEdgeRatio(bitmap: Bitmap): Float {
 }
 
 /**
+ * 平滑化雪邊界高度資料，採用簡單的滑動平均
+ */
+private fun smoothEdgeHeights(edgeHeights: IntArray, windowSize: Int = 5): IntArray {
+    val n = edgeHeights.size
+    val smoothed = IntArray(n)
+    for (i in 0 until n) {
+        var sum = 0
+        var count = 0
+        val start = maxOf(0, i - windowSize/2)
+        val end = minOf(n, i + windowSize/2 + 1)
+        for (j in start until end) {
+            sum += edgeHeights[j]
+            count++
+        }
+        smoothed[i] = sum / count
+    }
+    return smoothed
+}
+
+/**
  * 預處理雪邊界高度，計算每個X座標對應的雪邊緣Y座標
  */
 private fun preprocessSnowEdgeHeights(bitmap: Bitmap): IntArray {
@@ -629,12 +650,15 @@ private fun preprocessSnowEdgeHeights(bitmap: Bitmap): IntArray {
         }
     }
     
+    // 平滑化處理：使用視窗大小 15 的滑動平均
+    val smoothedHeights = smoothEdgeHeights(edgeHeights, windowSize = 40)
+    
     // 輸出一些統計訊息
-    val minHeight = edgeHeights.minOrNull() ?: height / 2
-    val maxHeight = edgeHeights.maxOrNull() ?: height / 2
-    val avgHeight = edgeHeights.average()
+    val minHeight = smoothedHeights.minOrNull() ?: height / 2
+    val maxHeight = smoothedHeights.maxOrNull() ?: height / 2
+    val avgHeight = smoothedHeights.average()
     
     Log.d("SnowEdge", "預處理完成: 最小高度=${minHeight}, 最大高度=${maxHeight}, 平均高度=${avgHeight}")
     
-    return edgeHeights
+    return smoothedHeights
 } 
