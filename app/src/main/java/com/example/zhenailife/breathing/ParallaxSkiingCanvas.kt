@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import kotlin.random.Random
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.withFrameNanos
+import kotlinx.coroutines.delay
 
 // 移除全域的downwardOffset定義
 // val downwardOffset = with(LocalDensity.current) { 20.dp.toPx() }
@@ -53,7 +54,7 @@ fun ParallaxSkiingCanvas(
     val context = LocalContext.current
     
     // 在Composable函數內部計算downwardOffset
-    val downwardOffset = with(LocalDensity.current) { 250.dp.toPx() }
+    val downwardOffset = with(LocalDensity.current) { 180.dp.toPx() }
     
     // 新增canvasSize狀態變數用於跟踪畫布尺寸
     val canvasSize = remember { mutableStateOf(Size.Zero) }
@@ -138,44 +139,53 @@ fun ParallaxSkiingCanvas(
         mutableListOf<Plant>()
     }
     
-    // 植物生成時間控制
-    val plantGenerationTimer by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "plantGeneration"
-    )
-    
-    // 控制植物生成
-    LaunchedEffect(plantGenerationTimer) {
-        // 每2秒有30%機率生成一個新植物
-        // 這裡根據當下的canvas尺寸與雪層狀態計算生成時的y座標
-        val currentCanvas = canvasSize.value
-        if (plantGenerationTimer > 0.95f && Random.nextFloat() < 0.3f && currentCanvas.width > 0f) {
-            val localSnowScale = currentCanvas.height / snowAndroidBitmap.height.toFloat()
-            val localSnowScaledHeight = snowAndroidBitmap.height * localSnowScale
-            val localSnowAdjustedY = (currentCanvas.height - localSnowScaledHeight) / 2
-            val currentPlantY = localSnowAdjustedY + (snowEdgeHeights.last() * localSnowScale) + downwardOffset
-            plants.add(
-                Plant(
-                    xPosition = 1.2f, // 從畫面右側外生成
-                    size = Random.nextFloat() * 0.005f + 0.005f, // 隨機大小
-                    speed = 0f,  // 速度改為0，由另一個LaunchedEffect更新
-                    yPosition = currentPlantY
-                )
-            )
+    // 使用獨立的 LaunchedEffect 控制植物生成，使生成更平均
+    LaunchedEffect(Unit) {
+        while (true) {
+            // 隨機延遲 1500 至 2500 毫秒，使植物生成更平均
+            val delayMillis = 1500L + Random.nextLong(0, 1000)
+            kotlinx.coroutines.delay(delayMillis)
             
-            // 限制植物數量，超過20個時移除最早的植物
-            if (plants.size > 20) {
-                plants.removeAt(0)
+            val currentCanvas = canvasSize.value
+            if (currentCanvas.width > 0f) {
+                val localSnowScale = currentCanvas.height / snowAndroidBitmap.height.toFloat()
+                val localSnowScaledHeight = snowAndroidBitmap.height * localSnowScale
+                val localSnowAdjustedY = (currentCanvas.height - localSnowScaledHeight) / 2
+                
+                // 以 plant 的 xPosition (1.2f) 計算 canvas 上的 x 座標
+                val plantCanvasX = currentCanvas.width * 1.2f
+                
+                // 計算雪圖片在 canvas 上的寬度及其捲動偏移
+                val snowScaledWidth = snowAndroidBitmap.width * localSnowScale
+                val snowScrollDistance = -snowOffset * snowScaledWidth
+                val normalizedSnowOffset = ((snowScrollDistance % snowScaledWidth) + snowScaledWidth) % snowScaledWidth
+                val snowTranslationX = -snowScaledWidth + normalizedSnowOffset
+                
+                // 計算 plantCanvasX 在雪圖片上的對應位置
+                val effectivePlantX = (plantCanvasX - snowTranslationX) % snowScaledWidth
+                val effectivePlantXMod = if (effectivePlantX < 0) effectivePlantX + snowScaledWidth else effectivePlantX
+                val currentSnowXIndex = (effectivePlantXMod / localSnowScale).toInt().coerceIn(0, snowAndroidBitmap.width - 1)
+                val currentPlantY = localSnowAdjustedY + (snowEdgeHeights[currentSnowXIndex] * localSnowScale) + downwardOffset
+                
+                // 每次生成一株植物
+                plants.add(
+                    Plant(
+                        xPosition = 1.2f, // 從畫面右側外生成
+                        size = Random.nextFloat() * 0.005f + 0.005f, // 隨機大小
+                        speed = 0f,  // 速度由另外的迴圈更新
+                        yPosition = currentPlantY
+                    )
+                )
+                
+                // 限制植物數量，超過20個時移除最早的植物
+                if (plants.size > 20) {
+                    plants.removeAt(0)
+                }
+                
+                // 移除已經移出畫面的植物
+                plants.removeAll { it.xPosition < -0.2f }
             }
         }
-        
-        // 移除已經移出畫面的植物
-        plants.removeAll { it.xPosition < -0.2f }
     }
     
     // 實現呼吸階段的環境效果
@@ -218,8 +228,8 @@ fun ParallaxSkiingCanvas(
         val dynamicSnowEdgeY = snowAdjustedY + (rawSnowY * snowScale)
         
         // 若角色目前高度偏高（即顯示在畫面太上方），加上一個垂直偏移來讓角色更貼近雪面
-        val verticalAdjustment = height * 0.32f  // 可根據需要調整此參數
-        val verticalPosition = dynamicSnowEdgeY + downwardOffset
+        val verticalAdjustment = height * 0.3f  // 可根據需要調整此參數
+        val verticalPosition = dynamicSnowEdgeY + verticalAdjustment
         
         // 繪製全畫面的藍天背景色 (確保沒有空白區域)
         drawRect(
@@ -294,8 +304,8 @@ fun ParallaxSkiingCanvas(
                 val snowScaledWidth = snowAndroidBitmap.width.toFloat() * snowScale
                 // 雪層從0到1的動畫週期為20000ms，計算每毫秒的移動比例
                 val snowSpeedPixelsPerMs = snowScaledWidth / 20000f
-                // 轉換成相對於畫布寬度的比例
-                val speedFraction = snowSpeedPixelsPerMs / canvasSize.value.width
+                // 將植物移動速度提高 20%
+                val speedFraction = (snowSpeedPixelsPerMs / canvasSize.value.width) * 1.2f
                 
                 // 更新所有植物的位置
                 plants.forEach { plant ->
