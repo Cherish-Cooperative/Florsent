@@ -1,0 +1,50 @@
+package app.florsent.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+// Florsent palette: sage green (primary), morning-mist gray (secondary), warm stone (tertiary/neutral).
+
+// Light
+internal val SageLight = Color(0xFF56705A)
+internal val SageContainerLight = Color(0xFFD8E4D5)
+internal val OnSageContainerLight = Color(0xFF17281A)
+internal val MistLight = Color(0xFF66706D)
+internal val MistContainerLight = Color(0xFFDDE3E1)
+internal val OnMistContainerLight = Color(0xFF1C2422)
+internal val StoneLight = Color(0xFF87705A)
+internal val StoneContainerLight = Color(0xFFEFE1D2)
+internal val OnStoneContainerLight = Color(0xFF2E2115)
+internal val BackgroundLight = Color(0xFFF5F3EE)
+internal val SurfaceLowestLight = Color(0xFFFBFAF7)
+internal val SurfaceLowLight = Color(0xFFF0EEE8)
+internal val SurfaceContainerLight = Color(0xFFEBE8E1)
+internal val SurfaceHighLight = Color(0xFFE5E2DA)
+internal val SurfaceHighestLight = Color(0xFFDFDCD3)
+internal val InkLight = Color(0xFF23251F)
+internal val InkMutedLight = Color(0xFF5B5E56)
+internal val OutlineLight = Color(0xFF8E9087)
+internal val OutlineVariantLight = Color(0xFFD3D0C6)
+
+// Dark
+internal val SageDark = Color(0xFFA8C3A6)
+internal val OnSageDark = Color(0xFF193320)
+internal val SageContainerDark = Color(0xFF304836)
+internal val OnSageContainerDark = Color(0xFFC9E2C6)
+internal val MistDark = Color(0xFFBBC4C1)
+internal val OnMistDark = Color(0xFF26302D)
+internal val MistContainerDark = Color(0xFF3A4341)
+internal val OnMistContainerDark = Color(0xFFD7E0DD)
+internal val StoneDark = Color(0xFFD8C0A6)
+internal val OnStoneDark = Color(0xFF3C2C1B)
+internal val StoneContainerDark = Color(0xFF54432F)
+internal val OnStoneContainerDark = Color(0xFFF5DFC6)
+internal val BackgroundDark = Color(0xFF141613)
+internal val SurfaceLowestDark = Color(0xFF0F110E)
+internal val SurfaceLowDark = Color(0xFF1A1C19)
+internal val SurfaceContainerDark = Color(0xFF1E211D)
+internal val SurfaceHighDark = Color(0xFF282B27)
+internal val SurfaceHighestDark = Color(0xFF333631)
+internal val InkDark = Color(0xFFE4E3DC)
+internal val InkMutedDark = Color(0xFFC1C3BA)
+internal val OutlineDark = Color(0xFF8B8E85)
+internal val OutlineVariantDark = Color(0xFF43463F)

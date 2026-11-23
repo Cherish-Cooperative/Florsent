@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="florsent_background">#FF141613</color>
+    <color name="nudge_surface">#FF282B27</color>
+    <color name="nudge_on_surface">#FFE4E3DC</color>
+    <color name="nudge_on_surface_muted">#FFC1C3BA</color>
+    <color name="nudge_accent">#FFA8C3A6</color>
+    <color name="nudge_outline">#FF43463F</color>
+    <color name="nudge_ripple">#33A8C3A6</color>
+</resources>

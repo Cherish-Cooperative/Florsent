@@ -1,3 +1,65 @@
 <resources>
-    <string name="app_name">ZHENAI Life</string>
+    <string name="app_name" translatable="false">Florsent</string>
+
+    <string name="action_back">返回</string>
+    <string name="minutes_format">%d 分鐘</string>
+
+    <!-- Home -->
+    <string name="home_tagline">放下手機的時候，慢慢來就好。</string>
+    <string name="home_breathe_now">立即呼吸練習</string>
+    <string name="home_preview">30 秒體驗漸進引導</string>
+    <string name="home_preview_needs_service">開啟漸進引導之後就能體驗。</string>
+    <string name="home_watched_apps">監測的 App</string>
+    <string name="home_watched_apps_value">%d 個</string>
+    <string name="home_budget">使用額度</string>
+    <string name="home_budget_value">單次 %1$d 分鐘・每日 %2$d 分鐘</string>
+
+    <string name="today_label">今天在社群 App 上</string>
+    <string name="today_of_budget">/ %d 分鐘</string>
+    <string name="status_idle">還在額度內，盡情使用吧。</string>
+    <string name="status_guiding">已經超過額度，畫面會慢慢變淡。</string>
+    <string name="status_breathing">正在呼吸練習。</string>
+    <string name="status_preview">漸進引導體驗中。</string>
+    <string name="status_cooldown">休息時間，%d 分鐘內不會打擾你。</string>
+
+    <string name="setup_title">開啟漸進引導</string>
+    <string name="setup_body">在社群 App 用超過額度時，畫面會一點一點變淡，再提醒你停下來呼吸。不會封鎖任何 App。</string>
+    <string name="setup_action">開始設定</string>
+
+    <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
+    <string name="disclosure_title">使用無障礙服務</string>
+    <string name="disclosure_body">Florsent 會透過無障礙服務知道目前在前景的是哪個 App，只用來計算你選定的社群 App 用了多久，並在畫面上顯示漸進的淡化效果和提示。\n\nFlorsent 不會讀取畫面內容，也不會記錄你輸入的文字。所有資料只存在這支手機上，不會上傳。\n\n按下「同意」後會開啟系統設定，請在「已下載的應用程式」中找到 Florsent 並開啟。</string>
+    <string name="disclosure_accept">同意並前往設定</string>
+    <string name="disclosure_decline">暫時不要</string>
+
+    <!-- Watched apps -->
+    <string name="watched_title">監測的 App</string>
+    <string name="watched_intro">只有勾選的 App 會計入使用額度。</string>
+    <string name="watched_suggested">常見的社群 App</string>
+    <string name="watched_others">其他 App</string>
+
+    <!-- Budget -->
+    <string name="budget_title">使用額度</string>
+    <string name="budget_intro">超過任一個額度，畫面就會開始慢慢變淡。</string>
+    <string name="budget_session">單次額度</string>
+    <string name="budget_session_hint">連續使用多久後開始引導，離開 10 分鐘以上會重算。</string>
+    <string name="budget_daily">每日額度</string>
+    <string name="budget_daily_hint">一天內累計超過之後，每次打開都會比較早出現引導。</string>
+    <string name="budget_cooldown">休息時間</string>
+    <string name="budget_cooldown_hint">做完呼吸練習之後，這段時間內不會再打擾你。</string>
+
+    <!-- Breathe (P2 placeholder) -->
+    <string name="breathe_title">呼吸練習</string>
+    <string name="breathe_placeholder_body">慢慢吸氣，停一下，再慢慢吐氣。\n完整的呼吸動畫會在下一版加入。</string>
+    <string name="breathe_complete">完成練習</string>
+    <string name="breathe_later">先不要</string>
+
+    <!-- Nudge overlay -->
+    <string name="nudge_message">停下來深呼吸一下？</string>
+    <string name="nudge_accept_description">停下來深呼吸一下，開啟呼吸練習</string>
+    <string name="nudge_dismiss_description">先不要，稍後再提醒</string>
+
+    <!-- Accessibility service -->
+    <string name="accessibility_service_label">Florsent 漸進引導</string>
+    <string name="accessibility_service_description">只用來偵測目前在前景的 App，計算你選定的社群 App 使用時間，並顯示漸進的淡化效果和呼吸提醒。不會讀取畫面內容或你輸入的文字，資料不會離開這支手機。</string>
 </resources>
