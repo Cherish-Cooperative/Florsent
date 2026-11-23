@@ -31,6 +31,17 @@ object ForegroundPolicy {
         if (pkg == selfPackage && className?.startsWith("$selfPackage.") != true) return null
         return pkg
     }
+
+    /** How long after the nudge hands off to Florsent a window event from the app just left is ignored. */
+    const val HANDOFF_ECHO_MS = 2_000L
+
+    /**
+     * After the nudge opens the breathing screen, the app the user just left can still emit a late
+     * window event (a dialog or transition finishing). Taken at face value it would look like
+     * "went back to the app", cancel breathing and bring the fade back over the breathing screen.
+     */
+    fun isHandoffEcho(pkg: String, leftPackage: String?, leftAtMs: Long, nowMs: Long): Boolean =
+        pkg == leftPackage && nowMs - leftAtMs in 0 until HANDOFF_ECHO_MS
 }
 
 /** Common feed-style social apps, used to preselect the watch list on first launch. */

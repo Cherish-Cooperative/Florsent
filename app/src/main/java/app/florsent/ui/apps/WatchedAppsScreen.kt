@@ -167,7 +167,7 @@ internal fun AppToggleRow(
 }
 
 @Composable
-private fun AppIcon(packageName: String, loadIcon: suspend (String, Int) -> Bitmap?) {
+internal fun AppIcon(packageName: String, loadIcon: suspend (String, Int) -> Bitmap?) {
     val peekIcon = LocalIconPeek.current
     val sizePx = with(LocalDensity.current) { 40.dp.roundToPx() }
     // Seed from the cache so scrolling back never flashes the placeholder.

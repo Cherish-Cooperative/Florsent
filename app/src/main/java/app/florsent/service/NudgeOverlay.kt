@@ -34,13 +34,22 @@ class NudgeOverlay(
     private val windowManager = service.getSystemService(WindowManager::class.java)
     private var root: FrameLayout? = null
     private var pill: View? = null
+    private var message: TextView? = null
     private var visible = false
+    private var bedtime = false
 
-    fun setVisible(show: Boolean) {
+    /** Shows or hides the pill; [bedtime] switches the wording to the bedtime question. */
+    fun setVisible(show: Boolean, bedtime: Boolean = false) {
+        if (bedtime != this.bedtime) {
+            this.bedtime = bedtime
+            message?.text = service.getString(messageRes())
+        }
         if (show == visible) return
         visible = show
         if (show) show() else hide()
     }
+
+    private fun messageRes() = if (bedtime) R.string.nudge_message_bedtime else R.string.nudge_message
 
     fun release() {
         visible = false
@@ -48,6 +57,7 @@ class NudgeOverlay(
         root?.let { runCatching { windowManager.removeViewImmediate(it) } }
         root = null
         pill = null
+        message = null
     }
 
     private fun show() {
@@ -113,7 +123,7 @@ class NudgeOverlay(
             }
         }
         val message = TextView(ctx).apply {
-            text = ctx.getString(R.string.nudge_message)
+            text = ctx.getString(messageRes())
             setTextColor(onSurface)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
             maxWidth = dp(240f).toInt() // stays on screen at the largest font scale
@@ -146,7 +156,7 @@ class NudgeOverlay(
         val container = FrameLayout(ctx).apply {
             // TalkBack announces the pill as it slides in, like a system pane.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                accessibilityPaneTitle = ctx.getString(R.string.nudge_message)
+                accessibilityPaneTitle = ctx.getString(messageRes())
             }
             val pad = dp(16f).toInt()
             setPadding(pad, pad, pad, pad)
@@ -156,6 +166,7 @@ class NudgeOverlay(
         container.addView(pill, FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
         ))
+        this.message = message
         return container to pill
     }
 

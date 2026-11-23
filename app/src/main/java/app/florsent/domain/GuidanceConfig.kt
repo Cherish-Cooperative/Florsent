@@ -37,6 +37,8 @@ data class GuidanceConfig(
      */
     val maxTickGapMs: Long = 20_000L,
     val preview: PreviewConfig = PreviewConfig(),
+    /** Bedtime wind-down; null until the user accepts an invitation or picks a time. */
+    val bedtime: BedtimeConfig? = null,
 )
 
 /** The 30-second "try the gradual guidance" demo. */

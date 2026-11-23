@@ -82,6 +82,28 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun `consent, bedtime and invitation round-trip`() = runTest {
+        val repo = repository()
+        assertEquals(UsageConsent.Unknown, repo.settings.first().usageConsent)
+        assertFalse(repo.settings.first().recordingAllowed)
+
+        repo.setUsageConsent(UsageConsent.Granted)
+        repo.setBedtimeThresholdMinutes(10)
+        repo.setBedtimeAnchor(23 * 60 + 40)
+        var s = repo.settings.first()
+        assertTrue(s.recordingAllowed)
+        assertEquals(23 * 60 + 40, s.bedtimeAnchorMinute)
+        assertTrue("choosing a time answers the invitation", s.bedtimeInviteAnswered)
+        assertEquals(23 * 60 + 40, s.toGuidanceConfig().bedtime?.anchorMinuteOfDay)
+        assertEquals(10 * 60_000L, s.toGuidanceConfig().bedtime?.thresholdMs)
+
+        repo.setBedtimeAnchor(null)
+        s = repo.settings.first()
+        assertEquals(null, s.bedtimeAnchorMinute)
+        assertEquals(null, s.toGuidanceConfig().bedtime)
+    }
+
+    @Test
     fun `settings convert to engine config in milliseconds`() = runTest {
         val repo = repository()
         repo.setWatched("a", true)

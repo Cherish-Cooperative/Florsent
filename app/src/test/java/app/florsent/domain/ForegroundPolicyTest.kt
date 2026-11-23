@@ -1,7 +1,9 @@
 package app.florsent.domain
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ForegroundPolicyTest {
@@ -34,5 +36,16 @@ class ForegroundPolicyTest {
         assertEquals(self, resolve(self, "app.florsent.MainActivity"))
         assertNull(resolve(self, "android.widget.FrameLayout"))
         assertNull(resolve(self, null))
+    }
+
+    @Test
+    fun `a late event from the app just left is ignored for two seconds only`() {
+        val yt = "com.google.android.youtube"
+        assertTrue(ForegroundPolicy.isHandoffEcho(yt, yt, leftAtMs = 1_000, nowMs = 1_000))
+        assertTrue(ForegroundPolicy.isHandoffEcho(yt, yt, 1_000, 2_999))
+        assertFalse("really going back counts", ForegroundPolicy.isHandoffEcho(yt, yt, 1_000, 3_000))
+        assertFalse("other apps always count", ForegroundPolicy.isHandoffEcho("com.android.chrome", yt, 1_000, 1_500))
+        assertFalse(ForegroundPolicy.isHandoffEcho(yt, null, 1_000, 1_500))
+        assertFalse("clock went back", ForegroundPolicy.isHandoffEcho(yt, yt, 1_000, 500))
     }
 }

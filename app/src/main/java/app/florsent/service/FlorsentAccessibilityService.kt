@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import app.florsent.MainActivity
 import app.florsent.appContainer
 import app.florsent.domain.ForegroundPolicy
+import app.florsent.domain.GuidanceContext
 import app.florsent.domain.GuidanceEvent
 import app.florsent.service.effect.CompositeVisualEffectController
 import app.florsent.service.effect.DimOverlayController
@@ -45,6 +46,8 @@ class FlorsentAccessibilityService : AccessibilityService() {
     private var renderJob: Job? = null
     private var ignoredPackages: Set<String> = emptySet()
     private var lastForeground: String? = null
+    private var handoffFrom: String? = null
+    private var handoffAtMs = 0L
     private var receiverRegistered = false
     private var isShutDown = true
 
@@ -118,7 +121,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
                 .distinctUntilChanged()
             combine(coordinator.effect, toggles) { effect, _ -> effect }.collect { effect ->
                 effects?.render(VisualEffect(effect.level, effect.targetPackage))
-                nudge?.setVisible(effect.showNudge)
+                nudge?.setVisible(effect.showNudge, bedtime = effect.context == GuidanceContext.Bedtime)
             }
         }
     }
@@ -127,6 +130,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = ForegroundPolicy.resolve(event.packageName, event.className, packageName, ignoredPackages)
             ?: return
+        if (ForegroundPolicy.isHandoffEcho(pkg, handoffFrom, handoffAtMs, coordinator.now())) return
         if (pkg == lastForeground) return
         lastForeground = pkg
         coordinator.dispatch(GuidanceEvent.ForegroundChanged(pkg, coordinator.now()))
@@ -146,7 +150,9 @@ class FlorsentAccessibilityService : AccessibilityService() {
     }
 
     private fun onNudgeAccepted() {
-        coordinator.dispatch(GuidanceEvent.NudgeAccepted(coordinator.now()))
+        handoffFrom = lastForeground
+        handoffAtMs = coordinator.now()
+        coordinator.dispatch(GuidanceEvent.NudgeAccepted(handoffAtMs))
         startActivity(MainActivity.breatheIntent(this))
     }
 

@@ -41,10 +41,31 @@ import app.florsent.ui.home.HomeScreen
 import app.florsent.ui.home.HomeViewModel
 import app.florsent.ui.onboarding.OnboardingScreen
 import app.florsent.ui.onboarding.OnboardingViewModel
-import app.florsent.ui.settings.SettingsScreen
+import app.florsent.ui.settings.AdvancedSettingsScreen
+import app.florsent.ui.settings.BedtimeSettingsScreen
+import app.florsent.ui.settings.BedtimeViewModel
+import app.florsent.ui.settings.BreathingSettingsScreen
+import app.florsent.ui.settings.BudgetSettingsScreen
+import app.florsent.ui.settings.SettingsHomeScreen
+import app.florsent.ui.settings.SettingsPage
+import app.florsent.ui.insights.InsightsScreen
+import app.florsent.ui.insights.InsightsViewModel
+import app.florsent.domain.BreathingPatterns
+import app.florsent.domain.GuidanceContext
 import app.florsent.ui.settings.SettingsViewModel
 
-enum class Route { Home, Breathe, Grounding, WatchedApps, Settings }
+enum class Route(val parent: Route? = null) {
+    Home,
+    Breathe(Home),
+    Grounding(Home),
+    Insights(Home),
+    Settings(Home),
+    WatchedApps(Settings),
+    SettingsBudget(Settings),
+    SettingsBedtime(Settings),
+    SettingsBreathing(Settings),
+    SettingsAdvanced(Settings),
+}
 
 /**
  * Five screens do not justify a navigation library; a saveable enum plus BackHandler is enough.
@@ -75,11 +96,16 @@ fun FlorsentAppUi(
     val loadedSettings by container.settings.settings.collectAsStateWithLifecycle(initialValue = null)
     val settings = loadedSettings ?: UserSettings()
 
+    // Whether the current breathing / grounding came from a bedtime nudge (frozen for the session).
+    var bedtimeSession by rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(requestedRoute) {
         if (requestedRoute != null) {
             route = requestedRoute
             if (requestedRoute == Route.Breathe && breatheVm.uiState.value.stage == BreatheStage.Ready) {
-                breatheVm.start()
+                bedtimeSession = guidance.state.value.context == GuidanceContext.Bedtime
+                // Bedtime breathing defaults to 4-7-8 for this session only.
+                breatheVm.start(if (bedtimeSession) BreathingPatterns.Relax478 else null)
             }
             onRouteConsumed()
         }
@@ -99,7 +125,9 @@ fun FlorsentAppUi(
     val returnToLife = { goToLauncher: Boolean ->
         guidance.dispatch(GuidanceEvent.BreathingCompleted(guidance.now()))
         route = Route.Home
-        if (goToLauncher) onGoToLauncher()
+        // "去休息吧" always leaves the phone; daytime follows the user's setting.
+        if (goToLauncher || bedtimeSession) onGoToLauncher()
+        bedtimeSession = false
     }
 
     BackHandler(enabled = route != Route.Home) {
@@ -107,7 +135,7 @@ fun FlorsentAppUi(
             Route.Breathe ->
                 if (breatheVm.uiState.value.stage == BreatheStage.Running) leaveBreathing() else route = Route.Home
             Route.Grounding -> returnToLife(false)
-            else -> route = Route.Home
+            else -> route = route.parent ?: Route.Home
         }
     }
 
@@ -142,15 +170,21 @@ fun FlorsentAppUi(
                     val state by vm.uiState.collectAsStateWithLifecycle()
                     HomeScreen(
                         state = state,
-                        onBreathe = { route = Route.Breathe },
+                        onBreathe = {
+                            bedtimeSession = false
+                            route = Route.Breathe
+                        },
                         onPreview = {
                             vm.startPreview()
                             onStartPreview()
                         },
-                        onOpenWatchedApps = { route = Route.WatchedApps },
+                        onOpenInsights = { route = Route.Insights },
                         onOpenSettings = { route = Route.Settings },
                         onAcceptDisclosure = vm::acceptDisclosure,
                         onOpenAccessibilitySettings = onOpenAccessibilitySettings,
+                        onAnswerConsent = vm::answerConsent,
+                        onAcceptInvite = vm::acceptInvite,
+                        onDeclineInvite = vm::declineInvite,
                     )
                 }
                 Route.Breathe -> {
@@ -174,8 +208,11 @@ fun FlorsentAppUi(
                         guidance.state.map { guidance.engine.completionStartsCooldown(it) }.distinctUntilChanged()
                     }
                     val startsCooldown by startsCooldownFlow.collectAsStateWithLifecycle(initialValue = false)
+                    val bedtimeQuiet = (guidance.config.value.bedtime?.cooldownMs ?: 0L) / 60_000
+                    val quietMinutes = if (bedtimeSession) bedtimeQuiet.toInt() else settings.cooldownMinutes
                     GroundingScreen(
-                        cooldownMinutes = if (startsCooldown) settings.cooldownMinutes else null,
+                        cooldownMinutes = if (startsCooldown) quietMinutes else null,
+                        bedtime = bedtimeSession,
                         onReturnToLife = { returnToLife(settings.returnToHomeScreen) },
                     )
                 }
@@ -185,24 +222,54 @@ fun FlorsentAppUi(
                     val state by vm.uiState.collectAsStateWithLifecycle()
                     WatchedAppsScreen(
                         state = state,
-                        onBack = { route = Route.Home },
+                        onBack = { route = Route.Settings },
                         onToggle = vm::setWatched,
                         loadIcon = vm::icon,
                     )
                 }
-                Route.Settings -> {
+                Route.Insights -> {
+                    val vm: InsightsViewModel =
+                        viewModel(factory = viewModelFactory { initializer { InsightsViewModel(container) } })
+                    val state by vm.uiState.collectAsStateWithLifecycle()
+                    InsightsScreen(state = state, onBack = { route = Route.Home }, loadIcon = vm::icon)
+                }
+                Route.SettingsBedtime -> {
+                    val vm: BedtimeViewModel =
+                        viewModel(factory = viewModelFactory { initializer { BedtimeViewModel(container) } })
+                    val state by vm.uiState.collectAsStateWithLifecycle()
+                    BedtimeSettingsScreen(state = state, vm = vm, onBack = { route = Route.Settings })
+                }
+                Route.Settings, Route.SettingsBudget, Route.SettingsBreathing, Route.SettingsAdvanced -> {
                     val vm: SettingsViewModel =
                         viewModel(factory = viewModelFactory {
                             initializer { SettingsViewModel(container, context.applicationContext) }
                         })
                     val state by vm.uiState.collectAsStateWithLifecycle()
-                    SettingsScreen(
-                        state = state,
-                        vm = vm,
-                        onBack = { route = Route.Home },
-                        onOpenAccessibilitySettings = onOpenAccessibilitySettings,
-                        onOpenZenAccessSettings = { context.startActivity(ZenGrayscale.accessSettingsIntent()) },
-                    )
+                    val back = { route = current.parent ?: Route.Home }
+                    when (current) {
+                        Route.SettingsBudget -> BudgetSettingsScreen(state, vm, back)
+                        Route.SettingsBreathing -> BreathingSettingsScreen(state, vm, back)
+                        Route.SettingsAdvanced -> AdvancedSettingsScreen(
+                            state = state,
+                            vm = vm,
+                            onBack = back,
+                            onOpenAccessibilitySettings = onOpenAccessibilitySettings,
+                            onOpenZenAccessSettings = { context.startActivity(ZenGrayscale.accessSettingsIntent()) },
+                        )
+                        else -> SettingsHomeScreen(
+                            state = state,
+                            onBack = back,
+                            onOpenWatchedApps = { route = Route.WatchedApps },
+                            onOpen = { page ->
+                                route = when (page) {
+                                    SettingsPage.Budget -> Route.SettingsBudget
+                                    SettingsPage.Bedtime -> Route.SettingsBedtime
+                                    SettingsPage.Breathing -> Route.SettingsBreathing
+                                    SettingsPage.Advanced -> Route.SettingsAdvanced
+                                }
+                            },
+                        )
+                    }
                 }
             }
         }

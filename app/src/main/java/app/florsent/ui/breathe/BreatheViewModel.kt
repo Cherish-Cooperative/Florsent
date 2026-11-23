@@ -37,10 +37,13 @@ class BreatheViewModel(
     private val stage = MutableStateFlow(BreatheStage.Ready)
     private val sessionId = MutableStateFlow(0)
 
+    /** A pattern for this session only (bedtime uses 4-7-8) without changing the saved choice. */
+    private val sessionPattern = MutableStateFlow<BreathingPattern?>(null)
+
     val uiState: StateFlow<BreatheUiState> =
-        combine(settings.settings, stage, sessionId) { settings, stage, session ->
+        combine(settings.settings, stage, sessionId, sessionPattern) { settings, stage, session, override ->
             BreatheUiState(
-                pattern = BreathingPatterns.byId(settings.breathingPatternId),
+                pattern = override ?: BreathingPatterns.byId(settings.breathingPatternId),
                 stage = stage,
                 sessionId = session,
                 ambientSound = settings.ambientSound,
@@ -49,6 +52,7 @@ class BreatheViewModel(
         }.stateIn(viewModelScope, SharingStarted.Eagerly, BreatheUiState())
 
     fun selectPattern(pattern: BreathingPattern) {
+        sessionPattern.value = null
         viewModelScope.launch { settings.setBreathingPattern(pattern.id) }
     }
 
@@ -63,7 +67,8 @@ class BreatheViewModel(
         viewModelScope.launch { settings.setCueSound(on) }
     }
 
-    fun start() {
+    fun start(patternForThisSession: BreathingPattern? = null) {
+        sessionPattern.value = patternForThisSession
         sessionId.value += 1
         stage.value = BreatheStage.Running
         if (uiState.value.ambientSound) sound.startAmbient()
@@ -89,6 +94,7 @@ class BreatheViewModel(
     /** Ends a session (finished, ended early or abandoned) and returns to the picker. */
     fun stop() {
         stage.value = BreatheStage.Ready
+        sessionPattern.value = null
         if (soundDelegate.isInitialized()) sound.stopAmbient()
     }
 

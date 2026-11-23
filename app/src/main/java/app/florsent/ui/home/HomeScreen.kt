@@ -42,6 +42,14 @@ import app.florsent.R
 import app.florsent.domain.GuidanceStatus
 import app.florsent.ui.breathe.BreathingFlower
 import java.time.LocalTime
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.Icon
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import app.florsent.ui.components.BedtimePickerDialog
+import app.florsent.ui.components.CardShape
+import app.florsent.ui.components.clockText
 import app.florsent.ui.components.NavigationRow
 import app.florsent.ui.components.SoftCard
 import app.florsent.ui.theme.FlorsentTheme
@@ -51,12 +59,16 @@ fun HomeScreen(
     state: HomeUiState,
     onBreathe: () -> Unit,
     onPreview: () -> Unit,
-    onOpenWatchedApps: () -> Unit,
+    onOpenInsights: () -> Unit,
     onOpenSettings: () -> Unit,
     onAcceptDisclosure: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
+    onAnswerConsent: (Boolean) -> Unit,
+    onAcceptInvite: (Int) -> Unit,
+    onDeclineInvite: () -> Unit,
 ) {
     var showDisclosure by rememberSaveable { mutableStateOf(false) }
+    var pickingBedtime by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -92,7 +104,36 @@ fun HomeScreen(
                 if (state.disclosureAccepted) onOpenAccessibilitySettings() else showDisclosure = true
             })
         } else {
-            TodayCard(state)
+            TodayCard(state, onOpenInsights)
+        }
+        // At most one gentle card at a time: consent first (existing users), then the invitation.
+        if (state.askConsent) {
+            Spacer(Modifier.height(12.dp))
+            ChoiceCard(
+                title = stringResource(R.string.consent_title),
+                body = stringResource(R.string.consent_body),
+                primary = stringResource(R.string.consent_accept) to { onAnswerConsent(true) },
+                secondary = stringResource(R.string.consent_decline) to { onAnswerConsent(false) },
+            )
+        } else {
+            state.invite?.let { invite ->
+                Spacer(Modifier.height(12.dp))
+                when (invite) {
+                    is BedtimeInvite.Learned -> ChoiceCard(
+                        title = stringResource(R.string.invite_title),
+                        body = stringResource(R.string.invite_body, clockText(invite.minuteOfDay)),
+                        primary = stringResource(R.string.invite_accept) to { onAcceptInvite(invite.minuteOfDay) },
+                        secondary = stringResource(R.string.invite_choose) to { pickingBedtime = true },
+                        tertiary = stringResource(R.string.invite_decline) to onDeclineInvite,
+                    )
+                    BedtimeInvite.ChooseTime -> ChoiceCard(
+                        title = stringResource(R.string.invite_title),
+                        body = stringResource(R.string.invite_irregular_body),
+                        primary = stringResource(R.string.invite_irregular_choose) to { pickingBedtime = true },
+                        secondary = stringResource(R.string.invite_decline) to onDeclineInvite,
+                    )
+                }
+            }
         }
 
         Spacer(Modifier.height(24.dp))
@@ -112,28 +153,24 @@ fun HomeScreen(
 
         Spacer(Modifier.height(28.dp))
         SoftCard {
-            Column {
-                NavigationRow(
-                    title = stringResource(R.string.home_watched_apps),
-                    value = stringResource(R.string.home_watched_apps_value, state.watchedCount),
-                    onClick = onOpenWatchedApps,
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                )
-                NavigationRow(
-                    title = stringResource(R.string.home_settings),
-                    value = stringResource(
-                        R.string.home_budget_value,
-                        state.sessionBudgetMinutes,
-                        state.dailyBudgetMinutes,
-                    ),
-                    onClick = onOpenSettings,
-                )
-            }
+            NavigationRow(
+                title = stringResource(R.string.home_settings_row),
+                value = stringResource(R.string.home_settings_row_value),
+                onClick = onOpenSettings,
+            )
         }
         Spacer(Modifier.height(32.dp))
+    }
+
+    if (pickingBedtime) {
+        BedtimePickerDialog(
+            initialMinuteOfDay = (state.invite as? BedtimeInvite.Learned)?.minuteOfDay ?: (23 * 60),
+            onConfirm = {
+                pickingBedtime = false
+                onAcceptInvite(it)
+            },
+            onDismiss = { pickingBedtime = false },
+        )
     }
 
     if (showDisclosure) {
@@ -170,6 +207,35 @@ private fun greeting(): String {
     )
 }
 
+/** A quiet one-time question with up to three answers. */
+@Composable
+private fun ChoiceCard(
+    title: String,
+    body: String,
+    primary: Pair<String, () -> Unit>,
+    secondary: Pair<String, () -> Unit>,
+    tertiary: Pair<String, () -> Unit>? = null,
+) {
+    SoftCard {
+        Column(Modifier.padding(20.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Spacer(Modifier.height(6.dp))
+            Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(14.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Button(onClick = primary.second) { Text(primary.first) }
+                Spacer(Modifier.size(8.dp))
+                TextButton(onClick = secondary.second) { Text(secondary.first) }
+                tertiary?.let { (label, action) ->
+                    TextButton(onClick = action) {
+                        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun SetupCard(onEnable: () -> Unit) {
     SoftCard {
@@ -192,17 +258,31 @@ private fun SetupCard(onEnable: () -> Unit) {
 }
 
 @Composable
-private fun TodayCard(state: HomeUiState) {
+private fun TodayCard(state: HomeUiState, onOpenInsights: () -> Unit) {
     val status = statusText(state)
     val summary = stringResource(R.string.today_summary, state.todayUsedMinutes, state.dailyBudgetMinutes, status)
-    SoftCard {
+    val openLabel = stringResource(R.string.home_open_insights)
+    SoftCard(
+        Modifier
+            .clip(CardShape)
+            .clickable(role = Role.Button, onClickLabel = openLabel, onClick = onOpenInsights),
+    ) {
         // One TalkBack node instead of "23", "/ 60 分鐘", "38%" fragments.
-        Column(Modifier.padding(24.dp).clearAndSetSemantics { contentDescription = summary }) {
-            Text(
-                stringResource(R.string.today_label),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        Column(Modifier.padding(24.dp).semantics(mergeDescendants = true) { contentDescription = summary }) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.today_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                Icon(
+                    painterResource(R.drawable.ic_chevron_right),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("${state.todayUsedMinutes}", style = MaterialTheme.typography.displaySmall)
@@ -228,6 +308,14 @@ private fun TodayCard(state: HomeUiState) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            state.bedtimeHintMinute?.let {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(R.string.home_bedtime_hint, clockText(it)),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
     }
 }
@@ -251,8 +339,9 @@ private fun HomePreview() {
                 loaded = true, serviceRunning = true, todayUsedMinutes = 23, dailyBudgetMinutes = 60,
                 sessionBudgetMinutes = 15, watchedCount = 4,
             ),
-            onBreathe = {}, onPreview = {}, onOpenWatchedApps = {}, onOpenSettings = {},
+            onBreathe = {}, onPreview = {}, onOpenInsights = {}, onOpenSettings = {},
             onAcceptDisclosure = {}, onOpenAccessibilitySettings = {},
+            onAnswerConsent = {}, onAcceptInvite = {}, onDeclineInvite = {},
         )
     }
 }

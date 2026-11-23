@@ -1,6 +1,6 @@
 # Florsent 隱私權政策／Privacy Policy
 
-生效日期／Effective date：2026-11-23
+生效日期／Effective date：2026-11-24
 
 [繁體中文](#繁體中文) ・ [English](#english)
 
@@ -18,12 +18,32 @@ Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體�
 
 | 資料 | 用途 | 保存位置 |
 |---|---|---|
-| 目前在前景的 App 的套件名稱（例如 `com.instagram.android`） | 判斷你是否正在使用你選擇留意的 App，以便計時 | 只在記憶體中暫存，不寫入儲存空間 |
+| 目前在前景的 App 的套件名稱（例如 `com.instagram.android`） | 判斷你是否正在使用你選擇留意的 App，以便計時 | 在記憶體中使用；只有留意的 App 的使用時段，會在你同意後寫入使用紀錄（見下方） |
+| 使用紀錄（需要你同意） | 學習你通常幾點放下手機、提供睡前提醒與使用洞察 | 手機本機，30 天後自動刪除 |
 | 手機上可啟動的 App 清單（名稱與圖示） | 讓你選擇要留意哪些 App | 不另外保存，每次開啟時讀取 |
 | 使用時間統計（今日累計、本次累計、超過額度後的時間） | 計算額度、決定何時淡化畫面與顯示提醒 | 手機本機（App 私有儲存空間） |
 | 你的設定（留意的 App、額度、安靜時間、聲音與呼吸偏好） | 讓 App 依你的偏好運作 | 手機本機（App 私有儲存空間） |
 
 本 App **不會**存取或處理：畫面上的文字與內容、你輸入的任何文字、通知內容、聯絡人、相片、位置、帳號資訊或任何可識別你個人身分的資料。
+
+### 使用紀錄（需要你同意）
+
+為了學習你的作息並提供睡前提醒與使用洞察，本 App 會在你同意後，於手機上保存以下紀錄：
+
+- 留意的 App 的名稱，以及每段使用的開始時間與長度。
+- 解鎖後螢幕亮著的時段，只有時間，不含 App 名稱。
+- 紀錄開始與停止的時間，以及當時的時區偏移（換時區後，過去的紀錄仍維持原本的當地時間）。
+
+這些紀錄只用來：
+
+- 在手機上計算你通常幾點放下手機。演算法在手機上執行，不使用任何雲端服務或 AI 模型。
+- 顯示今天、近 7 天與常用 App 的使用時間。
+
+保存與控制：
+
+- 紀錄保存在本 App 的私有儲存空間，30 天後自動刪除。
+- 你可以隨時在「設定 > 進階」關閉「記錄使用時段」，或按「清除使用紀錄」立即刪除全部紀錄與學到的作息。
+- 新使用者在開啟無障礙服務前的說明中會看到這項說明；從舊版升級的使用者，會在首頁被詢問一次是否開始記錄。選擇「不記錄」時，不會保存任何使用紀錄，睡前引導仍可用自己指定的時間。
 
 ### 無障礙服務（AccessibilityService API）的使用說明
 
@@ -36,7 +56,7 @@ Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體�
 
 **範圍限制：**
 
-- 只接收「視窗狀態改變」（`TYPE_WINDOW_STATE_CHANGED`）事件，從中只讀取 App 的套件名稱。
+- 只接收「視窗狀態改變」（`TYPE_WINDOW_STATE_CHANGED`）事件，從中只讀取 App 的套件名稱；螢幕開關與解鎖的時間來自系統廣播。
 - 已設定為不讀取視窗內容（`canRetrieveWindowContent=false`），因此無法看到畫面上的文字、圖片或你輸入的內容。
 - 不執行任何手勢，也不代替你操作手機。
 - 取得的資訊不會離開你的手機。
@@ -103,12 +123,32 @@ All data the App needs is processed and stored only on your phone. We do not col
 
 | Data | Purpose | Where it is kept |
 |---|---|---|
-| The package name of the app currently in the foreground (for example `com.instagram.android`) | To tell whether you are using one of the apps you chose to watch, so its time can be counted | Held in memory only; never written to storage |
+| The package name of the app currently in the foreground (for example `com.instagram.android`) | To tell whether you are using one of the apps you chose to watch, so its time can be counted | Used in memory; only usage sessions of watched apps are written to the usage history, with your consent (see below) |
+| Usage history (with your consent) | To learn when you usually put the phone down, and to show bedtime reminders and usage insights | On the phone; deleted automatically after 30 days |
 | The list of launchable apps on the phone (names and icons) | To let you choose which apps to watch | Not stored; read when you open the list |
 | Usage totals (today, this session, time over budget) | To track your budgets and decide when to fade the screen and show the reminder | On the phone (the App's private storage) |
 | Your settings (watched apps, budgets, quiet time, sound and breathing preferences) | To make the App work the way you set it up | On the phone (the App's private storage) |
 
 The App does **not** access or process on-screen text or content, anything you type, notification contents, contacts, photos, location, account information, or any data that personally identifies you.
+
+### Usage history (with your consent)
+
+To learn your daily rhythm and offer bedtime reminders and usage insights, the App keeps the following on your phone once you agree:
+
+- The names of the apps you chose to watch, with the start time and length of each session.
+- When the screen was unlocked and in use (times only, no app names).
+- When recording started and stopped, and the UTC offset at the time (so past nights keep their local time after you travel).
+
+It is used only to:
+
+- Work out, on the phone, when you usually put the phone down. The algorithm runs locally and uses no cloud service or AI model.
+- Show today's, the last 7 days' and your most used apps' time.
+
+Storage and control:
+
+- The history is kept in the App's private storage and deleted automatically after 30 days.
+- You can switch off "record usage sessions" or tap "clear usage history" in Settings > Advanced at any time; clearing deletes all history and what was learned from it.
+- New users see this in the explanation shown before turning on the accessibility service; users upgrading from an earlier version are asked once on the home screen. If you choose not to record, nothing is kept and bedtime guidance can still use a time you choose.
 
 ### Use of the AccessibilityService API
 
@@ -121,7 +161,7 @@ The App's core features require you to turn on the "Florsent 漸進引導" (Flor
 
 **Limits:**
 
-- It receives only window-state-change events (`TYPE_WINDOW_STATE_CHANGED`) and reads only the app's package name from them.
+- It receives only window-state-change events (`TYPE_WINDOW_STATE_CHANGED`) and reads only the app's package name from them; screen on/off and unlock times come from system broadcasts.
 - It is configured not to retrieve window content (`canRetrieveWindowContent=false`), so it cannot see on-screen text, images or anything you type.
 - It performs no gestures and never operates the phone on your behalf.
 - Nothing it learns ever leaves your phone.

@@ -31,6 +31,16 @@ data class GuidanceState(
     val nudgeSnoozedUntilMs: Long = 0,
     val previewStartedAtMs: Long? = null,
     val breathingFromPreview: Boolean = false,
+    /** Kind of the current fade, frozen when it starts (a day fade stays a day fade at 23:00). */
+    val context: GuidanceContext = GuidanceContext.Day,
+    /** Start of the bedtime window we are in (identifies "tonight"), or null outside it. */
+    val bedtimeWindowStartMs: Long? = null,
+    /** Watched-app use inside tonight's window since the last bedtime quiet time. */
+    val bedtimeUsedMs: Long = 0,
+    /** Bedtime fades started tonight; only the first [BedtimeConfig.maxNudgesPerNight] nudge. */
+    val bedtimeFades: Int = 0,
+    /** This fade keeps dimming but no longer shows the nudge (nightly limit reached). */
+    val nudgeSuppressed: Boolean = false,
 ) {
     fun isWatched(config: GuidanceConfig): Boolean =
         foregroundPackage != null && foregroundPackage in config.watchedPackages
@@ -61,6 +71,7 @@ data class GuidanceEffect(
     /** The app being guided; during the preview, whatever app is in front (may be null). */
     val targetPackage: String?,
     val isPreview: Boolean,
+    val context: GuidanceContext = GuidanceContext.Day,
 ) {
     companion object {
         val None = GuidanceEffect(level = 0f, showNudge = false, targetPackage = null, isPreview = false)

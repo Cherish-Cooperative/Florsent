@@ -10,7 +10,13 @@ import app.florsent.data.guidanceDataStore
 import app.florsent.data.settingsDataStore
 import app.florsent.domain.GuidanceEngine
 import app.florsent.domain.KnownSocialApps
+import app.florsent.data.UsageLogStore
 import app.florsent.service.GuidanceCoordinator
+import app.florsent.service.UsageAnalysis
+import app.florsent.service.UsageRecording
+import java.io.File
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import app.florsent.service.shizuku.PlatformShizukuClient
 import app.florsent.service.shizuku.ShizukuSaturation
 import kotlinx.coroutines.CoroutineScope
@@ -53,10 +59,43 @@ class AppContainer(context: Context) {
         clock = System::currentTimeMillis,
     )
 
+    /** 30-day on-device usage log (only written with the user's consent). */
+    val usageLog = UsageLogStore(File(context.filesDir, "usage"))
+    val recording = UsageRecording(usageLog, scope)
+    val analysis = UsageAnalysis(usageLog, clock = guidance::now)
+
     init {
         scope.launch {
             settings.initializeWatchedIfNeeded(installedApps.installedPackages(KnownSocialApps.packages))
         }
+        // Recording follows the real (loaded) settings, the service and the guidance state; event
+        // driven, so it adds no wakeups of its own.
+        scope.launch {
+            combine(guidance.state, guidance.config, guidance.serviceRunning, settings.settings) { s, c, running, user ->
+                UsageRecording.Input(
+                    recording = running && user.recordingAllowed,
+                    screenInUse = s.screenOn,
+                    watchedApp = if (s.isCounting(c)) s.foregroundPackage else null,
+                )
+            }.distinctUntilChanged().collect { recording.submit(it, guidance.now()) }
+        }
+        scope.launch { usageLog.prune(guidance.now() / 1000) }
+    }
+
+    /** "Clear usage history": deletes the log and the learned results. */
+    fun clearUsageHistory() {
+        val s = guidance.state.value
+        val c = guidance.config.value
+        val user = currentSettings.value
+        recording.clearHistory(
+            guidance.now(),
+            UsageRecording.Input(
+                recording = guidance.serviceRunning.value && user.recordingAllowed,
+                screenInUse = s.screenOn,
+                watchedApp = if (s.isCounting(c)) s.foregroundPackage else null,
+            ),
+        )
+        analysis.invalidate()
     }
 }
 

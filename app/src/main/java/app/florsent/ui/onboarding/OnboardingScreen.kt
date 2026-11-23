@@ -56,6 +56,7 @@ import app.florsent.R
 import app.florsent.domain.BreathingTimeline
 import app.florsent.domain.KnownSocialApps
 import app.florsent.data.InstalledApp
+import app.florsent.data.UsageConsent
 import app.florsent.ui.apps.AppRow
 import app.florsent.ui.apps.AppToggleRow
 import app.florsent.ui.breathe.BreathingFlower
@@ -100,8 +101,12 @@ class OnboardingViewModel(private val container: AppContainer) : ViewModel() {
 
     suspend fun icon(packageName: String, sizePx: Int): Bitmap? = container.installedApps.icon(packageName, sizePx)
 
+    /** The disclosure covers both the service and the 30-day history, so it grants both. */
     fun acceptDisclosure() {
-        viewModelScope.launch { container.settings.setDisclosureAccepted(true) }
+        viewModelScope.launch {
+            container.settings.setDisclosureAccepted(true)
+            container.settings.setUsageConsent(UsageConsent.Granted)
+        }
     }
 
     fun complete() {
@@ -295,6 +300,7 @@ private fun DisclosurePage(serviceRunning: Boolean) {
                 stringResource(R.string.onboarding_does_1),
                 stringResource(R.string.onboarding_does_2),
                 stringResource(R.string.onboarding_does_3),
+                stringResource(R.string.onboarding_does_4),
             ),
         )
         Spacer(Modifier.height(12.dp))

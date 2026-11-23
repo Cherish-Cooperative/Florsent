@@ -50,9 +50,10 @@ import kotlin.random.Random
 @Composable
 fun GroundingScreen(
     cooldownMinutes: Int?,
+    bedtime: Boolean = false,
     onReturnToLife: () -> Unit,
 ) {
-    val prompts = stringArrayResource(R.array.grounding_prompts)
+    val prompts = stringArrayResource(if (bedtime) R.array.grounding_prompts_bedtime else R.array.grounding_prompts)
     var index by rememberSaveable { mutableIntStateOf(Random.nextInt(prompts.size)) }
 
     BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
@@ -107,7 +108,10 @@ fun GroundingScreen(
             onClick = onReturnToLife,
             modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp).height(56.dp),
         ) {
-            Text(stringResource(R.string.grounding_return), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(if (bedtime) R.string.grounding_return_bedtime else R.string.grounding_return),
+                style = MaterialTheme.typography.titleMedium,
+            )
         }
     }
     }

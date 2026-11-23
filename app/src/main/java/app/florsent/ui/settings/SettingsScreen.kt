@@ -49,7 +49,9 @@ import androidx.lifecycle.viewModelScope
 import app.florsent.AppContainer
 import app.florsent.BuildConfig
 import app.florsent.R
+import app.florsent.data.UsageConsent
 import app.florsent.data.UserSettings
+import app.florsent.ui.components.clockText
 import app.florsent.service.effect.ZenGrayscale
 import app.florsent.service.shizuku.ShizukuSaturation
 import app.florsent.service.shizuku.ShizukuState
@@ -99,26 +101,204 @@ class SettingsViewModel(
         if (!on) container.shizuku.restoreAll()
     }
 
+    fun setRecording(on: Boolean) = viewModelScope.launch {
+        repo.setUsageConsent(if (on) UsageConsent.Granted else UsageConsent.Denied)
+    }
+
+    fun clearHistory() = container.clearUsageHistory()
+
     fun setZenGrayscale(on: Boolean) = viewModelScope.launch {
         repo.setZenGrayscaleFinish(on)
         if (!on) ZenGrayscale.removeRule(appContext)
     }
 }
 
+enum class SettingsPage { Budget, Bedtime, Breathing, Advanced }
+
+/** First level: five rows; everything else is one tap further (progressive disclosure). */
 @Composable
-fun SettingsScreen(
+fun SettingsHomeScreen(
+    state: SettingsUiState?,
+    onBack: () -> Unit,
+    onOpenWatchedApps: () -> Unit,
+    onOpen: (SettingsPage) -> Unit,
+) {
+    SettingsScaffold(stringResource(R.string.settings_title), onBack) {
+        if (state == null) return@SettingsScaffold
+        val s = state.settings
+        Spacer(Modifier.height(8.dp))
+        SoftCard {
+            Column {
+                NavigationRow(
+                    stringResource(R.string.home_watched_apps),
+                    stringResource(R.string.home_watched_apps_value, s.watchedPackages.size),
+                    onOpenWatchedApps,
+                )
+                CardDivider()
+                NavigationRow(
+                    stringResource(R.string.settings_row_budget),
+                    stringResource(R.string.settings_row_budget_value, s.sessionBudgetMinutes, s.dailyBudgetMinutes),
+                ) { onOpen(SettingsPage.Budget) }
+                CardDivider()
+                NavigationRow(
+                    stringResource(R.string.settings_row_bedtime),
+                    s.bedtimeAnchorMinute?.let { stringResource(R.string.settings_row_bedtime_on, clockText(it - 30)) }
+                        ?: stringResource(R.string.settings_row_bedtime_off),
+                ) { onOpen(SettingsPage.Bedtime) }
+                CardDivider()
+                NavigationRow(
+                    stringResource(R.string.settings_row_breathing),
+                    stringResource(R.string.settings_row_breathing_value),
+                ) { onOpen(SettingsPage.Breathing) }
+                CardDivider()
+                NavigationRow(
+                    stringResource(R.string.settings_row_advanced),
+                    stringResource(R.string.settings_row_advanced_value),
+                ) { onOpen(SettingsPage.Advanced) }
+            }
+        }
+        Footer()
+    }
+}
+
+@Composable
+fun BudgetSettingsScreen(state: SettingsUiState?, vm: SettingsViewModel, onBack: () -> Unit) {
+    SettingsScaffold(stringResource(R.string.settings_row_budget), onBack) {
+        if (state == null) return@SettingsScaffold
+        val s = state.settings
+        Text(
+            stringResource(R.string.budget_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
+        )
+        SoftCard {
+            Column {
+                MinutesSlider(
+                    stringResource(R.string.budget_session), stringResource(R.string.budget_session_hint),
+                    s.sessionBudgetMinutes, 5..60, 5, { vm.setSession(it) },
+                )
+                CardDivider()
+                MinutesSlider(
+                    stringResource(R.string.budget_daily), stringResource(R.string.budget_daily_hint),
+                    s.dailyBudgetMinutes, 15..240, 15, { vm.setDaily(it) },
+                )
+                CardDivider()
+                MinutesSlider(
+                    stringResource(R.string.budget_cooldown), stringResource(R.string.budget_cooldown_hint),
+                    s.cooldownMinutes, 5..60, 5, { vm.setCooldown(it) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun BreathingSettingsScreen(state: SettingsUiState?, vm: SettingsViewModel, onBack: () -> Unit) {
+    SettingsScaffold(stringResource(R.string.settings_row_breathing), onBack) {
+        if (state == null) return@SettingsScaffold
+        val s = state.settings
+        Spacer(Modifier.height(8.dp))
+        SoftCard {
+            Column {
+                SwitchRow(stringResource(R.string.breathe_ambient_sound),
+                    stringResource(R.string.settings_ambient_hint), s.ambientSound) { vm.setAmbient(it) }
+                CardDivider()
+                SwitchRow(stringResource(R.string.breathe_cue_sound),
+                    stringResource(R.string.settings_cue_hint), s.cueSound) { vm.setCue(it) }
+                CardDivider()
+                SwitchRow(stringResource(R.string.settings_return_home),
+                    stringResource(R.string.settings_return_home_hint), s.returnToHomeScreen) { vm.setReturnHome(it) }
+            }
+        }
+    }
+}
+
+@Composable
+fun AdvancedSettingsScreen(
     state: SettingsUiState?,
     vm: SettingsViewModel,
     onBack: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
     onOpenZenAccessSettings: () -> Unit,
 ) {
+    var confirmClear by rememberSaveable { mutableStateOf(false) }
+    SettingsScaffold(stringResource(R.string.settings_row_advanced), onBack) {
+        if (state == null) return@SettingsScaffold
+        val s = state.settings
+
+        if (supportsDynamicColor) {
+            SectionTitle(stringResource(R.string.settings_section_appearance))
+            SoftCard {
+                SwitchRow(
+                    stringResource(R.string.settings_dynamic_color),
+                    stringResource(R.string.settings_dynamic_color_hint),
+                    s.dynamicColor,
+                ) { vm.setDynamicColor(it) }
+            }
+        }
+
+        SectionTitle(stringResource(R.string.settings_section_guidance))
+        SoftCard {
+            Column {
+                NavigationRow(
+                    title = stringResource(R.string.settings_service),
+                    value = stringResource(
+                        if (state.serviceRunning) R.string.settings_service_on else R.string.settings_service_off,
+                    ),
+                    onClick = onOpenAccessibilitySettings,
+                )
+                if (ZenGrayscale.isSupported) {
+                    CardDivider()
+                    ZenGrayscaleRow(enabled = s.zenGrayscaleFinish, vm = vm, onOpenAccessSettings = onOpenZenAccessSettings)
+                }
+                CardDivider()
+                ShizukuRow(enabled = s.shizukuSaturation, vm = vm)
+            }
+        }
+
+        SectionTitle(stringResource(R.string.settings_section_records))
+        SoftCard {
+            Column {
+                SwitchRow(
+                    stringResource(R.string.settings_recording),
+                    stringResource(R.string.settings_recording_hint),
+                    s.recordingAllowed,
+                ) { vm.setRecording(it) }
+                CardDivider()
+                NavigationRow(
+                    stringResource(R.string.settings_clear_history),
+                    stringResource(R.string.settings_clear_history_hint),
+                ) { confirmClear = true }
+            }
+        }
+        Footer()
+    }
+
+    if (confirmClear) {
+        AlertDialog(
+            onDismissRequest = { confirmClear = false },
+            title = { Text(stringResource(R.string.clear_history_title)) },
+            text = { Text(stringResource(R.string.clear_history_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmClear = false
+                    vm.clearHistory()
+                }) { Text(stringResource(R.string.clear_history_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmClear = false }) { Text(stringResource(R.string.dialog_cancel)) }
+            },
+        )
+    }
+}
+
+@Composable
+private fun SettingsScaffold(title: String, onBack: () -> Unit, content: @Composable () -> Unit) {
     Scaffold(
-        topBar = { FlorsentTopBar(stringResource(R.string.settings_title), onBack) },
+        topBar = { FlorsentTopBar(title, onBack) },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
-        if (state == null) return@Scaffold
-        val s = state.settings
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -126,86 +306,21 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
         ) {
-            SectionTitle(stringResource(R.string.settings_section_budget))
-            Text(
-                stringResource(R.string.budget_intro),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 12.dp),
-            )
-            SoftCard {
-                Column {
-                    MinutesSlider(
-                        stringResource(R.string.budget_session), stringResource(R.string.budget_session_hint),
-                        s.sessionBudgetMinutes, 5..60, 5, { vm.setSession(it) },
-                    )
-                    CardDivider()
-                    MinutesSlider(
-                        stringResource(R.string.budget_daily), stringResource(R.string.budget_daily_hint),
-                        s.dailyBudgetMinutes, 15..240, 15, { vm.setDaily(it) },
-                    )
-                    CardDivider()
-                    MinutesSlider(
-                        stringResource(R.string.budget_cooldown), stringResource(R.string.budget_cooldown_hint),
-                        s.cooldownMinutes, 5..60, 5, { vm.setCooldown(it) },
-                    )
-                }
-            }
-
-            SectionTitle(stringResource(R.string.settings_section_breathing))
-            SoftCard {
-                Column {
-                    SwitchRow(stringResource(R.string.breathe_ambient_sound),
-                        stringResource(R.string.settings_ambient_hint), s.ambientSound) { vm.setAmbient(it) }
-                    CardDivider()
-                    SwitchRow(stringResource(R.string.breathe_cue_sound),
-                        stringResource(R.string.settings_cue_hint), s.cueSound) { vm.setCue(it) }
-                    CardDivider()
-                    SwitchRow(stringResource(R.string.settings_return_home),
-                        stringResource(R.string.settings_return_home_hint), s.returnToHomeScreen) { vm.setReturnHome(it) }
-                }
-            }
-
-            if (supportsDynamicColor) {
-                SectionTitle(stringResource(R.string.settings_section_appearance))
-                SoftCard {
-                    SwitchRow(
-                        stringResource(R.string.settings_dynamic_color),
-                        stringResource(R.string.settings_dynamic_color_hint),
-                        s.dynamicColor,
-                    ) { vm.setDynamicColor(it) }
-                }
-            }
-
-            SectionTitle(stringResource(R.string.settings_section_guidance))
-            SoftCard {
-                Column {
-                    NavigationRow(
-                        title = stringResource(R.string.settings_service),
-                        value = stringResource(
-                            if (state.serviceRunning) R.string.settings_service_on else R.string.settings_service_off,
-                        ),
-                        onClick = onOpenAccessibilitySettings,
-                    )
-                    if (ZenGrayscale.isSupported) {
-                        CardDivider()
-                        ZenGrayscaleRow(enabled = s.zenGrayscaleFinish, vm = vm, onOpenAccessSettings = onOpenZenAccessSettings)
-                    }
-                }
-            }
-
-            SectionTitle(stringResource(R.string.settings_section_advanced))
-            SoftCard { ShizukuRow(enabled = s.shizukuSaturation, vm = vm) }
-
-            Text(
-                stringResource(R.string.settings_footer, BuildConfig.VERSION_NAME),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 28.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            )
+            content()
+            Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+@Composable
+private fun Footer() {
+    Text(
+        stringResource(R.string.settings_footer, BuildConfig.VERSION_NAME),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 28.dp),
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+    )
 }
 
 /**

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import app.florsent.domain.GuidanceContext
 import app.florsent.domain.GuidanceMode
 import app.florsent.domain.GuidanceState
 import java.io.IOException
@@ -39,6 +40,11 @@ class GuidanceStateStore(private val dataStore: DataStore<Preferences>) : Guidan
             modeSinceMs = p[Keys.MODE_SINCE] ?: 0,
             cooldownUntilMs = p[Keys.COOLDOWN_UNTIL] ?: 0,
             nudgeSnoozedUntilMs = p[Keys.NUDGE_SNOOZED_UNTIL] ?: 0,
+            context = GuidanceContext.entries.firstOrNull { it.name == p[Keys.CONTEXT] } ?: GuidanceContext.Day,
+            bedtimeWindowStartMs = p[Keys.BEDTIME_WINDOW]?.takeIf { it >= 0 },
+            bedtimeUsedMs = p[Keys.BEDTIME_USED] ?: 0,
+            bedtimeFades = (p[Keys.BEDTIME_FADES] ?: 0L).toInt(),
+            nudgeSuppressed = (p[Keys.NUDGE_SUPPRESSED] ?: 0L) == 1L,
         )
     }
 
@@ -53,6 +59,11 @@ class GuidanceStateStore(private val dataStore: DataStore<Preferences>) : Guidan
             p[Keys.MODE_SINCE] = state.modeSinceMs
             p[Keys.COOLDOWN_UNTIL] = state.cooldownUntilMs
             p[Keys.NUDGE_SNOOZED_UNTIL] = state.nudgeSnoozedUntilMs
+            p[Keys.CONTEXT] = state.context.name
+            p[Keys.BEDTIME_WINDOW] = state.bedtimeWindowStartMs ?: -1
+            p[Keys.BEDTIME_USED] = state.bedtimeUsedMs
+            p[Keys.BEDTIME_FADES] = state.bedtimeFades.toLong()
+            p[Keys.NUDGE_SUPPRESSED] = if (state.nudgeSuppressed) 1L else 0L
         }
     }
 
@@ -66,5 +77,10 @@ class GuidanceStateStore(private val dataStore: DataStore<Preferences>) : Guidan
         val MODE_SINCE = longPreferencesKey("mode_since_ms")
         val COOLDOWN_UNTIL = longPreferencesKey("cooldown_until_ms")
         val NUDGE_SNOOZED_UNTIL = longPreferencesKey("nudge_snoozed_until_ms")
+        val CONTEXT = stringPreferencesKey("context")
+        val BEDTIME_WINDOW = longPreferencesKey("bedtime_window_start_ms")
+        val BEDTIME_USED = longPreferencesKey("bedtime_used_ms")
+        val BEDTIME_FADES = longPreferencesKey("bedtime_fades")
+        val NUDGE_SUPPRESSED = longPreferencesKey("nudge_suppressed")
     }
 }

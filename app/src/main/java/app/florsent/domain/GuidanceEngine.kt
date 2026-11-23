@@ -26,7 +26,7 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
 
         // Account for the time since the previous event under the *previous* foreground app (and the
         // previous day), then roll over the day.
-        var s = state.accumulate(now, config).rollDay(now).expireTimers(now, config)
+        var s = state.rollBedtime(now, config).accumulate(now, config).rollDay(now).expireTimers(now, config)
 
         s = when (event) {
             is ForegroundChanged -> {
@@ -81,9 +81,11 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
         val progress = fadeProgress(state, config)
         return GuidanceEffect(
             level = Easing.smoothstep(progress),
-            showNudge = progress >= config.nudgeAtProgress && nowMs >= state.nudgeSnoozedUntilMs,
+            showNudge = progress >= config.nudgeAtProgress && nowMs >= state.nudgeSnoozedUntilMs &&
+                !state.nudgeSuppressed,
             targetPackage = state.foregroundPackage,
             isPreview = false,
+            context = state.context,
         )
     }
 
@@ -123,7 +125,11 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
                         config.dailyBudgetMs - dailyUsedMs(state, nowMs),
                         config.dailyGraceMs - state.sessionUsedMs,
                     )
-                    minOf(toSession, toDaily)
+                    val toBedtime = config.bedtime?.let { bedtime ->
+                        if (state.bedtimeWindowStartMs != null) state.bedtimeThreshold(bedtime) - state.bedtimeUsedMs
+                        else BedtimeWindows.next(nowMs, bedtime, zone()).startMs - nowMs
+                    } ?: Long.MAX_VALUE
+                    minOf(toSession, toDaily, toBedtime)
                 }
                 fadeProgress(state, config) < 1f -> return FAST_TICK_MS
                 nowMs < state.nudgeSnoozedUntilMs -> state.nudgeSnoozedUntilMs - nowMs
@@ -146,6 +152,14 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
     fun fadeProgress(state: GuidanceState, config: GuidanceConfig): Float =
         if (config.fadeDurationMs <= 0) 1f
         else (state.overBudgetMs.toFloat() / config.fadeDurationMs).coerceIn(0f, 1f)
+
+    /** Tonight's window if [nowMs] is inside one (for the UI). */
+    fun bedtimeWindowAt(nowMs: Long, config: GuidanceConfig): BedtimeWindow? =
+        config.bedtime?.let { BedtimeWindows.at(nowMs, it, zone()) }
+
+    /** The next window to start after [nowMs] (for the home-screen hint). */
+    fun nextBedtimeWindow(nowMs: Long, config: GuidanceConfig): BedtimeWindow? =
+        config.bedtime?.let { BedtimeWindows.next(nowMs, it, zone()) }
 
     private fun epochDay(nowMs: Long): Long =
         Instant.ofEpochMilli(nowMs).atZone(zone()).toLocalDate().toEpochDay()
@@ -177,13 +191,42 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
         // clamping to [0, delta] yields exactly the over-budget share of this step.
         val sessionOver = session - config.sessionBudgetMs
         val dailyOver = minOf(daily - config.dailyBudgetMs, session - config.dailyGraceMs)
-        val overPortion = maxOf(sessionOver, dailyOver).coerceIn(0, delta)
-        return base.copy(
+        // Bedtime: cumulative use inside tonight's window, counted from the last bedtime quiet time.
+        val bedtime = config.bedtime
+        val inWindow = bedtime != null && bedtimeWindowStartMs != null
+        val bedtimeUsed = if (inWindow) bedtimeUsedMs + delta else bedtimeUsedMs
+        val bedtimeOver = if (inWindow) bedtimeUsed - bedtimeThreshold(bedtime) else Long.MIN_VALUE
+        val overPortion = maxOf(sessionOver, dailyOver, bedtimeOver).coerceIn(0, delta)
+        val next = base.copy(
             dailyUsedMs = daily,
             sessionUsedMs = session,
             overBudgetMs = overBudgetMs + overPortion,
             lastWatchedAtMs = now,
+            bedtimeUsedMs = bedtimeUsed,
         )
+        return if (overBudgetMs <= 0 && overPortion > 0) next.startFade(inWindow, bedtime) else next
+    }
+
+    /** Freezes the context of a fade that just began and applies the nightly nudge limit. */
+    private fun GuidanceState.startFade(inWindow: Boolean, bedtime: BedtimeConfig?): GuidanceState =
+        if (inWindow && bedtime != null) {
+            copy(
+                context = GuidanceContext.Bedtime,
+                nudgeSuppressed = bedtimeFades >= bedtime.maxNudgesPerNight,
+                bedtimeFades = bedtimeFades + 1,
+            )
+        } else {
+            copy(context = GuidanceContext.Day, nudgeSuppressed = false)
+        }
+
+    private fun GuidanceState.bedtimeThreshold(bedtime: BedtimeConfig): Long =
+        if (bedtimeFades == 0) bedtime.thresholdMs else bedtime.secondThresholdMs
+
+    /** Enters or leaves tonight's window; a new window starts with fresh counters. */
+    private fun GuidanceState.rollBedtime(now: Long, config: GuidanceConfig): GuidanceState {
+        val key = config.bedtime?.let { BedtimeWindows.at(now, it, zone()) }?.startMs
+        return if (key == bedtimeWindowStartMs) this
+        else copy(bedtimeWindowStartMs = key, bedtimeUsedMs = 0, bedtimeFades = 0)
     }
 
     private fun GuidanceState.expireTimers(now: Long, config: GuidanceConfig): GuidanceState {
@@ -207,7 +250,8 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
      */
     private fun GuidanceState.sanitizeClock(now: Long, config: GuidanceConfig): GuidanceState {
         var s = this
-        if (s.cooldownUntilMs > now + config.cooldownMs) s = s.copy(cooldownUntilMs = now + config.cooldownMs)
+        val maxCooldown = maxOf(config.cooldownMs, config.bedtime?.cooldownMs ?: 0)
+        if (s.cooldownUntilMs > now + maxCooldown) s = s.copy(cooldownUntilMs = now + maxCooldown)
         if (s.nudgeSnoozedUntilMs > now + config.nudgeSnoozeMs) {
             s = s.copy(nudgeSnoozedUntilMs = now + config.nudgeSnoozeMs)
         }
@@ -225,18 +269,24 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
     }
 
     private fun GuidanceState.clearSession() =
-        copy(sessionUsedMs = 0, overBudgetMs = 0, nudgeSnoozedUntilMs = 0)
+        copy(sessionUsedMs = 0, overBudgetMs = 0, nudgeSnoozedUntilMs = 0, nudgeSuppressed = false)
 
     private fun GuidanceState.toTracking(now: Long) =
         copy(mode = GuidanceMode.Tracking, modeSinceMs = now, breathingFromPreview = false)
 
-    private fun GuidanceState.startCooldown(now: Long, config: GuidanceConfig) =
-        clearSession().copy(
+    /** Quiet time; a bedtime fade gets the bedtime length and restarts tonight's counter. */
+    private fun GuidanceState.startCooldown(now: Long, config: GuidanceConfig): GuidanceState {
+        val bedtime = config.bedtime
+        val isBedtime = context == GuidanceContext.Bedtime && bedtime != null
+        val length = if (isBedtime) bedtime.cooldownMs else config.cooldownMs
+        return clearSession().copy(
             mode = GuidanceMode.Cooldown,
             modeSinceMs = now,
-            cooldownUntilMs = now + config.cooldownMs,
+            cooldownUntilMs = now + length,
             breathingFromPreview = false,
+            bedtimeUsedMs = if (isBedtime) 0 else bedtimeUsedMs,
         )
+    }
 
     private companion object {
         const val FAST_TICK_MS = 1_000L

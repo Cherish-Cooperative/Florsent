@@ -37,7 +37,7 @@
 
     <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
     <string name="disclosure_title">使用無障礙服務</string>
-    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，只用來計算留意的 App 用了多久，並顯示淡化效果和提醒。\n\n不讀取畫面內容，不記錄你輸入的文字，資料只存在這支手機上。\n\n接著請在系統的無障礙設定中，開啟「Florsent 漸進引導」。</string>
+    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計算留意的 App 用了多久、顯示淡化效果和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間，學習你的作息（隨時可以清除）。\n\n不讀取畫面內容，不記錄你輸入的文字，資料只存在這支手機上。\n\n接著請在系統的無障礙設定中，開啟「Florsent 漸進引導」。</string>
     <string name="disclosure_accept">同意，前往設定</string>
     <string name="disclosure_decline">暫時不要</string>
 
@@ -128,6 +128,7 @@
     <string name="onboarding_does_1">只讀取目前在前景的 App 名稱</string>
     <string name="onboarding_does_2">計算留意的 App 用了多久</string>
     <string name="onboarding_does_3">在畫面上顯示淡化效果和呼吸提醒</string>
+    <string name="onboarding_does_4">在手機上保存 30 天的使用時段與螢幕開關時間，學習你的作息（隨時可以清除）</string>
     <string name="onboarding_doesnt_title">Florsent 不會做的事</string>
     <string name="onboarding_doesnt_1">不讀取畫面上的文字和內容</string>
     <string name="onboarding_doesnt_2">不記錄你輸入的任何東西</string>
@@ -173,6 +174,89 @@
     <string name="shizuku_action_grant">允許使用</string>
     <string name="shizuku_action_retry">重新連線</string>
 
+    <!-- Home: usage card, consent, bedtime invitation -->
+    <string name="home_open_insights">查看最近的使用情形</string>
+    <string name="home_settings_row">設定</string>
+    <string name="home_settings_row_value">留意的 App、額度、睡前引導</string>
+    <string name="home_bedtime_hint">今晚 %s 後會溫和提醒你休息</string>
+    <string name="consent_title">讓 Florsent 了解你的作息</string>
+    <string name="consent_body">在手機上保存 30 天的使用時段與螢幕開關時間，用來學習作息、提供睡前提醒和使用洞察。資料不會離開這支手機，隨時可以清除。</string>
+    <string name="consent_accept">開始記錄</string>
+    <string name="consent_decline">不記錄</string>
+    <string name="invite_title">睡前也溫柔地提醒你？</string>
+    <string name="invite_body">最近你多在 %s 左右放下手機。要在那之前溫和提醒你嗎？</string>
+    <string name="invite_irregular_body">還看不出你固定的作息。可以自己選一個想睡的時間。</string>
+    <string name="invite_accept">好</string>
+    <string name="invite_choose">換個時間</string>
+    <string name="invite_irregular_choose">選時間</string>
+    <string name="invite_decline">不用</string>
+
+    <!-- Insights -->
+    <string name="insights_title">最近</string>
+    <string name="insights_today">今天</string>
+    <string name="insights_last_seven">近 7 天</string>
+    <string name="insights_top_apps">常用的留意 App</string>
+    <string name="insights_no_record_day">沒有紀錄</string>
+    <string name="insights_recording_off">沒有記錄使用時段，所以這裡沒有資料。可以在「設定 &gt; 進階」開啟。</string>
+    <string name="insight_puts_down">最近多在 %s 左右放下手機。</string>
+    <string name="insight_less">這週比上週少滑了 %s。</string>
+    <string name="insight_more">這週在社群 App 上多花了一些時間。</string>
+    <string name="insight_similar">這兩週的使用時間差不多。</string>
+    <string name="insight_not_enough">再過幾天，這裡會開始告訴你一些發現。</string>
+    <string name="duration_minutes">%d 分鐘</string>
+    <string name="duration_hours">%d 小時</string>
+    <string name="duration_hours_minutes">%1$d 小時 %2$d 分鐘</string>
+    <string name="insights_bar_description">%1$s，%2$s</string>
+
+    <!-- Settings home and sub-pages -->
+    <string name="settings_row_budget">使用額度</string>
+    <string name="settings_row_budget_value">單次 %1$d 分鐘・每日 %2$d 分鐘</string>
+    <string name="settings_row_bedtime">睡前引導</string>
+    <string name="settings_row_bedtime_on">每晚 %s 起溫和提醒</string>
+    <string name="settings_row_bedtime_off">未開啟</string>
+    <string name="settings_row_breathing">呼吸與聲音</string>
+    <string name="settings_row_breathing_value">環境音、提示音、練習完成後</string>
+    <string name="settings_row_advanced">進階</string>
+    <string name="settings_row_advanced_value">外觀、黑白、Shizuku、使用紀錄</string>
+    <string name="settings_section_records">使用紀錄</string>
+    <string name="settings_recording">記錄使用時段</string>
+    <string name="settings_recording_hint">在手機上保存 30 天，用來學習作息與顯示洞察。</string>
+    <string name="settings_clear_history">清除使用紀錄</string>
+    <string name="settings_clear_history_hint">刪除保存的使用時段與學到的作息。</string>
+    <string name="clear_history_title">清除使用紀錄？</string>
+    <string name="clear_history_body">會刪除這支手機上保存的使用時段與學到的作息，無法復原。</string>
+    <string name="clear_history_confirm">清除</string>
+    <string name="dialog_cancel">取消</string>
+    <string name="dialog_ok">確定</string>
+
+    <!-- Bedtime -->
+    <string name="bedtime_title">睡前引導</string>
+    <string name="bedtime_status_learning">正在了解你的作息，已觀察 %d 晚。</string>
+    <string name="bedtime_status_confident">最近你多在 %s 左右放下手機。</string>
+    <string name="bedtime_status_irregular">還看不出固定的作息。</string>
+    <string name="bedtime_status_no_record">沒有記錄使用時段，不會自動學習。你仍然可以自己選時間。</string>
+    <string name="bedtime_current">每晚 %1$s 起，累計滑 %2$d 分鐘，會溫和提醒你休息。</string>
+    <string name="bedtime_current_off">目前沒有開啟睡前引導。</string>
+    <string name="bedtime_note">會從想睡時間的 30 分鐘前開始留意，每晚最多提醒兩次。</string>
+    <string name="bedtime_choose_time">選擇想睡的時間</string>
+    <string name="bedtime_change_time">更改時間</string>
+    <string name="bedtime_use_learned">改用最近的作息（%s）</string>
+    <string name="bedtime_threshold">提醒前可以滑多久</string>
+    <string name="bedtime_turn_off">關閉睡前引導</string>
+    <string name="bedtime_picker_title">想睡的時間</string>
+    <string name="nudge_message_bedtime">該準備休息了嗎？</string>
+    <string name="grounding_return_bedtime">去休息吧</string>
+    <string-array name="grounding_prompts_bedtime">
+        <item>把手機放到伸手拿不到的地方充電。</item>
+        <item>把房間的燈調暗一點。</item>
+        <item>明天的事，明天再想就好。</item>
+        <item>深深吐一口氣，讓肩膀放鬆下來。</item>
+        <item>喝一小口溫水，準備躺下。</item>
+        <item>想一件今天值得感謝的小事。</item>
+        <item>把被子拉好，讓身體暖暖的。</item>
+        <item>閉上眼睛，聽聽房間裡安靜的聲音。</item>
+    </string-array>
+
     <!-- Nudge overlay -->
     <string name="nudge_message">停下來深呼吸一下？</string>
     <string name="nudge_accept_description">開始呼吸練習</string>
@@ -180,5 +264,5 @@
 
     <!-- Accessibility service -->
     <string name="accessibility_service_label">Florsent 漸進引導</string>
-    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計算留意的 App 用了多久，並顯示淡化效果和呼吸提醒。不讀取畫面內容或你輸入的文字，資料不會離開這支手機。</string>
+    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計算留意的 App 用了多久、顯示淡化效果和呼吸提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息。不讀取畫面內容或你輸入的文字，資料不會離開這支手機。</string>
 </resources>
