@@ -166,8 +166,9 @@ private fun learningText(s: UserSettings, learning: BedtimeLearning?): String = 
     learning is BedtimeLearning.Confident ->
         stringResource(R.string.bedtime_status_confident, clockText(BedtimeLearner.roundTo5(learning.minuteOfDay)))
     learning is BedtimeLearning.Irregular -> stringResource(R.string.bedtime_status_irregular)
-    learning is BedtimeLearning.Learning -> stringResource(R.string.bedtime_status_learning, learning.nightsObserved)
-    else -> stringResource(R.string.bedtime_status_learning, 0)
+    learning is BedtimeLearning.Learning && learning.nightsObserved > 0 ->
+        stringResource(R.string.bedtime_status_learning, learning.nightsObserved)
+    else -> stringResource(R.string.bedtime_status_learning_start)
 }
 
 private const val DEFAULT_PICKER_MINUTE = 23 * 60

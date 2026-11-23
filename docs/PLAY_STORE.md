@@ -1,6 +1,6 @@
 # Florsent Google Play 上架資料包
 
-這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.8.1（versionCode 9）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
+這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.8.2（versionCode 10）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
 
 - 套件名稱：`app.florsent`（上架後不能再改）
 - 介面語言：繁體中文
@@ -274,9 +274,11 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 
 ## 版本說明
 
-### 0.8.1（zh-TW）
+### 0.8.2（zh-TW）
 
 ```
+・閉氣時花朵和進度環會停住，跟著畫面一起停下來
+・介面文字更精簡，拿掉多餘的說明
 ・睡前引導：先觀察一週，看出你的習慣後只問一次，答應之後時間就固定下來
 ・新的「最近」頁面：今天、近 7 天和最常用的 App
 ・設定變得更簡單，進階選項收進「進階」
@@ -284,9 +286,11 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 ・使用紀錄更準確：App 重新啟動時不再記下多餘的停止與開始
 ```
 
-### 0.8.1（en-US）
+### 0.8.2（en-US）
 
 ```
+• The flower and progress ring now stand still while you hold your breath
+• Cleaner screens with less explanatory text
 • Bedtime wind-down: Florsent learns your evening habit for a week, asks once, then keeps your chosen time
 • New "Recent" page: today, the last 7 days and your most used apps
 • Simpler settings, with advanced options under "Advanced"

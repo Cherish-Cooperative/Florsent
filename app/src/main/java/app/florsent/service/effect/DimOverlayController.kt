@@ -8,6 +8,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
+import app.florsent.util.DebugLog
 import kotlin.math.abs
 
 /**
@@ -75,6 +76,7 @@ class DimOverlayController(
             alpha = 0f
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
         }
+        DebugLog.d { "dim attach" }
         windowManager.addView(v, layoutParams())
         view = v
         return v
@@ -82,6 +84,7 @@ class DimOverlayController(
 
     private fun detach() {
         val v = view ?: return
+        DebugLog.d { "dim detach" }
         view = null
         runCatching { windowManager.removeViewImmediate(v) }
     }

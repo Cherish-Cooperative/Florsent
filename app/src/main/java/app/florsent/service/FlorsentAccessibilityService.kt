@@ -23,12 +23,13 @@ import app.florsent.service.effect.VisualEffect
 import app.florsent.service.effect.VisualEffectController
 import app.florsent.service.effect.ZenGrayscale
 import app.florsent.service.effect.ZenGrayscaleController
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import app.florsent.util.DebugLog
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -69,6 +70,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        DebugLog.d { "service connected" }
         ignoredPackages = getSystemService(InputMethodManager::class.java)
             ?.enabledInputMethodList
             ?.mapTo(mutableSetOf()) { it.packageName }
@@ -120,6 +122,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
                 .map { it.zenGrayscaleFinish to it.shizukuSaturation }
                 .distinctUntilChanged()
             combine(coordinator.effect, toggles) { effect, _ -> effect }.collect { effect ->
+                DebugLog.d { "effect level=${"%.3f".format(effect.level)} nudge=${effect.showNudge} preview=${effect.isPreview} target=${effect.targetPackage} mode=${coordinator.state.value.mode} previewStart=${coordinator.state.value.previewStartedAtMs}" }
                 effects?.render(VisualEffect(effect.level, effect.targetPackage))
                 nudge?.setVisible(effect.showNudge, bedtime = effect.context == GuidanceContext.Bedtime)
             }
@@ -130,6 +133,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = ForegroundPolicy.resolve(event.packageName, event.className, packageName, ignoredPackages)
             ?: return
+        DebugLog.d { "window event pkg=${event.packageName} class=${event.className} -> $pkg" }
         if (ForegroundPolicy.isHandoffEcho(pkg, handoffFrom, handoffAtMs, coordinator.now())) return
         if (pkg == lastForeground) return
         lastForeground = pkg
@@ -159,6 +163,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
     /** Called from both onUnbind and onDestroy; only the first call does anything. */
     private fun shutdown() {
         if (isShutDown) return
+        DebugLog.d { "service shutdown (overlays released)" }
         isShutDown = true
         renderJob?.cancel()
         renderJob = null

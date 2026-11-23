@@ -108,6 +108,25 @@ class BreathingTimelineTest {
     }
 
     @Test
+    fun `everything stands still while holding the breath`() {
+        // Equal 4-4-4: inhale 0-4 s, hold 4-8 s, exhale 8-12 s.
+        assertEquals(4_000L, BreathingTimeline.movingMsAt(equal, 4_000))
+        assertEquals("frozen through the hold", 4_000L, BreathingTimeline.movingMsAt(equal, 7_999))
+        assertEquals(6_000L, BreathingTimeline.movingMsAt(equal, 10_000))
+        assertEquals("second cycle", 9_000L, BreathingTimeline.movingMsAt(equal, 13_000))
+        assertEquals(
+            BreathingTimeline.sessionProgress(equal, 4_000),
+            BreathingTimeline.sessionProgress(equal, 7_500),
+            0f,
+        )
+        // Box also stands still in the pause after breathing out.
+        assertEquals(BreathingTimeline.movingMsAt(box, 12_000), BreathingTimeline.movingMsAt(box, 15_999))
+        // Resonance has no holds: moving time is real time.
+        assertEquals(7_000L, BreathingTimeline.movingMsAt(resonance, 7_000))
+        assertEquals(1f, BreathingTimeline.sessionProgress(equal, equal.totalMs), 0f)
+    }
+
+    @Test
     fun `idle expansion stays in a gentle range`() {
         (0L..16_000L step 250).forEach { t ->
             val e = BreathingTimeline.idleExpansion(t)

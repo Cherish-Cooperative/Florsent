@@ -300,7 +300,8 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 4-7-8 放鬆呼吸 `relax_478` | 4・7・8 | 4（上限） | 1:16 |
 | 共振呼吸 `resonance_55` | 5.5・5.5 | 7 | 1:17 |
 
-- `BreathingTimeline` 是純函式：`expansionAt()`（逐幀、零配置，用 index 迴圈）、`displayAt()`（每秒變一次）、`sessionProgress()`、`idleExpansion()`。展開程度用 ease-in-out sine，在階段交界連續。
+- `BreathingTimeline` 是純函式：`expansionAt()`（逐幀、零配置，用 index 迴圈）、`displayAt()`（每秒變一次）、`movingMsAt()`、`sessionProgress()`、`idleExpansion()`。展開程度用 ease-in-out sine，在階段交界連續。
+- **閉氣時整個畫面停住**：花瓣的旋轉與微晃、進度環都用 `movingMsAt()`（扣掉所有閉氣與停頓時間的經過時間）驅動，展開程度在閉氣時本來就固定，所以閉氣期間花朵與進度環的像素完全不變，只有倒數數字在走。使用者跟著畫面一起停。
 - `BreathingFlower`：兩層各 6 片花瓣、光暈、中心微光、進度環。路徑、漸層、筆觸都在 `drawWithCache` 建好；動畫數值只在 draw lambda 裡讀取，所以每一幀只重畫、不重組。
 - `rememberFrameClock`：以 `withFrameNanos` 累積時間；`rememberSaveable`，旋轉螢幕後接續；超過 250 ms 的間隔（App 在背景）只算一個標準幀，所以會暫停而不是跳過；閒置的花限制在約 30 fps。
 - 換階段時輕微震動（API 34+ `SEGMENT_TICK`，否則 `CLOCK_TICK`）；提示音只在設定開啟時播放，並在選擇頁預先載入。
@@ -349,7 +350,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ## 編譯與測試
 
 ```sh
-./gradlew testDebugUnitTest      # 151 個 JVM 測試
+./gradlew testDebugUnitTest      # 152 個 JVM 測試
 ./gradlew assembleDebug
 ./gradlew assembleRelease        # 確認 R8 沒有移除 ShellService
 ```
@@ -369,7 +370,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 測試 | 涵蓋 |
 |---|---|
 | `GuidanceEngineTest`（27） | 額度、淡化、提醒、呼吸、安靜時間、預覽、跨日、時鐘保護、tick 排程 |
-| `BreathingTimelineTest`（11） | 四種呼吸法、展開連續性、倒數、結束 |
+| `BreathingTimelineTest`（12） | 四種呼吸法、展開連續性、倒數、結束、閉氣時停住 |
 | `ForegroundPolicyTest`（4） | 系統介面、輸入法、自己的 overlay、點提醒後的延遲事件 |
 | `SaturationPlannerTest`（6）、`SaturationSessionTest`（10） | 量化、還原優先、當機補救、失敗降級 |
 | `GuidanceCoordinatorTest`（7） | 虛擬時間下的零輪詢、每秒淡化、寫入節流、載入前事件排隊 |
@@ -414,10 +415,16 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 - **`am start` 帶回已在前景的 Activity 不會觸發 onResume。** 設定頁的 Shizuku 狀態在 onResume 時更新，測試時先回桌面再開。
 - **同一個 AVD 不能同時開兩個實例。** 另建一個 AVD，或加 `-read-only`。
 - 首頁的「30 秒體驗漸進引導」在 20 秒內跑完淡化、第 12 秒浮出提醒；搭配 `dumpsys color_display` 可以完整驗證三層。
+- **淡化中途閃一下（變回正常再變灰）**，幾乎都是無障礙服務被解除又重新綁定：`uiautomator`、重新安裝 App、系統重啟服務都會讓 overlay 立刻移除。debug 版會輸出診斷 log（`DebugLog`，release 版不輸出），可以直接看出原因：
+
+  ```sh
+  adb logcat --pid=$(adb shell pidof app.florsent) -s FlorsentDbg
+  # effect level=… / window event … / dim attach|detach / service connected|shutdown
+  ```
 
 ## 實機驗證紀錄
 
-0.8.1 在 Pixel 10 Pro（Android 17，API 37，`CP4A.261105.040.A1`）上驗證：
+0.8.1～0.8.2 在 Pixel 10 Pro（Android 17，API 37，`CP4A.261105.040.A1`）上驗證：
 
 | 項目 | 結果 |
 |---|---|
@@ -425,6 +432,7 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 | Onboarding 與無障礙服務 | 揭露頁、同意、使用者自己在系統設定開啟服務，綁定正常 |
 | 30 秒預覽 | 0 秒開始淡化，約 12 秒浮出提醒，30 秒兩個 overlay 都移除 |
 | 呼吸蓮花 | 約 28 秒 1,682 影格，jank 0.12%，p50 6 ms、p90 10 ms、p99 16 ms |
+| 閉氣時停住 | 盒式呼吸：吸氣後閉氣 5 張、吐氣後停頓 6 張連續截圖的花朵與進度環像素完全相同 |
 | 環境音 | 練習中 `MediaPlayer` started；按 Home 變 paused、交還音訊焦點；回來恢復；離開練習後釋放 |
 | Zen 灰階收尾 | 需要使用者授予零打擾存取權後再驗證 |
 | Shizuku 第三層 | 實機未安裝 Shizuku，未驗證 |

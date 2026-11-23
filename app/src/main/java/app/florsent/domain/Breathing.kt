@@ -4,7 +4,12 @@ import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.cos
 
-enum class BreathPhaseKind { Inhale, HoldIn, Exhale, HoldOut }
+enum class BreathPhaseKind {
+    Inhale, HoldIn, Exhale, HoldOut;
+
+    /** Holding the breath: the whole picture stands still so the user stays still with it. */
+    val isHold: Boolean get() = this == HoldIn || this == HoldOut
+}
 
 data class BreathPhase(val kind: BreathPhaseKind, val durationMs: Long)
 
@@ -20,6 +25,9 @@ data class BreathingPattern(
 
     val cycleMs: Long = phases.sumOf { it.durationMs }
     val totalMs: Long = cycleMs * cycles
+
+    /** Breathing (non-hold) time per cycle; always > 0 because every pattern breathes in. */
+    val movingCycleMs: Long = phases.filterNot { it.kind.isHold }.sumOf { it.durationMs }
 
     /** "4 · 7 · 8", "5.5 · 5.5" */
     val rhythmLabel: String = phases.joinToString(" · ") { phase ->
@@ -98,9 +106,28 @@ object BreathingTimeline {
         return 0f
     }
 
-    /** 0..1 progress through the whole session. */
+    /**
+     * Elapsed time with every hold taken out. Drives everything that moves (petal drift, the
+     * progress ring), so the screen freezes while the user holds their breath. Allocation-free.
+     */
+    fun movingMsAt(pattern: BreathingPattern, elapsedMs: Long): Long {
+        val elapsed = elapsedMs.coerceIn(0, pattern.totalMs)
+        var moving = (elapsed / pattern.cycleMs) * pattern.movingCycleMs
+        var t = elapsed % pattern.cycleMs
+        val phases = pattern.phases
+        for (i in phases.indices) {
+            if (t <= 0) break
+            val phase = phases[i]
+            val inPhase = minOf(t, phase.durationMs)
+            if (!phase.kind.isHold) moving += inPhase
+            t -= inPhase
+        }
+        return moving
+    }
+
+    /** 0..1 progress through the whole session; stands still during holds. */
     fun sessionProgress(pattern: BreathingPattern, elapsedMs: Long): Float =
-        (elapsedMs.toFloat() / pattern.totalMs).coerceIn(0f, 1f)
+        (movingMsAt(pattern, elapsedMs).toFloat() / (pattern.movingCycleMs * pattern.cycles)).coerceIn(0f, 1f)
 
     fun displayAt(pattern: BreathingPattern, elapsedMs: Long): BreathDisplay {
         if (elapsedMs >= pattern.totalMs) {

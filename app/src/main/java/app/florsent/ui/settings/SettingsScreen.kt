@@ -146,15 +146,9 @@ fun SettingsHomeScreen(
                         ?: stringResource(R.string.settings_row_bedtime_off),
                 ) { onOpen(SettingsPage.Bedtime) }
                 CardDivider()
-                NavigationRow(
-                    stringResource(R.string.settings_row_breathing),
-                    stringResource(R.string.settings_row_breathing_value),
-                ) { onOpen(SettingsPage.Breathing) }
+                NavigationRow(stringResource(R.string.settings_row_breathing)) { onOpen(SettingsPage.Breathing) }
                 CardDivider()
-                NavigationRow(
-                    stringResource(R.string.settings_row_advanced),
-                    stringResource(R.string.settings_row_advanced_value),
-                ) { onOpen(SettingsPage.Advanced) }
+                NavigationRow(stringResource(R.string.settings_row_advanced)) { onOpen(SettingsPage.Advanced) }
             }
         }
         Footer()
@@ -166,12 +160,7 @@ fun BudgetSettingsScreen(state: SettingsUiState?, vm: SettingsViewModel, onBack:
     SettingsScaffold(stringResource(R.string.settings_row_budget), onBack) {
         if (state == null) return@SettingsScaffold
         val s = state.settings
-        Text(
-            stringResource(R.string.budget_intro),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
-        )
+        Spacer(Modifier.height(8.dp))
         SoftCard {
             Column {
                 MinutesSlider(
@@ -207,8 +196,9 @@ fun BreathingSettingsScreen(state: SettingsUiState?, vm: SettingsViewModel, onBa
                 SwitchRow(stringResource(R.string.breathe_cue_sound),
                     stringResource(R.string.settings_cue_hint), s.cueSound) { vm.setCue(it) }
                 CardDivider()
-                SwitchRow(stringResource(R.string.settings_return_home),
-                    stringResource(R.string.settings_return_home_hint), s.returnToHomeScreen) { vm.setReturnHome(it) }
+                SwitchRow(stringResource(R.string.settings_return_home), null, s.returnToHomeScreen) {
+                    vm.setReturnHome(it)
+                }
             }
         }
     }
@@ -266,10 +256,7 @@ fun AdvancedSettingsScreen(
                     s.recordingAllowed,
                 ) { vm.setRecording(it) }
                 CardDivider()
-                NavigationRow(
-                    stringResource(R.string.settings_clear_history),
-                    stringResource(R.string.settings_clear_history_hint),
-                ) { confirmClear = true }
+                NavigationRow(stringResource(R.string.settings_clear_history)) { confirmClear = true }
             }
         }
         Footer()
@@ -465,7 +452,7 @@ private fun CardDivider() {
 @Composable
 private fun SwitchRow(
     title: String,
-    hint: String,
+    hint: String?,
     checked: Boolean,
     enabled: Boolean = true,
     onChange: (Boolean) -> Unit,
@@ -480,7 +467,9 @@ private fun SwitchRow(
     ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (hint != null) {
+                Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
         Switch(checked = checked, onCheckedChange = null, enabled = enabled)
     }

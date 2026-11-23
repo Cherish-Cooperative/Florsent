@@ -90,12 +90,6 @@ fun HomeScreen(
             }
             BreathingFlower(expansion = { 0.7f }, timeSeconds = { 0f }, modifier = Modifier.size(76.dp))
         }
-        Spacer(Modifier.height(8.dp))
-        Text(
-            stringResource(R.string.home_tagline),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
         Spacer(Modifier.height(28.dp))
 
         if (state.loaded && !state.serviceRunning) {
@@ -153,11 +147,7 @@ fun HomeScreen(
 
         Spacer(Modifier.height(28.dp))
         SoftCard {
-            NavigationRow(
-                title = stringResource(R.string.home_settings_row),
-                value = stringResource(R.string.home_settings_row_value),
-                onClick = onOpenSettings,
-            )
+            NavigationRow(title = stringResource(R.string.home_settings_row), onClick = onOpenSettings)
         }
         Spacer(Modifier.height(32.dp))
     }
@@ -260,7 +250,7 @@ private fun SetupCard(onEnable: () -> Unit) {
 @Composable
 private fun TodayCard(state: HomeUiState, onOpenInsights: () -> Unit) {
     val status = statusText(state)
-    val summary = stringResource(R.string.today_summary, state.todayUsedMinutes, state.dailyBudgetMinutes, status)
+    val summary = stringResource(R.string.today_summary, state.todayUsedMinutes, state.dailyBudgetMinutes, status.orEmpty())
     val openLabel = stringResource(R.string.home_open_insights)
     SoftCard(
         Modifier
@@ -302,14 +292,17 @@ private fun TodayCard(state: HomeUiState, onOpenInsights: () -> Unit) {
                 gapSize = 0.dp,
                 drawStopIndicator = {},
             )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                status,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            // Within budget the bar says it all; a line appears only when something is happening.
+            if (status != null) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    status,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             state.bedtimeHintMinute?.let {
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(if (status != null) 6.dp else 16.dp))
                 Text(
                     stringResource(R.string.home_bedtime_hint, clockText(it)),
                     style = MaterialTheme.typography.bodyMedium,
@@ -321,9 +314,8 @@ private fun TodayCard(state: HomeUiState, onOpenInsights: () -> Unit) {
 }
 
 @Composable
-private fun statusText(state: HomeUiState): String = when (state.status) {
-    GuidanceStatus.Idle ->
-        stringResource(if (state.watchedCount == 0) R.string.status_no_apps else R.string.status_idle)
+private fun statusText(state: HomeUiState): String? = when (state.status) {
+    GuidanceStatus.Idle -> if (state.watchedCount == 0) stringResource(R.string.status_no_apps) else null
     GuidanceStatus.Guiding -> stringResource(R.string.status_guiding)
     GuidanceStatus.Breathing -> stringResource(R.string.status_breathing)
     GuidanceStatus.Preview -> stringResource(R.string.status_preview)

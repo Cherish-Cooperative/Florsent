@@ -176,11 +176,6 @@ private fun PatternPicker(
                     timeSeconds = { clock.longValue / 1000f },
                     modifier = Modifier.size(140.dp),
                 )
-                Text(
-                    stringResource(R.string.breathe_pick_rhythm),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
                 Spacer(Modifier.height(16.dp))
                 Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     BreathingPatterns.all.forEach { pattern ->
@@ -352,7 +347,8 @@ private fun BreathingSession(
                         BreathingTimeline.expansionAt(pattern, clock.longValue)
                     }
                 },
-                timeSeconds = { if (reducedMotion) 0f else clock.longValue / 1000f },
+                // Petal drift runs on breathing time only, so the flower is completely still while holding.
+                timeSeconds = { if (reducedMotion) 0f else BreathingTimeline.movingMsAt(pattern, clock.longValue) / 1000f },
                 progress = { BreathingTimeline.sessionProgress(pattern, clock.longValue) },
                 modifier = Modifier.size(flowerSize),
             )

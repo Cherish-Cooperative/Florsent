@@ -63,7 +63,7 @@ fun SoftCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
 
 /** A tappable settings row: title, current value, chevron. */
 @Composable
-fun NavigationRow(title: String, value: String, onClick: () -> Unit) {
+fun NavigationRow(title: String, value: String? = null, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,11 +74,13 @@ fun NavigationRow(title: String, value: String, onClick: () -> Unit) {
     ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(
-                value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (value != null) {
+                Text(
+                    value,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Icon(
             painter = painterResource(R.drawable.ic_chevron_right),

@@ -26,6 +26,12 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) requestedRoute = routeFor(intent)
 
         val container = appContainer
+        if (savedInstanceState == null && requestedRoute == null) {
+            // A fresh screen that was not opened from the nudge cannot be showing a breathing
+            // session. If the engine still thinks one is running (the process died mid-session), end
+            // it now instead of showing "breathing" on the home card until the 15-minute timeout.
+            container.guidance.dispatch(GuidanceEvent.BreathingCancelled(container.guidance.now()))
+        }
         setContent {
             val settings by container.currentSettings.collectAsStateWithLifecycle()
             FlorsentTheme(dynamicColor = settings.dynamicColor) {

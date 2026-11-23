@@ -9,7 +9,6 @@
          安靜時間 = cooldown; 留意的 App = watched apps. -->
 
     <!-- Home -->
-    <string name="home_tagline">慢慢放下手機就好。</string>
     <string name="greeting_morning">早安</string>
     <string name="greeting_afternoon">午安</string>
     <string name="greeting_evening">晚上好</string>
@@ -18,61 +17,53 @@
     <string name="home_preview">30 秒體驗漸進引導</string>
     <string name="home_watched_apps">留意的 App</string>
     <string name="home_watched_apps_value">%d 個</string>
-    <string name="home_settings">額度與設定</string>
-    <string name="home_budget_value">單次 %1$d 分鐘・每日 %2$d 分鐘</string>
 
     <string name="today_label">今天在社群 App 上</string>
     <string name="today_of_budget">/ %d 分鐘</string>
     <string name="today_summary">今天在社群 App 上 %1$d 分鐘，每日額度 %2$d 分鐘。%3$s</string>
-    <string name="status_idle">還在額度內。</string>
-    <string name="status_no_apps">還沒選要留意的 App。</string>
-    <string name="status_guiding">超過額度了，畫面正慢慢變淡。</string>
-    <string name="status_breathing">正在呼吸練習。</string>
-    <string name="status_preview">正在體驗漸進引導。</string>
-    <string name="status_cooldown">安靜時間，還有 %d 分鐘。</string>
+    <string name="status_no_apps">還沒選要留意的 App</string>
+    <string name="status_guiding">超過額度，畫面正慢慢變淡</string>
+    <string name="status_breathing">正在呼吸練習</string>
+    <string name="status_preview">正在體驗漸進引導</string>
+    <string name="status_cooldown">安靜時間，還有 %d 分鐘</string>
 
     <string name="setup_title">開啟漸進引導</string>
-    <string name="setup_body">用超過額度時，畫面會慢慢變淡，再提醒你停下來呼吸。不會封鎖 App。</string>
+    <string name="setup_body">用太久時畫面會慢慢變淡，不會封鎖 App</string>
     <string name="setup_action">開始設定</string>
 
     <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
     <string name="disclosure_title">使用無障礙服務</string>
-    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計算留意的 App 用了多久、顯示淡化效果和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間，學習你的作息（隨時可以清除）。\n\n不讀取畫面內容，不記錄你輸入的文字，資料只存在這支手機上。\n\n接著請在系統的無障礙設定中，開啟「Florsent 漸進引導」。</string>
+    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除\n\n不讀取畫面內容和你輸入的文字，資料只存在這支手機上\n\n接著請在系統的無障礙設定中開啟「Florsent 漸進引導」</string>
     <string name="disclosure_accept">同意，前往設定</string>
     <string name="disclosure_decline">暫時不要</string>
 
     <!-- Watched apps -->
     <string name="watched_title">留意的 App</string>
-    <string name="watched_intro">已選 %d 個，只有這些 App 會計入額度。</string>
+    <string name="watched_intro">已選 %d 個</string>
     <string name="watched_search">搜尋 App</string>
-    <string name="watched_no_results">找不到符合的 App。</string>
+    <string name="watched_no_results">找不到符合的 App</string>
     <string name="watched_suggested">常見的社群 App</string>
     <string name="watched_others">其他 App</string>
 
     <!-- Settings -->
-    <string name="settings_title">額度與設定</string>
-    <string name="settings_section_budget">使用額度</string>
-    <string name="settings_section_breathing">呼吸練習</string>
+    <string name="settings_title">設定</string>
     <string name="settings_section_guidance">漸進引導</string>
-    <string name="settings_ambient_hint">練習時播放輕柔的手碟聲。</string>
-    <string name="settings_cue_hint">換吸氣、吐氣時輕響一聲。</string>
+    <string name="settings_ambient_hint">輕柔的手碟聲</string>
+    <string name="settings_cue_hint">換氣時輕響一聲</string>
     <string name="settings_return_home">完成後回到手機桌面</string>
-    <string name="settings_return_home_hint">按「回到生活」後直接離開 Florsent。</string>
     <string name="settings_service">無障礙服務</string>
     <string name="settings_service_on">已開啟</string>
     <string name="settings_service_off">未開啟，輕觸前往設定</string>
     <string name="settings_footer">Florsent %s・資料只存在這支手機上</string>
-    <string name="budget_intro">超過任一額度，畫面就會慢慢變淡。</string>
     <string name="budget_session">單次額度</string>
-    <string name="budget_session_hint">連續用多久後開始變淡。離開 10 分鐘就重新計算。</string>
+    <string name="budget_session_hint">連續使用多久後開始變淡</string>
     <string name="budget_daily">每日額度</string>
-    <string name="budget_daily_hint">今天累計超過後，每次打開 2 分鐘就開始變淡。</string>
+    <string name="budget_daily_hint">一天累計的上限</string>
     <string name="budget_cooldown">安靜時間</string>
-    <string name="budget_cooldown_hint">做完呼吸練習後，這段時間不再提醒。</string>
+    <string name="budget_cooldown_hint">練習後多久不再提醒</string>
 
     <!-- Breathe -->
     <string name="breathe_title">呼吸練習</string>
-    <string name="breathe_pick_rhythm">選一種節奏，跟著花呼吸。</string>
     <string name="breathe_start">開始</string>
     <string name="breathe_ambient_sound">環境音</string>
     <string name="breathe_cue_sound">提示音</string>
@@ -80,61 +71,61 @@
     <string name="breathe_countdown_description">還有 %1$d 秒，第 %2$d 輪，共 %3$d 輪</string>
     <string name="breathe_end_early">提早結束</string>
     <string name="phase_inhale">吸氣</string>
-    <string name="phase_hold_in">屏息</string>
+    <string name="phase_hold_in">閉氣</string>
     <string name="phase_exhale">吐氣</string>
     <string name="phase_hold_out">停頓</string>
     <string name="pattern_duration">%1$d 輪・約 %2$d 分 %3$d 秒</string>
     <string name="pattern_duration_even">%1$d 輪・約 %2$d 分鐘</string>
     <string name="pattern_equal">等長呼吸</string>
-    <string name="pattern_equal_desc">三段一樣長，幫助專注。</string>
+    <string name="pattern_equal_desc">幫助專注</string>
     <string name="pattern_box">盒式呼吸</string>
-    <string name="pattern_box_desc">四段一樣長，讓心情穩定。</string>
+    <string name="pattern_box_desc">穩定心情</string>
     <string name="pattern_478">4-7-8 放鬆呼吸</string>
-    <string name="pattern_478_desc">拉長吐氣，幫助放鬆。</string>
+    <string name="pattern_478_desc">幫助放鬆入睡</string>
     <string name="pattern_resonance">共振呼吸</string>
-    <string name="pattern_resonance_desc">每分鐘約五次半，讓呼吸慢下來。</string>
+    <string name="pattern_resonance_desc">讓呼吸慢下來</string>
 
     <!-- Grounding -->
     <string name="grounding_label">回到當下</string>
     <string name="grounding_another">換一句</string>
     <string name="grounding_return">回到生活</string>
-    <string name="grounding_cooldown">接下來 %d 分鐘不再提醒。</string>
+    <string name="grounding_cooldown">接下來 %d 分鐘不再提醒</string>
     <string-array name="grounding_prompts">
-        <item>看看四周，找出三樣綠色的東西。</item>
-        <item>感受雙腳踩在地上的重量。</item>
-        <item>放下手機，去倒杯水，慢慢喝完。</item>
+        <item>看看四周，找出三樣綠色的東西</item>
+        <item>感受雙腳踩在地上的重量</item>
+        <item>放下手機，去倒杯水，慢慢喝完</item>
         <item>聽聽看，現在離你最遠的聲音是什麼？</item>
-        <item>讓肩膀放鬆，往下沉一點點。</item>
-        <item>看向窗外最遠的地方，讓眼睛休息一下。</item>
-        <item>摸摸身邊的東西，感覺它的溫度和觸感。</item>
-        <item>站起來伸個懶腰，讓背慢慢延展開。</item>
-        <item>想一件今天還不錯的小事。</item>
-        <item>深深吸一口氣，聞聞空氣裡有什麼味道。</item>
-        <item>留意眼前最亮的那個顏色，靜靜看它一會兒。</item>
-        <item>跟身邊的人說說話，或抬頭看看天空。</item>
+        <item>讓肩膀放鬆，往下沉一點點</item>
+        <item>看向窗外最遠的地方，讓眼睛休息一下</item>
+        <item>摸摸身邊的東西，感覺它的溫度和觸感</item>
+        <item>站起來伸個懶腰，讓背慢慢延展開</item>
+        <item>想一件今天還不錯的小事</item>
+        <item>深深吸一口氣，聞聞空氣裡有什麼味道</item>
+        <item>留意眼前最亮的那個顏色，靜靜看它一會兒</item>
+        <item>跟身邊的人說說話，或抬頭看看天空</item>
     </string-array>
 
     <!-- Onboarding -->
-    <string name="onboarding_purpose_title">不封鎖任何 App，\n只在你用太久時，溫柔地提醒。</string>
+    <string name="onboarding_purpose_title">不封鎖任何 App\n只在你用太久時，溫柔地提醒</string>
     <string name="onboarding_step_fade">用超過額度時，畫面會慢慢變淡</string>
     <string name="onboarding_step_nudge">畫面下方浮出提醒，問你要不要停下來</string>
     <string name="onboarding_step_breathe">花一分鐘呼吸，然後回到生活</string>
     <string name="onboarding_apps_title">想留意哪些 App？</string>
-    <string name="onboarding_apps_body">只有選取的 App 會計入時間，之後隨時能調整。</string>
-    <string name="onboarding_apps_none">沒有找到常見的社群 App，之後可以自己加入。</string>
+    <string name="onboarding_apps_body">只有選取的 App 會計時，之後可以再改</string>
+    <string name="onboarding_apps_none">沒找到常見的社群 App，之後可以自己加入</string>
     <string name="onboarding_disclosure_title">最後一步：開啟無障礙服務</string>
-    <string name="onboarding_disclosure_body">Florsent 要透過無障礙服務，才知道你正在用哪個 App。</string>
+    <string name="onboarding_disclosure_body">Florsent 需要無障礙服務，才知道你正在用哪個 App</string>
     <string name="onboarding_does_title">Florsent 會做的事</string>
     <string name="onboarding_does_1">只讀取目前在前景的 App 名稱</string>
     <string name="onboarding_does_2">計算留意的 App 用了多久</string>
     <string name="onboarding_does_3">在畫面上顯示淡化效果和呼吸提醒</string>
-    <string name="onboarding_does_4">在手機上保存 30 天的使用時段與螢幕開關時間，學習你的作息（隨時可以清除）</string>
+    <string name="onboarding_does_4">在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除</string>
     <string name="onboarding_doesnt_title">Florsent 不會做的事</string>
     <string name="onboarding_doesnt_1">不讀取畫面上的文字和內容</string>
     <string name="onboarding_doesnt_2">不記錄你輸入的任何東西</string>
-    <string name="onboarding_doesnt_3">不上傳任何資料，一切只存在這支手機上</string>
-    <string name="onboarding_enable_hint">接著請在系統的無障礙設定中，開啟「Florsent 漸進引導」。</string>
-    <string name="onboarding_service_ready">已經開啟，一切就緒。</string>
+    <string name="onboarding_doesnt_3">不上傳任何資料，只存在這支手機上</string>
+    <string name="onboarding_enable_hint">接著在系統的無障礙設定中開啟「Florsent 漸進引導」</string>
+    <string name="onboarding_service_ready">已經開啟，一切就緒</string>
     <string name="onboarding_begin">開始</string>
     <string name="onboarding_next">下一步</string>
     <string name="onboarding_enable">同意，前往設定</string>
@@ -144,10 +135,10 @@
 
     <!-- True grayscale finish (Android 15+) -->
     <string name="settings_zen_grayscale">淡到底時改成黑白</string>
-    <string name="settings_zen_grayscale_hint">透過系統「模式」切換，不影響通知和鈴聲。需要「零打擾」存取權。</string>
-    <string name="settings_zen_grayscale_lost">「零打擾」存取權已關閉，目前只會變淡。</string>
+    <string name="settings_zen_grayscale_hint">不影響通知和鈴聲，需要零打擾存取權</string>
+    <string name="settings_zen_grayscale_lost">零打擾存取權已關閉，目前只會變淡</string>
     <string name="zen_access_title">需要「零打擾」存取權</string>
-    <string name="zen_access_body">Florsent 只會建立「Florsent 漸進灰階」模式，在淡到底時把畫面切成黑白，不更動通知或其他模式。\n\n接著請在系統設定允許 Florsent 存取。</string>
+    <string name="zen_access_body">Florsent 只會建立「Florsent 漸進灰階」模式，淡到底時把畫面切成黑白，不更動通知或其他模式\n\n接著請在系統設定中允許 Florsent 存取</string>
     <string name="zen_access_confirm">前往設定</string>
     <string name="zen_access_cancel">取消</string>
     <string name="zen_rule_name">Florsent 漸進灰階</string>
@@ -156,19 +147,18 @@
     <!-- Appearance -->
     <string name="settings_section_appearance">外觀</string>
     <string name="settings_dynamic_color">跟隨系統主題色</string>
-    <string name="settings_dynamic_color_hint">使用桌布的配色，而不是 Florsent 的鼠尾草綠。</string>
+    <string name="settings_dynamic_color_hint">使用桌布的配色</string>
 
     <!-- Per-app desaturation via Shizuku (advanced, optional) -->
-    <string name="settings_section_advanced">進階</string>
     <string name="shizuku_title">讓 App 自己慢慢褪色</string>
-    <string name="shizuku_hint">透過 Shizuku，只讓正在用的 App 從彩色慢慢變成黑白。適合熟悉手機設定的人。</string>
+    <string name="shizuku_hint">只讓正在用的 App 從彩色慢慢變成黑白，需要 Shizuku</string>
     <string name="shizuku_status_not_installed">需要先安裝 Shizuku</string>
-    <string name="shizuku_status_not_running">Shizuku 還沒啟動，請先在 Shizuku 裡啟動服務</string>
+    <string name="shizuku_status_not_running">Shizuku 還沒啟動，請先在 Shizuku 裡啟動</string>
     <string name="shizuku_status_too_old">Shizuku 版本太舊，請先更新</string>
     <string name="shizuku_status_no_permission">需要允許 Florsent 使用 Shizuku</string>
     <string name="shizuku_status_ready">已就緒</string>
-    <string name="shizuku_status_degraded">剛才無法調整顏色，目前只會變淡。輕觸重新連線</string>
-    <string name="shizuku_status_pending_restore">Shizuku 已停止，可能有 App 還是黑白的。重新啟動 Shizuku 或重新開機就會恢復</string>
+    <string name="shizuku_status_degraded">剛才無法調整顏色，目前只會變淡，輕觸重新連線</string>
+    <string name="shizuku_status_pending_restore">Shizuku 已停止，部分 App 可能還是黑白，重新啟動 Shizuku 或重新開機即可恢復</string>
     <string name="shizuku_action_get">取得 Shizuku</string>
     <string name="shizuku_action_open">開啟 Shizuku</string>
     <string name="shizuku_action_grant">允許使用</string>
@@ -177,15 +167,14 @@
     <!-- Home: usage card, consent, bedtime invitation -->
     <string name="home_open_insights">查看最近的使用情形</string>
     <string name="home_settings_row">設定</string>
-    <string name="home_settings_row_value">留意的 App、額度、睡前引導</string>
     <string name="home_bedtime_hint">今晚 %s 後會溫和提醒你休息</string>
     <string name="consent_title">讓 Florsent 了解你的作息</string>
-    <string name="consent_body">在手機上保存 30 天的使用時段與螢幕開關時間，用來學習作息、提供睡前提醒和使用洞察。資料不會離開這支手機，隨時可以清除。</string>
+    <string name="consent_body">在手機上保存 30 天的使用時段與螢幕開關時間，用來學習作息和提供睡前提醒。資料不會離開這支手機，隨時可以清除</string>
     <string name="consent_accept">開始記錄</string>
     <string name="consent_decline">不記錄</string>
     <string name="invite_title">睡前也溫柔地提醒你？</string>
-    <string name="invite_body">最近你多在 %s 左右放下手機。要在那之前溫和提醒你嗎？</string>
-    <string name="invite_irregular_body">還看不出你固定的作息。可以自己選一個想睡的時間。</string>
+    <string name="invite_body">最近你多在 %s 左右放下手機，要在那之前提醒你嗎？</string>
+    <string name="invite_irregular_body">還看不出固定的作息，可以自己選想睡的時間</string>
     <string name="invite_accept">好</string>
     <string name="invite_choose">換個時間</string>
     <string name="invite_irregular_choose">選時間</string>
@@ -197,12 +186,12 @@
     <string name="insights_last_seven">近 7 天</string>
     <string name="insights_top_apps">常用的留意 App</string>
     <string name="insights_no_record_day">沒有紀錄</string>
-    <string name="insights_recording_off">沒有記錄使用時段，所以這裡沒有資料。可以在「設定 &gt; 進階」開啟。</string>
-    <string name="insight_puts_down">最近多在 %s 左右放下手機。</string>
-    <string name="insight_less">這週比上週少滑了 %s。</string>
-    <string name="insight_more">這週在社群 App 上多花了一些時間。</string>
-    <string name="insight_similar">這兩週的使用時間差不多。</string>
-    <string name="insight_not_enough">再過幾天，這裡會開始告訴你一些發現。</string>
+    <string name="insights_recording_off">沒有記錄使用時段，可以在「設定 &gt; 進階」開啟</string>
+    <string name="insight_puts_down">最近多在 %s 左右放下手機</string>
+    <string name="insight_less">這週比上週少滑了 %s</string>
+    <string name="insight_more">這週在社群 App 上多花了一些時間</string>
+    <string name="insight_similar">這兩週的使用時間差不多</string>
+    <string name="insight_not_enough">再記錄幾天，這裡就會有內容</string>
     <string name="duration_minutes">%d 分鐘</string>
     <string name="duration_hours">%d 小時</string>
     <string name="duration_hours_minutes">%1$d 小時 %2$d 分鐘</string>
@@ -215,29 +204,27 @@
     <string name="settings_row_bedtime_on">每晚 %s 起溫和提醒</string>
     <string name="settings_row_bedtime_off">未開啟</string>
     <string name="settings_row_breathing">呼吸與聲音</string>
-    <string name="settings_row_breathing_value">環境音、提示音、練習完成後</string>
     <string name="settings_row_advanced">進階</string>
-    <string name="settings_row_advanced_value">外觀、黑白、Shizuku、使用紀錄</string>
     <string name="settings_section_records">使用紀錄</string>
     <string name="settings_recording">記錄使用時段</string>
-    <string name="settings_recording_hint">在手機上保存 30 天，用來學習作息與顯示洞察。</string>
+    <string name="settings_recording_hint">只存在手機上，保留 30 天</string>
     <string name="settings_clear_history">清除使用紀錄</string>
-    <string name="settings_clear_history_hint">刪除保存的使用時段與學到的作息。</string>
     <string name="clear_history_title">清除使用紀錄？</string>
-    <string name="clear_history_body">會刪除這支手機上保存的使用時段與學到的作息，無法復原。</string>
+    <string name="clear_history_body">會刪除這支手機上的使用紀錄與學到的作息，無法復原</string>
     <string name="clear_history_confirm">清除</string>
     <string name="dialog_cancel">取消</string>
     <string name="dialog_ok">確定</string>
 
     <!-- Bedtime -->
     <string name="bedtime_title">睡前引導</string>
-    <string name="bedtime_status_learning">正在了解你的作息，已觀察 %d 晚。</string>
-    <string name="bedtime_status_confident">最近你多在 %s 左右放下手機。</string>
-    <string name="bedtime_status_irregular">還看不出固定的作息。</string>
-    <string name="bedtime_status_no_record">沒有記錄使用時段，不會自動學習。你仍然可以自己選時間。</string>
-    <string name="bedtime_current">每晚 %1$s 起，累計滑 %2$d 分鐘，會溫和提醒你休息。</string>
-    <string name="bedtime_current_off">目前沒有開啟睡前引導。</string>
-    <string name="bedtime_note">會從想睡時間的 30 分鐘前開始留意，每晚最多提醒兩次。</string>
+    <string name="bedtime_status_learning_start">正在了解你的作息</string>
+    <string name="bedtime_status_learning">正在了解你的作息，已觀察 %d 晚</string>
+    <string name="bedtime_status_confident">最近你多在 %s 左右放下手機</string>
+    <string name="bedtime_status_irregular">還看不出固定的作息</string>
+    <string name="bedtime_status_no_record">沒有記錄使用時段，可以自己選時間</string>
+    <string name="bedtime_current">每晚 %1$s 起，累計滑 %2$d 分鐘會提醒你休息</string>
+    <string name="bedtime_current_off">睡前引導未開啟</string>
+    <string name="bedtime_note">每晚最多提醒兩次</string>
     <string name="bedtime_choose_time">選擇想睡的時間</string>
     <string name="bedtime_change_time">更改時間</string>
     <string name="bedtime_use_learned">改用最近的作息（%s）</string>
@@ -247,14 +234,14 @@
     <string name="nudge_message_bedtime">該準備休息了嗎？</string>
     <string name="grounding_return_bedtime">去休息吧</string>
     <string-array name="grounding_prompts_bedtime">
-        <item>把手機放到伸手拿不到的地方充電。</item>
-        <item>把房間的燈調暗一點。</item>
-        <item>明天的事，明天再想就好。</item>
-        <item>深深吐一口氣，讓肩膀放鬆下來。</item>
-        <item>喝一小口溫水，準備躺下。</item>
-        <item>想一件今天值得感謝的小事。</item>
-        <item>把被子拉好，讓身體暖暖的。</item>
-        <item>閉上眼睛，聽聽房間裡安靜的聲音。</item>
+        <item>把手機放到伸手拿不到的地方充電</item>
+        <item>把房間的燈調暗一點</item>
+        <item>明天的事，明天再想就好</item>
+        <item>深深吐一口氣，讓肩膀放鬆下來</item>
+        <item>喝一小口溫水，準備躺下</item>
+        <item>想一件今天值得感謝的小事</item>
+        <item>把被子拉好，讓身體暖暖的</item>
+        <item>閉上眼睛，聽聽房間裡安靜的聲音</item>
     </string-array>
 
     <!-- Nudge overlay -->
@@ -264,5 +251,5 @@
 
     <!-- Accessibility service -->
     <string name="accessibility_service_label">Florsent 漸進引導</string>
-    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計算留意的 App 用了多久、顯示淡化效果和呼吸提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息。不讀取畫面內容或你輸入的文字，資料不會離開這支手機。</string>
+    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計時、顯示淡化和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息。不讀取畫面內容或你輸入的文字，資料不會離開這支手機</string>
 </resources>
