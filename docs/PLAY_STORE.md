@@ -262,13 +262,25 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 |---|---|---|
 | 高解析度圖示 | 512 × 512 PNG，32 位元 | 已備妥，[`docs/assets/play-icon-512.png`](assets/play-icon-512.png) |
 | Feature Graphic | 1024 × 500 PNG／JPG，不透明 | 已備妥，[`docs/assets/play-feature-graphic.png`](assets/play-feature-graphic.png) |
-| 手機截圖 | 2 到 8 張，建議 1080 × 2400 直式 | 待辦。用乾淨的手機或模擬器重拍 6 張：①首頁（今日卡片）②畫面淡化與提醒 ③呼吸蓮花 ④回到當下 ⑤使用洞察 ⑥睡前邀請卡。淺色模式為主，可加一張深色 |
+| 手機截圖 | 2 到 8 張，9:16 直式 | 已備妥 5 張，1080 × 1920 PNG，放在 [`docs/assets/play-screenshots/`](assets/play-screenshots/)，依序上傳（見下表） |
 | 7 吋／10 吋平板截圖 | 選填 | 待辦，不提供（手機優先） |
 | 宣傳影片 | 選填，YouTube 連結 | 待辦，可沿用審核示範影片剪短版 |
 | 審核示範影片 | YouTube 不公開連結 | 待辦，依上方分鏡錄製 |
 | 隱私權政策網址 | 公開可存取的網頁 | 待辦，發布 PRIVACY.md |
 | 簽署金鑰 | Play App Signing，上傳金鑰另外保管 | 待辦，建立 upload key，`assembleRelease` 改成 `bundleRelease` 產生 AAB |
 | 聯絡信箱 | 公開信箱 | 待辦，開發者決定 |
+
+### 手機截圖順序
+
+| 順序 | 檔案 | 標題 | 畫面 |
+|---|---|---|---|
+| 1 | [`01-gentle-fade.png`](assets/play-screenshots/01-gentle-fade.png) | 溫柔漸進提醒 | 桌面淡化，底部浮出「停下來深呼吸一下？」 |
+| 2 | [`02-breathing-lotus.png`](assets/play-screenshots/02-breathing-lotus.png) | 沉浸蓮花呼吸 | 4-7-8 呼吸的吐氣階段 |
+| 3 | [`03-return-to-life.png`](assets/play-screenshots/03-return-to-life.png) | 回到生活當下 | 感官覺察提示與「回到生活」按鈕 |
+| 4 | [`04-bedtime-winddown.png`](assets/play-screenshots/04-bedtime-winddown.png) | 懂你的睡前節奏 | 深色首頁與睡前邀請卡 |
+| 5 | [`05-calm-insights.png`](assets/play-screenshots/05-calm-insights.png) | 平靜的使用洞察 | 「最近」頁：今天、近 7 天與常用 App |
+
+截圖都在模擬器上用假資料拍攝，已拿掉假的鏡頭開孔，沒有個人資訊。
 
 截圖拍攝提醒：用模擬器拍時，可以照 [TECHNICAL.md](TECHNICAL.md) 的方式放入假資料，讓洞察頁和睡前邀請卡有內容。不要用真實使用者的手機截圖。
 
@@ -305,5 +317,5 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 - [ ] PRIVACY.md 已發布，網址可以在無痕視窗打開
 - [ ] 資料安全表單與 PRIVACY.md、App 內揭露的文字一致（30 天、需同意、可清除、不離開手機）
 - [ ] 無障礙聲明附上影片連結，影片清楚拍到揭露全文
-- [ ] 截圖沒有任何個人資訊
+- [x] 截圖沒有任何個人資訊（5 張皆為模擬器假資料）
 - [ ] 在 Android 15 以上的實機確認 Zen 灰階收尾會在離開時還原
