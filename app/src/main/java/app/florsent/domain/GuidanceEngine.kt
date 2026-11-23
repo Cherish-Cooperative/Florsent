@@ -133,8 +133,12 @@ class GuidanceEngine(private val zone: ZoneId = ZoneId.systemDefault()) {
         if (mode != GuidanceMode.Tracking) return base.copy(dailyUsedMs = daily, lastWatchedAtMs = now)
 
         val session = sessionUsedMs + delta
-        val overPortion = maxOf(session - config.sessionBudgetMs, daily - config.dailyBudgetMs)
-            .coerceIn(0, delta)
+        // Over budget when the session budget is used up, or when the daily budget is used up and
+        // this session has had its grace period. Both terms grow 1:1 with usage once positive, so
+        // clamping to [0, delta] yields exactly the over-budget share of this step.
+        val sessionOver = session - config.sessionBudgetMs
+        val dailyOver = minOf(daily - config.dailyBudgetMs, session - config.dailyGraceMs)
+        val overPortion = maxOf(sessionOver, dailyOver).coerceIn(0, delta)
         return base.copy(
             dailyUsedMs = daily,
             sessionUsedMs = session,

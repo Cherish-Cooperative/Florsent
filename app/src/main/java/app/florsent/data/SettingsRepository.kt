@@ -26,6 +26,9 @@ data class UserSettings(
     val ambientSound: Boolean = false,
     val cueSound: Boolean = false,
     val returnToHomeScreen: Boolean = true,
+    val onboardingCompleted: Boolean = false,
+    /** Android 15+: switch to true grayscale (Modes device effect) when the fade is complete. */
+    val zenGrayscaleFinish: Boolean = false,
 ) {
     fun toGuidanceConfig(): GuidanceConfig = GuidanceConfig(
         watchedPackages = watchedPackages,
@@ -58,6 +61,8 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
                 ambientSound = p[Keys.AMBIENT_SOUND] ?: false,
                 cueSound = p[Keys.CUE_SOUND] ?: false,
                 returnToHomeScreen = p[Keys.RETURN_HOME] ?: true,
+                onboardingCompleted = p[Keys.ONBOARDING_COMPLETED] ?: false,
+                zenGrayscaleFinish = p[Keys.ZEN_GRAYSCALE] ?: false,
             )
         }
         .distinctUntilChanged()
@@ -91,6 +96,9 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setCueSound(on: Boolean) = dataStore.edit { it[Keys.CUE_SOUND] = on }
     suspend fun setReturnToHomeScreen(on: Boolean) = dataStore.edit { it[Keys.RETURN_HOME] = on }
 
+    suspend fun setOnboardingCompleted() = dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = true }
+    suspend fun setZenGrayscaleFinish(on: Boolean) = dataStore.edit { it[Keys.ZEN_GRAYSCALE] = on }
+
     private object Keys {
         val WATCHED = stringSetPreferencesKey("watched_packages")
         val WATCHED_INITIALIZED = booleanPreferencesKey("watched_initialized")
@@ -102,5 +110,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         val AMBIENT_SOUND = booleanPreferencesKey("ambient_sound")
         val CUE_SOUND = booleanPreferencesKey("cue_sound")
         val RETURN_HOME = booleanPreferencesKey("return_to_home_screen")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val ZEN_GRAYSCALE = booleanPreferencesKey("zen_grayscale_finish")
     }
 }

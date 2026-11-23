@@ -17,6 +17,9 @@ import app.florsent.service.effect.CompositeVisualEffectController
 import app.florsent.service.effect.DimOverlayController
 import app.florsent.service.effect.VisualEffect
 import app.florsent.service.effect.VisualEffectController
+import app.florsent.service.effect.ZenGrayscale
+import app.florsent.service.effect.ZenGrayscaleController
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -62,7 +65,17 @@ class FlorsentAccessibilityService : AccessibilityService() {
             ?.mapTo(mutableSetOf()) { it.packageName }
             .orEmpty()
 
-        effects = CompositeVisualEffectController(listOf(DimOverlayController(this)))
+        val container = appContainer
+        effects = CompositeVisualEffectController(
+            listOfNotNull(
+                DimOverlayController(this),
+                if (ZenGrayscale.isSupported) {
+                    ZenGrayscaleController(this) { container.currentSettings.value.zenGrayscaleFinish }
+                } else {
+                    null
+                },
+            ),
+        )
         nudge = NudgeOverlay(
             service = this,
             onAccept = ::onNudgeAccepted,
@@ -83,7 +96,10 @@ class FlorsentAccessibilityService : AccessibilityService() {
 
         coordinator.setServiceRunning(true)
         renderJob = scope.launch {
-            coordinator.effect.collect { effect ->
+            // Settings are part of the key so toggling an effect applies even at a steady level.
+            combine(coordinator.effect, container.currentSettings) { effect, settings ->
+                effect to settings.zenGrayscaleFinish
+            }.collect { (effect, _) ->
                 effects?.render(VisualEffect(effect.level, effect.targetPackage))
                 nudge?.setVisible(effect.showNudge)
             }

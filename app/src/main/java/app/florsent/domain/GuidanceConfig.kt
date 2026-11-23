@@ -10,8 +10,13 @@ data class GuidanceConfig(
     val watchedPackages: Set<String> = emptySet(),
     /** Continuous time in watched apps before guidance starts. */
     val sessionBudgetMs: Long = 15 * MINUTE_MS,
-    /** Total watched-app time per local day; once exceeded, guidance starts right away. */
+    /** Total watched-app time per local day; once exceeded, guidance comes much sooner. */
     val dailyBudgetMs: Long = 60 * MINUTE_MS,
+    /**
+     * After the daily budget is used up, each session still gets this much use before the fade
+     * starts, so opening an app never feels like hitting a wall.
+     */
+    val dailyGraceMs: Long = 2 * MINUTE_MS,
     /** Over-budget usage needed to go from no effect to full effect. */
     val fadeDurationMs: Long = 3 * MINUTE_MS,
     /** Fade progress (0..1) at which the "take a breath?" nudge slides in. */

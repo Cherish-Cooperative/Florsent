@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import android.content.Context
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -20,7 +23,12 @@ import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +40,7 @@ import app.florsent.AppContainer
 import app.florsent.BuildConfig
 import app.florsent.R
 import app.florsent.data.UserSettings
+import app.florsent.service.effect.ZenGrayscale
 import app.florsent.ui.components.FlorsentTopBar
 import app.florsent.ui.components.NavigationRow
 import app.florsent.ui.components.SoftCard
@@ -44,7 +53,10 @@ import kotlinx.coroutines.launch
 
 data class SettingsUiState(val settings: UserSettings, val serviceRunning: Boolean)
 
-class SettingsViewModel(private val container: AppContainer) : ViewModel() {
+class SettingsViewModel(
+    private val container: AppContainer,
+    private val appContext: Context,
+) : ViewModel() {
     val uiState: StateFlow<SettingsUiState?> =
         combine(container.settings.settings, container.guidance.serviceRunning, ::SettingsUiState)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -56,6 +68,13 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     fun setAmbient(on: Boolean) = viewModelScope.launch { repo.setAmbientSound(on) }
     fun setCue(on: Boolean) = viewModelScope.launch { repo.setCueSound(on) }
     fun setReturnHome(on: Boolean) = viewModelScope.launch { repo.setReturnToHomeScreen(on) }
+
+    fun hasZenAccess(): Boolean = ZenGrayscale.hasAccess(appContext)
+
+    fun setZenGrayscale(on: Boolean) = viewModelScope.launch {
+        repo.setZenGrayscaleFinish(on)
+        if (!on) ZenGrayscale.removeRule(appContext)
+    }
 }
 
 @Composable
@@ -64,6 +83,7 @@ fun SettingsScreen(
     vm: SettingsViewModel,
     onBack: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
+    onOpenZenAccessSettings: () -> Unit,
 ) {
     Scaffold(
         topBar = { FlorsentTopBar(stringResource(R.string.settings_title), onBack) },
@@ -120,13 +140,19 @@ fun SettingsScreen(
 
             SectionTitle(stringResource(R.string.settings_section_guidance))
             SoftCard {
-                NavigationRow(
-                    title = stringResource(R.string.settings_service),
-                    value = stringResource(
-                        if (state.serviceRunning) R.string.settings_service_on else R.string.settings_service_off,
-                    ),
-                    onClick = onOpenAccessibilitySettings,
-                )
+                Column {
+                    NavigationRow(
+                        title = stringResource(R.string.settings_service),
+                        value = stringResource(
+                            if (state.serviceRunning) R.string.settings_service_on else R.string.settings_service_off,
+                        ),
+                        onClick = onOpenAccessibilitySettings,
+                    )
+                    if (ZenGrayscale.isSupported) {
+                        CardDivider()
+                        ZenGrayscaleRow(enabled = s.zenGrayscaleFinish, vm = vm, onOpenAccessSettings = onOpenZenAccessSettings)
+                    }
+                }
             }
 
             Text(
@@ -137,6 +163,59 @@ fun SettingsScreen(
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
         }
+    }
+}
+
+/**
+ * True-grayscale finish (Android 15+). Turning it on without notification-policy access explains
+ * why the access is needed, sends the user to system settings, and completes on return.
+ */
+@Composable
+private fun ZenGrayscaleRow(enabled: Boolean, vm: SettingsViewModel, onOpenAccessSettings: () -> Unit) {
+    var hasAccess by remember { mutableStateOf(vm.hasZenAccess()) }
+    var pendingEnable by rememberSaveable { mutableStateOf(false) }
+    var showExplain by rememberSaveable { mutableStateOf(false) }
+
+    LifecycleResumeEffect(Unit) {
+        hasAccess = vm.hasZenAccess()
+        if (pendingEnable) {
+            pendingEnable = false
+            if (hasAccess) vm.setZenGrayscale(true)
+        }
+        onPauseOrDispose { }
+    }
+
+    val effective = enabled && hasAccess
+    SwitchRow(
+        title = stringResource(R.string.settings_zen_grayscale),
+        hint = stringResource(
+            if (enabled && !hasAccess) R.string.settings_zen_grayscale_lost else R.string.settings_zen_grayscale_hint,
+        ),
+        checked = effective,
+    ) { on ->
+        when {
+            !on -> vm.setZenGrayscale(false)
+            hasAccess -> vm.setZenGrayscale(true)
+            else -> showExplain = true
+        }
+    }
+
+    if (showExplain) {
+        AlertDialog(
+            onDismissRequest = { showExplain = false },
+            title = { Text(stringResource(R.string.zen_access_title)) },
+            text = { Text(stringResource(R.string.zen_access_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExplain = false
+                    pendingEnable = true
+                    onOpenAccessSettings()
+                }) { Text(stringResource(R.string.zen_access_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExplain = false }) { Text(stringResource(R.string.zen_access_cancel)) }
+            },
+        )
     }
 }
 

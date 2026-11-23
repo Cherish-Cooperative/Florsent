@@ -211,7 +211,7 @@ class GuidanceEngineTest {
     }
 
     @Test
-    fun `exceeding the daily budget makes guidance start immediately`() {
+    fun `after the daily budget is used up, a new session gets a two minute grace period`() {
         val h = Harness(cfg = config.copy(sessionBudgetMs = 30 * MIN, dailyBudgetMs = 20 * MIN))
         h.open(social)
         h.advance(20 * MIN)
@@ -219,11 +219,59 @@ class GuidanceEngineTest {
         h.advance(5 * MIN) // longer than the session gap: new session
 
         h.open(social)
-        h.advance(30_000)
+        h.advance(2 * MIN)
+        assertEquals("no fade during the grace period", 0L, h.state.overBudgetMs)
+        assertEquals(GuidanceEffect.None, h.effect)
 
-        assertTrue(h.state.sessionUsedMs < h.config.sessionBudgetMs)
+        h.advance(30_000)
         assertEquals(30_000L, h.state.overBudgetMs)
         assertTrue(h.effect.level > 0f)
+        assertTrue("still sooner than the session budget", h.state.sessionUsedMs < h.config.sessionBudgetMs)
+    }
+
+    @Test
+    fun `grace period also applies after a cooldown once the daily budget is gone`() {
+        val h = Harness(cfg = config.copy(sessionBudgetMs = 10 * MIN, dailyBudgetMs = 10 * MIN))
+        h.open(social)
+        h.advance(11 * MIN)
+        h.send { NudgeAccepted(it) }
+        h.open("app.florsent")
+        h.send { BreathingCompleted(it) }
+        h.advance(5 * MIN) // cooldown ends
+
+        h.open(social)
+        h.advance(1 * MIN + 59_000)
+        assertEquals(GuidanceEffect.None, h.effect)
+
+        h.advance(2_000)
+        assertTrue(h.effect.level > 0f)
+    }
+
+    @Test
+    fun `crossing the daily budget mid-session starts the fade without an extra wait`() {
+        val h = Harness(cfg = config.copy(sessionBudgetMs = 30 * MIN, dailyBudgetMs = 10 * MIN))
+        h.open(social)
+        h.advance(10 * MIN)
+        assertEquals(0L, h.state.overBudgetMs)
+
+        h.advance(30_000)
+
+        assertEquals("already well past the grace period", 30_000L, h.state.overBudgetMs)
+    }
+
+    @Test
+    fun `crossing the daily budget early in a session still waits out the grace period`() {
+        val h = Harness(cfg = config.copy(sessionBudgetMs = 30 * MIN, dailyBudgetMs = 10 * MIN))
+        h.open(social)
+        h.advance(9 * MIN + 30_000)
+        h.open(other)
+        h.advance(4 * MIN) // new session
+        h.open(social)
+        h.advance(1 * MIN) // daily crossed 30 s into this session
+
+        assertEquals(0L, h.state.overBudgetMs)
+        h.advance(1 * MIN + 10_000)
+        assertEquals(10_000L, h.state.overBudgetMs)
     }
 
     @Test

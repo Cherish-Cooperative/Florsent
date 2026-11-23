@@ -26,6 +26,7 @@ import app.florsent.AppContainer
 import app.florsent.data.UserSettings
 import app.florsent.domain.GuidanceEvent
 import app.florsent.service.audio.BreathingSoundscape
+import app.florsent.service.effect.ZenGrayscale
 import app.florsent.ui.apps.WatchedAppsScreen
 import app.florsent.ui.apps.WatchedAppsViewModel
 import app.florsent.ui.breathe.BreatheScreen
@@ -34,6 +35,8 @@ import app.florsent.ui.breathe.BreatheViewModel
 import app.florsent.ui.grounding.GroundingScreen
 import app.florsent.ui.home.HomeScreen
 import app.florsent.ui.home.HomeViewModel
+import app.florsent.ui.onboarding.OnboardingScreen
+import app.florsent.ui.onboarding.OnboardingViewModel
 import app.florsent.ui.settings.SettingsScreen
 import app.florsent.ui.settings.SettingsViewModel
 
@@ -62,7 +65,8 @@ fun FlorsentAppUi(
             initializer { BreatheViewModel(container, BreathingSoundscape(context.applicationContext)) }
         },
     )
-    val settings by container.settings.settings.collectAsStateWithLifecycle(UserSettings())
+    val loadedSettings by container.settings.settings.collectAsStateWithLifecycle(initialValue = null)
+    val settings = loadedSettings ?: UserSettings()
 
     LaunchedEffect(requestedRoute) {
         if (requestedRoute != null) {
@@ -101,6 +105,24 @@ fun FlorsentAppUi(
     }
 
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        // Wait for settings so first-run users never see a flash of the home screen (or vice versa).
+        val current = loadedSettings ?: return@Surface
+        if (!current.onboardingCompleted) {
+            val vm: OnboardingViewModel =
+                viewModel(factory = viewModelFactory { initializer { OnboardingViewModel(container) } })
+            val state by vm.uiState.collectAsStateWithLifecycle()
+            OnboardingScreen(
+                state = state,
+                onToggleApp = vm::setWatched,
+                loadIcon = vm::icon,
+                onEnableService = {
+                    vm.acceptDisclosure()
+                    onOpenAccessibilitySettings()
+                },
+                onFinish = vm::complete,
+            )
+            return@Surface
+        }
         AnimatedContent(
             targetState = route,
             transitionSpec = { fadeIn(tween(320)) togetherWith fadeOut(tween(200)) },
@@ -160,13 +182,16 @@ fun FlorsentAppUi(
                 }
                 Route.Settings -> {
                     val vm: SettingsViewModel =
-                        viewModel(factory = viewModelFactory { initializer { SettingsViewModel(container) } })
+                        viewModel(factory = viewModelFactory {
+                            initializer { SettingsViewModel(container, context.applicationContext) }
+                        })
                     val state by vm.uiState.collectAsStateWithLifecycle()
                     SettingsScreen(
                         state = state,
                         vm = vm,
                         onBack = { route = Route.Home },
                         onOpenAccessibilitySettings = onOpenAccessibilitySettings,
+                        onOpenZenAccessSettings = { context.startActivity(ZenGrayscale.accessSettingsIntent()) },
                     )
                 }
             }

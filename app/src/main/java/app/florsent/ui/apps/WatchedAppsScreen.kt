@@ -124,7 +124,7 @@ private fun SectionHeader(text: String) {
 }
 
 @Composable
-private fun AppToggleRow(
+internal fun AppToggleRow(
     row: AppRow,
     onToggle: (String, Boolean) -> Unit,
     loadIcon: suspend (String, Int) -> Bitmap?,

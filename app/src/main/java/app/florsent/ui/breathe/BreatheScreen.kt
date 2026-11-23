@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +49,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -138,33 +140,45 @@ private fun PatternPicker(
             }
         },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            val clock = rememberFrameClock(key = Unit, running = !reducedMotion)
-            BreathingFlower(
-                expansion = { if (reducedMotion) 0.45f else BreathingTimeline.idleExpansion(clock.longValue) },
-                timeSeconds = { clock.longValue / 1000f },
-                modifier = Modifier.size(200.dp),
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                stringResource(R.string.breathe_pick_rhythm),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(20.dp))
-            Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                BreathingPatterns.all.forEach { pattern ->
-                    PatternCard(pattern, selected = pattern.id == state.pattern.id) { onSelectPattern(pattern) }
+        val scroll = rememberScrollState()
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scroll)
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                val clock = rememberFrameClock(key = Unit, running = !reducedMotion)
+                BreathingFlower(
+                    expansion = { if (reducedMotion) 0.45f else BreathingTimeline.idleExpansion(clock.longValue) },
+                    timeSeconds = { clock.longValue / 1000f },
+                    modifier = Modifier.size(140.dp),
+                )
+                Text(
+                    stringResource(R.string.breathe_pick_rhythm),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(16.dp))
+                Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    BreathingPatterns.all.forEach { pattern ->
+                        PatternCard(pattern, selected = pattern.id == state.pattern.id) { onSelectPattern(pattern) }
+                    }
                 }
+                Spacer(Modifier.height(20.dp))
             }
-            Spacer(Modifier.height(16.dp))
+            // Soft fade at the bottom edge, only while more content is below.
+            val background = MaterialTheme.colorScheme.background
+            if (scroll.canScrollForward) {
+                Box(
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(32.dp)
+                        .background(Brush.verticalGradient(listOf(background.copy(alpha = 0f), background))),
+                )
+            }
         }
     }
 }
@@ -181,7 +195,7 @@ private fun PatternCard(pattern: BreathingPattern, selected: Boolean, onClick: (
             .fillMaxWidth()
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
     ) {
-        Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+        Column(Modifier.padding(horizontal = 20.dp, vertical = 13.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 Text(
@@ -190,7 +204,7 @@ private fun PatternCard(pattern: BreathingPattern, selected: Boolean, onClick: (
                     color = scheme.primary,
                 )
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             Text(
                 description,
                 style = MaterialTheme.typography.bodyMedium,

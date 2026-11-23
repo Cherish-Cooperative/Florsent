@@ -5,6 +5,7 @@ import android.content.Context
 import app.florsent.data.GuidanceStateStore
 import app.florsent.data.InstalledAppsRepository
 import app.florsent.data.SettingsRepository
+import app.florsent.data.UserSettings
 import app.florsent.data.guidanceDataStore
 import app.florsent.data.settingsDataStore
 import app.florsent.domain.GuidanceEngine
@@ -13,7 +14,10 @@ import app.florsent.service.GuidanceCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class FlorsentApp : Application() {
@@ -31,6 +35,10 @@ class AppContainer(context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     val settings = SettingsRepository(context.settingsDataStore)
+
+    /** Latest settings for synchronous reads (e.g. effect controllers); defaults until loaded. */
+    val currentSettings: StateFlow<UserSettings> =
+        settings.settings.stateIn(scope, SharingStarted.Eagerly, UserSettings())
     val installedApps = InstalledAppsRepository(context)
     val guidance = GuidanceCoordinator(
         scope = scope,

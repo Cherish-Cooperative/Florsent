@@ -61,7 +61,7 @@
     <string name="budget_session">單次額度</string>
     <string name="budget_session_hint">連續使用多久後開始引導，離開 10 分鐘以上會重算。</string>
     <string name="budget_daily">每日額度</string>
-    <string name="budget_daily_hint">一天內累計超過之後，每次打開都會比較早出現引導。</string>
+    <string name="budget_daily_hint">一天內累計超過之後，每次打開用了 2 分鐘就會開始引導。</string>
     <string name="budget_cooldown">休息時間</string>
     <string name="budget_cooldown_hint">做完呼吸練習之後，這段時間內不會再打擾你。</string>
 
@@ -108,6 +108,43 @@
         <item>留意眼前最亮的那個顏色，靜靜看它一會兒。</item>
         <item>跟身邊的人說說話，或抬頭看看天空。</item>
     </string-array>
+
+    <!-- Onboarding -->
+    <string name="onboarding_purpose_title">不封鎖任何 App，\n只在你用太久時，溫柔地提醒。</string>
+    <string name="onboarding_step_fade">社群 App 用超過額度時，畫面會慢慢變淡</string>
+    <string name="onboarding_step_nudge">畫面下方浮出提醒，問你要不要停下來</string>
+    <string name="onboarding_step_breathe">花一分鐘呼吸，然後回到生活</string>
+    <string name="onboarding_apps_title">哪些 App 需要提醒？</string>
+    <string name="onboarding_apps_body">只有選取的 App 會計入使用時間。之後也能在「監測的 App」裡調整。</string>
+    <string name="onboarding_apps_none">這支手機上沒有找到常見的社群 App。之後可以在「監測的 App」裡自己加入。</string>
+    <string name="onboarding_disclosure_title">最後一步：開啟無障礙服務</string>
+    <string name="onboarding_disclosure_body">Florsent 需要透過無障礙服務，才能知道你正在用哪個 App，並在畫面上顯示淡化效果和提醒。</string>
+    <string name="onboarding_does_title">Florsent 會做的事</string>
+    <string name="onboarding_does_1">只讀取目前在前景的 App 名稱</string>
+    <string name="onboarding_does_2">計算你選取的 App 用了多久</string>
+    <string name="onboarding_does_3">在畫面上顯示淡化效果和呼吸提醒</string>
+    <string name="onboarding_doesnt_title">Florsent 不會做的事</string>
+    <string name="onboarding_doesnt_1">不讀取畫面上的文字和內容</string>
+    <string name="onboarding_doesnt_2">不記錄你輸入的任何東西</string>
+    <string name="onboarding_doesnt_3">不上傳任何資料，一切只存在這支手機上</string>
+    <string name="onboarding_enable_hint">按下「同意並前往開啟」後，請在「已下載的應用程式」中找到「Florsent 漸進引導」並開啟。</string>
+    <string name="onboarding_service_ready">已經開啟，一切就緒。</string>
+    <string name="onboarding_begin">開始</string>
+    <string name="onboarding_next">下一步</string>
+    <string name="onboarding_enable">同意並前往開啟</string>
+    <string name="onboarding_start_using">開始使用</string>
+    <string name="onboarding_later">稍後再說</string>
+
+    <!-- True grayscale finish (Android 15+) -->
+    <string name="settings_zen_grayscale">淡化到底時切換成灰階</string>
+    <string name="settings_zen_grayscale_hint">透過系統的「模式」把畫面變成黑白，不會改變通知和鈴聲。需要「零打擾」存取權。</string>
+    <string name="settings_zen_grayscale_lost">「零打擾」存取權已關閉，目前只會淡化，不會切換灰階。</string>
+    <string name="zen_access_title">需要「零打擾」存取權</string>
+    <string name="zen_access_body">Florsent 只會用這個權限建立一個名為「Florsent 漸進灰階」的模式，在淡化到底時把畫面切成黑白，不會變更你的通知或其他模式。\n\n接下來會開啟系統設定，請找到 Florsent 並允許存取。</string>
+    <string name="zen_access_confirm">前往設定</string>
+    <string name="zen_access_cancel">取消</string>
+    <string name="zen_rule_name">Florsent 漸進灰階</string>
+    <string name="zen_rule_trigger">在社群 App 用超過額度、淡化到底時開啟</string>
 
     <!-- Nudge overlay -->
     <string name="nudge_message">停下來深呼吸一下？</string>
