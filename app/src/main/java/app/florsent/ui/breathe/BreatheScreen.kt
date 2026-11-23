@@ -56,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -370,8 +371,9 @@ private fun BreathingSession(
 /** Seconds and cycle; its own scope so only this recomposes when the second changes. */
 @Composable
 private fun SessionCounters(display: BreathDisplay, cycles: Int) {
-    val description = stringResource(
-        R.string.breathe_countdown_description, display.secondsLeft, display.cycleIndex + 1, cycles,
+    val description = pluralStringResource(
+        R.plurals.breathe_countdown_description, display.secondsLeft,
+        display.secondsLeft, display.cycleIndex + 1, cycles,
     )
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

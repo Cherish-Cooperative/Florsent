@@ -1,5 +1,10 @@
 package app.florsent.ui.settings
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,37 +12,36 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -45,20 +49,24 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import app.florsent.AppContainer
 import app.florsent.BuildConfig
 import app.florsent.R
+import app.florsent.data.AppLanguage
+import app.florsent.data.AppLocales
 import app.florsent.data.UsageConsent
 import app.florsent.data.UserSettings
-import app.florsent.ui.components.clockText
 import app.florsent.service.effect.ZenGrayscale
 import app.florsent.service.shizuku.ShizukuSaturation
 import app.florsent.service.shizuku.ShizukuState
-import app.florsent.ui.theme.supportsDynamicColor
 import app.florsent.ui.components.FlorsentTopBar
 import app.florsent.ui.components.NavigationRow
 import app.florsent.ui.components.SoftCard
+import app.florsent.ui.components.clockText
+import app.florsent.ui.theme.supportsDynamicColor
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -217,18 +225,28 @@ fun AdvancedSettingsScreen(
     onOpenZenAccessSettings: () -> Unit,
 ) {
     var confirmClear by rememberSaveable { mutableStateOf(false) }
+    var choosingLanguage by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    // Read once per composition of this screen; a language change recreates the activity anyway.
+    val language = remember { AppLocales.current(context) }
     SettingsScaffold(stringResource(R.string.settings_row_advanced), onBack) {
         if (state == null) return@SettingsScaffold
         val s = state.settings
 
-        if (supportsDynamicColor) {
-            SectionTitle(stringResource(R.string.settings_section_appearance))
-            SoftCard {
-                SwitchRow(
-                    stringResource(R.string.settings_dynamic_color),
-                    stringResource(R.string.settings_dynamic_color_hint),
-                    s.dynamicColor,
-                ) { vm.setDynamicColor(it) }
+        SectionTitle(stringResource(R.string.settings_section_appearance))
+        SoftCard {
+            Column {
+                NavigationRow(stringResource(R.string.settings_language), languageLabel(language)) {
+                    choosingLanguage = true
+                }
+                if (supportsDynamicColor) {
+                    CardDivider()
+                    SwitchRow(
+                        stringResource(R.string.settings_dynamic_color),
+                        stringResource(R.string.settings_dynamic_color_hint),
+                        s.dynamicColor,
+                    ) { vm.setDynamicColor(it) }
+                }
             }
         }
 
@@ -264,6 +282,20 @@ fun AdvancedSettingsScreen(
             }
         }
         Footer()
+    }
+
+    if (choosingLanguage) {
+        LanguageDialog(
+            current = language,
+            onDismiss = { choosingLanguage = false },
+            onPick = { picked ->
+                choosingLanguage = false
+                if (picked != language) {
+                    AppLocales.set(context, picked)
+                    if (AppLocales.needsManualRecreate) context.findActivity()?.recreate()
+                }
+            },
+        )
     }
 
     if (confirmClear) {
@@ -526,3 +558,47 @@ private fun MinutesSlider(
         )
     }
 }
+
+@Composable
+private fun languageLabel(language: AppLanguage): String = stringResource(
+    when (language) {
+        AppLanguage.System -> R.string.settings_language_system
+        AppLanguage.TraditionalChinese -> R.string.language_name_zh_tw
+        AppLanguage.English -> R.string.language_name_en
+    },
+)
+
+/** Follow system / 繁體中文 / English. Picking applies immediately. */
+@Composable
+private fun LanguageDialog(current: AppLanguage, onDismiss: () -> Unit, onPick: (AppLanguage) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings_language)) },
+        text = {
+            Column(Modifier.selectableGroup()) {
+                AppLanguage.entries.forEach { option ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .selectable(selected = option == current, role = Role.RadioButton) { onPick(option) },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        RadioButton(selected = option == current, onClick = null)
+                        Text(languageLabel(option), style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.dialog_cancel)) } },
+    )
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+

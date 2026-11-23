@@ -13,6 +13,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import app.florsent.MainActivity
 import app.florsent.appContainer
+import app.florsent.data.AppLocales
 import app.florsent.domain.ForegroundPolicy
 import app.florsent.domain.GuidanceContext
 import app.florsent.domain.GuidanceEvent
@@ -70,6 +71,10 @@ class FlorsentAccessibilityService : AccessibilityService() {
                 }
             }
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLocales.wrap(newBase))
     }
 
     override fun onServiceConnected() {

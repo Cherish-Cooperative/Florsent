@@ -344,6 +344,13 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - **對比驗證**：`ContrastAudit` 以 WCAG 2.x 公式計算 Florsent 實際使用的文字／背景組合（包括選中卡片的半透明疊色）。品牌深淺色由單元測試保證全部 ≥ 4.5:1；debug build 在動態色啟用時，會把實際配色的對比記錄到 logcat 的 `FlorsentContrast`。
 - **M3 與系統整合**：edge-to-edge、`enableOnBackInvokedCallback="true"`（預測性返回）、adaptive icon 含 monochrome 圖層（主題圖示）。
 - **App 圖示「展葉之 F」**：鼠尾草綠線性漸層加左上柔光，前景是主葉、內瓣與露珠組成的 F，皆為 108×108 viewport 的向量。
+- **語言**：英文是預設資源（`res/values/`），繁體中文在 `res/values-zh-rTW/`。Android 7 以後會依文字系統比對，所以 zh-HK 等繁體中文地區也會用到繁中資源。
+  - 系統層級：`res/xml/locales_config.xml` + `android:localeConfig`，Android 13 以上的「App 語言」設定會列出 English 與繁體中文。
+  - App 內：「設定 > 進階 > 外觀 > 語言 / Language」（跟隨系統／繁體中文／English）。`AppLocales` 在 Android 13 以上呼叫 `LocaleManager.setApplicationLocales`，整個程序（包括無障礙服務的提醒文字）一起切換；Android 8～12 存在 `app_language` SharedPreferences，由 `MainActivity` 與無障礙服務的 `attachBaseContext` 套用，切換後重建 Activity（服務在下次啟動時才換語言）。
+  - `androidResources.localeFilters = en, zh-rTW`，函式庫的其他語言不會打包進來；`bundle.language.enableSplit = false`，否則 Play 只會下載系統語言的字串，App 內切換到另一個語言時會沒有資源可用。
+  - 語言名稱「繁體中文」「English」一律用該語言書寫（`translatable="false"`）；「語言 / Language」刻意雙語，用哪種語言都找得到。
+  - 洞察頁的星期標籤取 `LocalConfiguration` 的語系，而不是 `Locale.getDefault()`。
+  - 英文有數量的句子用 `plurals`（「已觀察 N 晚」、TalkBack 的倒數秒數）；其餘改寫成不需要單複數的句子（`%d min`、`%d selected`）。
 - **無障礙慣例**：標題加 `heading()`；裝飾圖形不進語意樹；相關文字合併成一個節點；觸控目標至少 48dp；不要用 `outline` 當文字顏色；大字級與橫向不能被裁切。
 
 ## 隱私與權限
@@ -367,7 +374,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ## 編譯與測試
 
 ```sh
-./gradlew testDebugUnitTest      # 162 個 JVM 測試
+./gradlew testDebugUnitTest      # 170 個 JVM 測試
 ./gradlew assembleDebug
 ./gradlew assembleRelease        # 確認 R8 沒有移除 ShellService
 ```
@@ -399,6 +406,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `UsageRecordingTest`（7） | 寫入順序、新程序補 `U`、重啟不寫多餘的停止與開始、服務沒來時收尾、沒有同意不寫、清除後重新開始、壞行與保存期限 |
 | `SettingsRepositoryTest`（6）、`GuidanceStateStoreTest`（3） | 真實 DataStore 檔案上的預設值、往返與持久化 |
 | `BreatheViewModelTest`（8） | 聲音延遲建立、背景暫停、提示音開關、釋放 |
+| `StringResourcesParityTest`（8） | 中英文鍵值、陣列句數、佔位符、複數、無漏翻、無句尾句號、`locales_config` 與資源一致、語言代碼對應 |
 | `FadeSoundControllerTest`（10） | 淡化開始播放一次、關閉不播、中途關閉淡出、通話不播、交接延長淡出、焦點被搶不重試、拒絕不重試、釋放、音量曲線 |
 | `ContrastAuditTest`（4） | WCAG 公式、品牌深淺色全部通過 AA |
 
@@ -488,5 +496,5 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 5. **時間規則寫在 `domain/`，而且要有單元測試。** 不要在 Android 元件裡寫計時邏輯。
 6. **使用紀錄只在同意後寫入、只存在手機、保存 30 天。** 不記錄留意的 App 以外的套件名稱；學到的時間不能自動改動使用者接受的時段。
 7. **螢幕關閉或不在留意的 App 時零輪詢。**
-8. **使用者看得到的文字放在 `strings.xml`**，用詞遵守 [CONTRIBUTING.md](../CONTRIBUTING.md) 的約定，並維持 WCAG AA。
+8. **使用者看得到的文字放在 `strings.xml`，中英文同時加**，用詞遵守 [CONTRIBUTING.md](../CONTRIBUTING.md) 的約定，並維持 WCAG AA。
 9. **改了行為就更新文件**：這份文件、README、PRIVACY.md。

@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import app.florsent.data.AppLocales
 import app.florsent.domain.GuidanceEvent
 import app.florsent.ui.FlorsentAppUi
 import app.florsent.ui.Route
@@ -19,6 +20,10 @@ import app.florsent.ui.theme.FlorsentTheme
 class MainActivity : ComponentActivity() {
 
     private var requestedRoute by mutableStateOf<Route?>(null)
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLocales.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
