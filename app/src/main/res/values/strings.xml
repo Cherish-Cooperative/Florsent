@@ -152,6 +152,22 @@
     <string name="zen_rule_name">Florsent 漸進灰階</string>
     <string name="zen_rule_trigger">在留意的 App 上淡到底時開啟</string>
 
+    <!-- Per-app desaturation via Shizuku (advanced, optional) -->
+    <string name="settings_section_advanced">進階</string>
+    <string name="shizuku_title">讓 App 自己慢慢褪色</string>
+    <string name="shizuku_hint">透過 Shizuku，只讓正在用的 App 從彩色慢慢變成黑白。適合熟悉手機設定的人。</string>
+    <string name="shizuku_status_not_installed">需要先安裝 Shizuku</string>
+    <string name="shizuku_status_not_running">Shizuku 還沒啟動，請先在 Shizuku 裡啟動服務</string>
+    <string name="shizuku_status_too_old">Shizuku 版本太舊，請先更新</string>
+    <string name="shizuku_status_no_permission">需要允許 Florsent 使用 Shizuku</string>
+    <string name="shizuku_status_ready">已就緒</string>
+    <string name="shizuku_status_degraded">剛才無法調整顏色，目前只會變淡。輕觸重新連線</string>
+    <string name="shizuku_status_pending_restore">Shizuku 已停止，可能有 App 還是黑白的。重新啟動 Shizuku 或重新開機就會恢復</string>
+    <string name="shizuku_action_get">取得 Shizuku</string>
+    <string name="shizuku_action_open">開啟 Shizuku</string>
+    <string name="shizuku_action_grant">允許使用</string>
+    <string name="shizuku_action_retry">重新連線</string>
+
     <!-- Nudge overlay -->
     <string name="nudge_message">停下來深呼吸一下？</string>
     <string name="nudge_accept_description">開始呼吸練習</string>

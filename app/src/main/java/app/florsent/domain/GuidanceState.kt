@@ -58,7 +58,7 @@ data class GuidanceEffect(
     /** 0 = untouched screen, 1 = strongest guidance. Already eased. */
     val level: Float,
     val showNudge: Boolean,
-    /** The app being guided, or null for the preview. */
+    /** The app being guided; during the preview, whatever app is in front (may be null). */
     val targetPackage: String?,
     val isPreview: Boolean,
 ) {

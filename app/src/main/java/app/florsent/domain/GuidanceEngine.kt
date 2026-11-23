@@ -70,7 +70,8 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
             return GuidanceEffect(
                 level = Easing.smoothstep(elapsed.toFloat() / config.preview.fadeMs),
                 showNudge = elapsed >= config.preview.nudgeAtMs,
-                targetPackage = null,
+                // Whatever is in front (usually the launcher), so per-app layers can be previewed too.
+                targetPackage = state.foregroundPackage,
                 isPreview = true,
             )
         }

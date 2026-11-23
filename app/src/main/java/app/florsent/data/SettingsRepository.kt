@@ -29,6 +29,8 @@ data class UserSettings(
     val onboardingCompleted: Boolean = false,
     /** Android 15+: switch to true grayscale (Modes device effect) when the fade is complete. */
     val zenGrayscaleFinish: Boolean = false,
+    /** Advanced: per-app desaturation through Shizuku. */
+    val shizukuSaturation: Boolean = false,
 ) {
     fun toGuidanceConfig(): GuidanceConfig = GuidanceConfig(
         watchedPackages = watchedPackages,
@@ -63,6 +65,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
                 returnToHomeScreen = p[Keys.RETURN_HOME] ?: true,
                 onboardingCompleted = p[Keys.ONBOARDING_COMPLETED] ?: false,
                 zenGrayscaleFinish = p[Keys.ZEN_GRAYSCALE] ?: false,
+                shizukuSaturation = p[Keys.SHIZUKU_SATURATION] ?: false,
             )
         }
         .distinctUntilChanged()
@@ -98,6 +101,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
 
     suspend fun setOnboardingCompleted() = dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = true }
     suspend fun setZenGrayscaleFinish(on: Boolean) = dataStore.edit { it[Keys.ZEN_GRAYSCALE] = on }
+    suspend fun setShizukuSaturation(on: Boolean) = dataStore.edit { it[Keys.SHIZUKU_SATURATION] = on }
 
     private object Keys {
         val WATCHED = stringSetPreferencesKey("watched_packages")
@@ -112,5 +116,6 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         val RETURN_HOME = booleanPreferencesKey("return_to_home_screen")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val ZEN_GRAYSCALE = booleanPreferencesKey("zen_grayscale_finish")
+        val SHIZUKU_SATURATION = booleanPreferencesKey("shizuku_saturation")
     }
 }

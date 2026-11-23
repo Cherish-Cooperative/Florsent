@@ -16,6 +16,11 @@
   不封鎖、不說教，只在你用太久時，讓畫面溫柔地變淡。
 </p>
 
+<p align="center">
+  <b>第一次認識 Florsent？請先看 <a href="docs/PRODUCT.md">產品介紹</a></b><br>
+  <sub>寫給一般使用者：理念、使用方式、呼吸法怎麼選、隱私與常見問題</sub>
+</p>
+
 ---
 
 ## 理念
@@ -52,13 +57,26 @@ Android 沒有開放一般 App 調整整個螢幕的飽和度，所以 Florsent 
 |---|---|---|---|
 | **基本層** | 無障礙服務的 overlay 視窗，以中性灰（#858585）半透明疊加，透明度最高 0.6。混入中間灰會同時降低對比和飽和度，畫面是變淡而不是變色 | 開啟無障礙服務 | 已完成 |
 | **灰階收尾** | 淡到底時啟用 Florsent 自己的系統「模式」（`AutomaticZenRule`），唯一的效果是灰階（`ZenDeviceEffects`）。中斷過濾設為 ALL，不影響通知和鈴聲 | Android 15 以上，並授予「零打擾」存取權 | 已完成，選用 |
-| **逐 App 去飽和** | 透過 Shizuku 呼叫 `cmd color_display set-layer-saturation`，只讓正在用的 App 從彩色慢慢變灰 | 自行安裝 Shizuku | 規劃中 |
+| **逐 App 去飽和** | 透過 Shizuku 的 UserService 執行 `cmd color_display set-layer-saturation`，只讓正在用的 App 從 100 慢慢降到 0 | 自行安裝並啟動 Shizuku，允許 Florsent 使用 | 已完成，進階選用 |
 
 設計重點：
 
 - 無障礙 overlay 是受信任的視窗，透明度再高也不會擋住觸控。一般懸浮窗超過 0.8 就會被系統擋下。
 - 灰階收尾的每個系統呼叫都有保護。沒有權限、權限被收回或發生任何錯誤時，都會退回基本層。服務啟動時會先同步一次，就算 App 曾經當掉，畫面也不會停在黑白。
 - 關閉灰階開關時，會把模式從系統的「模式」清單刪除。
+
+### 第三層怎麼保證不會卡在黑白
+
+逐 App 去飽和的設定存在系統裡，Florsent 的程序結束後也不會消失，所以這一層有最嚴格的還原規則：
+
+- **先記錄再變灰**：每個 App 在被調低飽和度之前，先同步寫入「待還原清單」；成功恢復到 100 才從清單移除。
+- **任何離開都還原**：離開那個 App、進入呼吸練習、安靜時間、關閉開關、關閉無障礙服務，都會先把飽和度恢復到 100。
+- **當機也能補救**：Florsent 重新啟動，或 Shizuku 重新連上時，會先把待還原清單裡的 App 全部恢復。
+- **失敗就退回**：任何一次指令失敗，這一層就暫停並嘗試還原，由第一、二層繼續引導。
+- **說實話**：如果 Shizuku 在途中停止，Florsent 沒辦法還原，設定頁會清楚提示「重新啟動 Shizuku 或重新開機就會恢復」。系統重新開機本身也會清除所有設定。
+- **權限最小**：在 Shizuku 程序裡執行的服務只開放一個操作，由服務自己用驗證過的參數組出固定指令，不提供任意指令執行。
+
+這些規則由 `SaturationPlanner` 和 `SaturationSession` 實作，全部有單元測試，並在模擬器上實測過程序被強制結束、Shizuku 中途停止等情境。
 
 ## 效能與省電
 
@@ -72,6 +90,7 @@ Android 沒有開放一般 App 調整整個螢幕的飽和度，所以 Florsent 
 
 - 無障礙服務**只**接收 `TYPE_WINDOW_STATE_CHANGED`，用來知道前景是哪個 App。`canRetrieveWindowContent=false`，所以讀不到畫面上的任何文字或內容。
 - 沒有網路權限，所有資料只存在手機上，也不會被雲端備份或轉移到其他裝置。
+- 進階的 Shizuku 功能完全選用。Shizuku SDK 只加入與 Shizuku 溝通用的 `moe.shizuku.manager.permission.API_V23`，不會加入網路或其他權限。
 - 首次使用時，會先清楚說明 Florsent 用無障礙服務做什麼、不做什麼，使用者同意後才會帶到系統設定。
 
 完整內容請見 [隱私權政策 PRIVACY.md](PRIVACY.md)。
@@ -97,7 +116,7 @@ app.florsent
 ```sh
 git clone https://github.com/Cherish-Cooperative/Florsent.git
 cd Florsent
-./gradlew testDebugUnitTest   # 41 個 domain 單元測試
+./gradlew testDebugUnitTest   # 57 個單元測試
 ./gradlew assembleDebug       # debug APK
 ./gradlew assembleRelease     # R8 與資源縮減
 ```

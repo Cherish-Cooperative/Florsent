@@ -19,3 +19,5 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Shizuku UserService: instantiated reflectively inside the Shizuku process.
+-keep class app.florsent.service.shizuku.ShellService { <init>(...); }

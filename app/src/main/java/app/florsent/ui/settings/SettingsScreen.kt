@@ -12,6 +12,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextButton
@@ -29,7 +31,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,6 +51,8 @@ import app.florsent.BuildConfig
 import app.florsent.R
 import app.florsent.data.UserSettings
 import app.florsent.service.effect.ZenGrayscale
+import app.florsent.service.shizuku.ShizukuSaturation
+import app.florsent.service.shizuku.ShizukuState
 import app.florsent.ui.components.FlorsentTopBar
 import app.florsent.ui.components.NavigationRow
 import app.florsent.ui.components.SoftCard
@@ -76,6 +82,20 @@ class SettingsViewModel(
     fun setReturnHome(on: Boolean) = viewModelScope.launch { repo.setReturnToHomeScreen(on) }
 
     fun hasZenAccess(): Boolean = ZenGrayscale.hasAccess(appContext)
+
+    val shizukuState: StateFlow<ShizukuState> = container.shizuku.state
+    val shizukuDegraded: StateFlow<Boolean> = container.shizuku.degraded
+    val shizukuPendingRestore: StateFlow<Boolean> = container.shizuku.pendingRestore
+
+    fun refreshShizuku() = container.shizuku.refresh()
+    fun requestShizukuPermission() = container.shizuku.requestPermission()
+    fun retryShizuku() = container.shizuku.retry()
+
+    fun setShizuku(on: Boolean) {
+        viewModelScope.launch { repo.setShizukuSaturation(on) }
+        // Restore right away even if the accessibility service is not running to do it.
+        if (!on) container.shizuku.restoreAll()
+    }
 
     fun setZenGrayscale(on: Boolean) = viewModelScope.launch {
         repo.setZenGrayscaleFinish(on)
@@ -161,6 +181,9 @@ fun SettingsScreen(
                 }
             }
 
+            SectionTitle(stringResource(R.string.settings_section_advanced))
+            SoftCard { ShizukuRow(enabled = s.shizukuSaturation, vm = vm) }
+
             Text(
                 stringResource(R.string.settings_footer, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.bodySmall,
@@ -170,6 +193,77 @@ fun SettingsScreen(
             )
         }
     }
+}
+
+/**
+ * Advanced per-app desaturation through Shizuku. The switch only works once Shizuku is running and
+ * Florsent is allowed; every other state shows one plain sentence and one action.
+ */
+@Composable
+private fun ShizukuRow(enabled: Boolean, vm: SettingsViewModel) {
+    val shizukuState by vm.shizukuState.collectAsStateWithLifecycle()
+    val degraded by vm.shizukuDegraded.collectAsStateWithLifecycle()
+    val pendingRestore by vm.shizukuPendingRestore.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    LifecycleResumeEffect(Unit) {
+        vm.refreshShizuku()
+        onPauseOrDispose { }
+    }
+
+    val ready = shizukuState == ShizukuState.Ready
+    val status = when {
+        pendingRestore && !ready -> R.string.shizuku_status_pending_restore
+        ready && degraded -> R.string.shizuku_status_degraded
+        else -> when (shizukuState) {
+            ShizukuState.NotInstalled -> R.string.shizuku_status_not_installed
+            ShizukuState.NotRunning -> R.string.shizuku_status_not_running
+            ShizukuState.TooOld -> R.string.shizuku_status_too_old
+            ShizukuState.NoPermission -> R.string.shizuku_status_no_permission
+            ShizukuState.Ready -> R.string.shizuku_status_ready
+        }
+    }
+    val action: Pair<Int, () -> Unit>? = when {
+        ready && degraded -> R.string.shizuku_action_retry to vm::retryShizuku
+        shizukuState == ShizukuState.NotInstalled -> R.string.shizuku_action_get to { openShizukuDownload(context) }
+        shizukuState == ShizukuState.NotRunning || shizukuState == ShizukuState.TooOld ->
+            R.string.shizuku_action_open to { openShizukuApp(context) }
+        shizukuState == ShizukuState.NoPermission -> R.string.shizuku_action_grant to vm::requestShizukuPermission
+        else -> null
+    }
+
+    Column {
+        SwitchRow(
+            title = stringResource(R.string.shizuku_title),
+            hint = stringResource(R.string.shizuku_hint),
+            checked = enabled && ready,
+            enabled = ready,
+        ) { vm.setShizuku(it) }
+        Row(
+            Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                stringResource(status),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (ready && !degraded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f).padding(vertical = 12.dp),
+            )
+            action?.let { (label, onClick) ->
+                TextButton(onClick = onClick) { Text(stringResource(label)) }
+            }
+        }
+    }
+}
+
+/** Opens the Shizuku website in the browser (Florsent itself has no network access). */
+private fun openShizukuDownload(context: Context) {
+    runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ShizukuSaturation.DOWNLOAD_URL))) }
+}
+
+private fun openShizukuApp(context: Context) {
+    val intent = context.packageManager.getLaunchIntentForPackage(ShizukuSaturation.MANAGER_PACKAGE) ?: return
+    runCatching { context.startActivity(intent) }
 }
 
 /**
@@ -241,11 +335,17 @@ private fun CardDivider() {
 }
 
 @Composable
-private fun SwitchRow(title: String, hint: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun SwitchRow(
+    title: String,
+    hint: String,
+    checked: Boolean,
+    enabled: Boolean = true,
+    onChange: (Boolean) -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onChange)
+            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -254,7 +354,7 @@ private fun SwitchRow(title: String, hint: String, checked: Boolean, onChange: (
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Switch(checked = checked, onCheckedChange = null)
+        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
     }
 }
 

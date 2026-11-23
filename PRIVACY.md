@@ -47,6 +47,14 @@ Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體�
 
 如果你在設定中開啟「淡到底時改成黑白」，本 App 會請你授予「零打擾」存取權（通知政策存取權）。這個權限只用來建立並開關一個名為「Florsent 漸進灰階」的系統模式，它唯一的效果是讓畫面變成黑白，不會變更你的通知、鈴聲或其他模式。你可以隨時關閉這項功能或收回權限。關閉功能時，這個模式也會一併刪除。
 
+### 選用進階功能：Shizuku 逐 App 去飽和
+
+如果你自行安裝並啟動 Shizuku，並在本 App 設定中開啟「讓 App 自己慢慢褪色」，本 App 會透過 Shizuku 調整你正在使用的 App 的顏色飽和度，讓它慢慢變成黑白。
+
+- 只會把你選擇留意的 App 的套件名稱與飽和度數值（0 到 100）交給系統，沒有其他資料。
+- 為了在 App 異常結束後仍能恢復顏色，本 App 會在手機上暫存「目前被調整過的 App」清單，恢復後立即清除。
+- 這項功能必須由你主動安裝 Shizuku、在 Shizuku 中允許本 App，並在設定中開啟；任何一步沒有完成，功能都不會運作。
+
 ### 權限一覽
 
 | 權限 | 用途 |
@@ -54,6 +62,8 @@ Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體�
 | 無障礙服務（`BIND_ACCESSIBILITY_SERVICE`） | 如上所述，偵測前景 App 並顯示淡化效果與提醒 |
 | 通知政策存取權（`ACCESS_NOTIFICATION_POLICY`，選用） | Android 15 以上的灰階收尾功能 |
 | 查詢可啟動的 App（`<queries>`，非 `QUERY_ALL_PACKAGES`） | 列出 App 供你選擇 |
+| Shizuku API（`moe.shizuku.manager.permission.API_V23`，選用） | 與你自行安裝的 Shizuku 溝通，用於進階的逐 App 去飽和 |
+| 查詢 Shizuku 是否安裝（`<queries>` 指定單一套件） | 在設定頁顯示 Shizuku 的狀態 |
 
 本 App 不要求網路、位置、相機、麥克風、聯絡人、儲存空間或通知權限。
 
@@ -122,6 +132,14 @@ The App's core features require you to turn on the "Florsent 漸進引導" (Flor
 
 If you turn on "switch to black and white when fully faded" in settings, the App asks for Do Not Disturb (notification policy) access. It is used only to create and switch a system mode called "Florsent 漸進灰階" (Florsent Gradual Grayscale), whose only effect is to turn the screen grayscale. It does not change your notifications, sounds or other modes. You can turn the feature off or revoke the access at any time; turning the feature off also deletes the mode.
 
+### Optional advanced feature: per-app desaturation with Shizuku
+
+If you install and start Shizuku yourself and turn on "let apps fade to gray" in the App's settings, the App uses Shizuku to lower the colour saturation of the app you are using, so it slowly turns grayscale.
+
+- Only the package name of the app you chose to watch and a saturation value (0 to 100) are passed to the system, nothing else.
+- So that colours can be restored even after an unexpected exit, the App keeps a short on-device list of apps whose colour it changed, and clears it as soon as they are restored.
+- The feature only works after you install Shizuku, allow the App in Shizuku, and turn the feature on in settings.
+
 ### Permissions
 
 | Permission | Purpose |
@@ -129,6 +147,8 @@ If you turn on "switch to black and white when fully faded" in settings, the App
 | Accessibility service (`BIND_ACCESSIBILITY_SERVICE`) | As described above: detect the foreground app and show the fade and reminder |
 | Notification policy access (`ACCESS_NOTIFICATION_POLICY`, optional) | The grayscale finish on Android 15 and later |
 | Querying launchable apps (`<queries>`, not `QUERY_ALL_PACKAGES`) | Listing apps for you to choose from |
+| Shizuku API (`moe.shizuku.manager.permission.API_V23`, optional) | Talking to the Shizuku app you installed, for the advanced per-app desaturation |
+| Checking whether Shizuku is installed (`<queries>` for that one package) | Showing Shizuku's status in settings |
 
 The App does not request internet, location, camera, microphone, contacts, storage or notification permissions.
 

@@ -16,6 +16,7 @@ import app.florsent.domain.ForegroundPolicy
 import app.florsent.domain.GuidanceEvent
 import app.florsent.service.effect.CompositeVisualEffectController
 import app.florsent.service.effect.DimOverlayController
+import app.florsent.service.effect.ShizukuSaturationController
 import app.florsent.service.effect.VisualEffect
 import app.florsent.service.effect.VisualEffectController
 import app.florsent.service.effect.ZenGrayscale
@@ -78,6 +79,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
                 } else {
                     null
                 },
+                ShizukuSaturationController(container.shizuku) { container.currentSettings.value.shizukuSaturation },
             ),
         )
         nudge = NudgeOverlay(
@@ -107,9 +109,11 @@ class FlorsentAccessibilityService : AccessibilityService() {
         isShutDown = false
         coordinator.setServiceRunning(true)
         renderJob = scope.launch {
-            // The Zen toggle is part of the key so switching it applies even at a steady level.
-            val zenToggle = container.currentSettings.map { it.zenGrayscaleFinish }.distinctUntilChanged()
-            combine(coordinator.effect, zenToggle) { effect, _ -> effect }.collect { effect ->
+            // Layer toggles are part of the key so switching one applies even at a steady level.
+            val toggles = container.currentSettings
+                .map { it.zenGrayscaleFinish to it.shizukuSaturation }
+                .distinctUntilChanged()
+            combine(coordinator.effect, toggles) { effect, _ -> effect }.collect { effect ->
                 effects?.render(VisualEffect(effect.level, effect.targetPackage))
                 nudge?.setVisible(effect.showNudge)
             }
