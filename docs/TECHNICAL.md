@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin 2.4">
   <img src="https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white" alt="Jetpack Compose, Material 3">
   <img src="https://img.shields.io/badge/Min%20SDK-26%20(Android%208.0)-56705A" alt="Min SDK 26">
-  <img src="https://img.shields.io/badge/APK-4.6%20MB-56705A" alt="Release APK 4.6 MB">
+  <img src="https://img.shields.io/badge/APK-3.1%20MB-56705A" alt="Release APK 3.1 MB">
   <a href="../LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-56705A" alt="License: Apache 2.0"></a>
 </p>
 
@@ -42,7 +42,7 @@
 | SDK | minSdk 26、targetSdk 36、compileSdk 37.1 |
 | 依賴 | AndroidX core／activity／lifecycle／DataStore、Coroutines、Shizuku API 13.1.5（選用功能） |
 | 不使用 | 網路、DI 框架、Navigation 函式庫、任何分析或廣告 SDK |
-| Release APK | 約 4.6 MB（R8 與資源縮減） |
+| Release APK | 約 3.1 MB（R8 與資源縮減） |
 
 compileSdk 37.1 是新版 AndroidX 的要求，只決定編譯時能用哪些 API；執行時行為由 targetSdk 36 決定。
 
@@ -235,7 +235,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 留意的 App | 勾選要計時的 App |
 | 使用額度 | 單次、每日、安靜時間 |
 | 睡前引導 | 時段、可以滑多久、關閉 |
-| 呼吸與聲音 | 環境音、提示音、完成後回桌面 |
+| 呼吸與聲音 | 呼吸練習環境音、變淡時播放柔和雨聲、提示音、完成後回桌面 |
 | 進階 | 外觀、無障礙服務、黑白收尾、Shizuku、使用紀錄與清除 |
 
 沒有「智慧自動引導」總開關，也沒有自動調整的每日額度（會形成自我收緊的迴圈）。預設值合理，學到東西時只邀請一次。
@@ -306,6 +306,23 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - `rememberFrameClock`：以 `withFrameNanos` 累積時間；`rememberSaveable`，旋轉螢幕後接續；超過 250 ms 的間隔（App 在背景）只算一個標準幀，所以會暫停而不是跳過；閒置的花限制在約 30 fps。
 - 換階段時輕微震動（API 34+ `SEGMENT_TICK`，否則 `CLOCK_TICK`）；提示音只在設定開啟時播放，並在選擇頁預先載入。
 - 環境音在 App 進入背景時暫停並釋放音訊焦點；音效引擎延遲到真的需要時才建立。
+
+### 聲音
+
+| 音檔 | 用途 | 內容 |
+|---|---|---|
+| `res/raw/breathing_ambient.ogg` | 呼吸練習環境音 | 暖調頌缽共鳴與柔霧粉紅噪聲，48 秒，無敲擊節奏 |
+| `res/raw/fade_ambient.ogg` | 變淡時的柔和雨聲 | 遠雨與晚風，42 秒 |
+| `res/raw/cue_soft.m4a` | 提示音 | 10 KB，依階段改變播放速率 |
+
+- 兩首環境音由音景團隊以程式合成，沒有版權風險。原檔是 AAC（.m4a），但 AAC 編碼器會在開頭補約 46 ms 靜音，`MediaPlayer` 循環時不會去掉，每一圈都會斷一下。所以從去掉補位的 PCM 轉成 Opus（112 kbps VBR，Ogg 容器）；Opus 的 pre-skip 由解碼器處理，循環沒有縫。轉檔後長度精準（48.0000 秒、42.0000 秒）、平均音量都是 -20.5 dB。
+- **變淡時播放**（`FadeSoundController` + `FadeSoundscape`）是視覺效果組合裡的一層，和淡化層收到同樣的淡化程度：
+  - 淡化程度大於 0、開關打開、沒有在通話（`MODE_IN_CALL`／`IN_COMMUNICATION`／`RINGTONE`）才播放。
+  - 音訊焦點用 `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`，系統自動把前景 App 壓低音量，不會暫停；講話內容（Podcast 等）由系統自行暫停。
+  - 15 秒淡入（音量曲線 0.4 × p²），離開時 1.5 秒淡出。淡入淡出用實際經過時間計算，不受「移除動畫」設定影響。
+  - 點提醒時呼叫 `handOffToBreathing()`，改用 3.5 秒淡出，和呼吸畫面約 1 秒的啟動、2.5 秒的環境音淡入交疊。呼吸環境音要焦點時，正在淡出的雨聲不會被截短。
+  - 焦點被拒絕或被搶走（來電、使用者打開別的音樂），這一輪淡化就不再要求焦點，下一輪才重新開始。
+- Android 17 的背景音訊強化會把背景 App 的播放靜音、焦點要求回傳失敗。綁定中的無障礙服務不受影響：模擬器開啟完整強制（`cmd audio set-enable-hardening 1`）時，雨聲仍是 started、`muted=none`，焦點為 `GAIN_TRANSIENT_MAY_DUCK`。不需要前景服務或新權限。
 - 關閉系統動畫時，花依階段張開或收合，不做連續動畫。
 - TalkBack：階段標籤是唯一的 live region（polite），倒數與輪數合併成一句、不朗讀每一秒。
 
@@ -350,7 +367,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ## 編譯與測試
 
 ```sh
-./gradlew testDebugUnitTest      # 152 個 JVM 測試
+./gradlew testDebugUnitTest      # 162 個 JVM 測試
 ./gradlew assembleDebug
 ./gradlew assembleRelease        # 確認 R8 沒有移除 ShellService
 ```
@@ -382,6 +399,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `UsageRecordingTest`（7） | 寫入順序、新程序補 `U`、重啟不寫多餘的停止與開始、服務沒來時收尾、沒有同意不寫、清除後重新開始、壞行與保存期限 |
 | `SettingsRepositoryTest`（6）、`GuidanceStateStoreTest`（3） | 真實 DataStore 檔案上的預設值、往返與持久化 |
 | `BreatheViewModelTest`（8） | 聲音延遲建立、背景暫停、提示音開關、釋放 |
+| `FadeSoundControllerTest`（10） | 淡化開始播放一次、關閉不播、中途關閉淡出、通話不播、交接延長淡出、焦點被搶不重試、拒絕不重試、釋放、音量曲線 |
 | `ContrastAuditTest`（4） | WCAG 公式、品牌深淺色全部通過 AA |
 
 單元測試開啟了 `unitTests.isReturnDefaultValues = true`，讓 `android.util.Log` 等 stub 回傳預設值。

@@ -1,6 +1,6 @@
 # Florsent Google Play 上架資料包
 
-這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.8.2（versionCode 10）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
+這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.9.0（versionCode 11）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
 
 - 套件名稱：`app.florsent`（上架後不能再改）
 - 介面語言：繁體中文
@@ -42,10 +42,10 @@ Florsent 不封鎖任何 App，只在你滑太久的時候，溫柔地提醒你�
 很多人都試過限制使用時間的 App。時間一到 App 被鎖住，我們做的第一件事通常是找方法解鎖。Florsent 換了一種方式：當畫面慢慢失去顏色，滑動就沒那麼吸引人；這時有人輕聲問你要不要休息一下，停下來會容易許多。要不要停，永遠由你決定。
 
 ■ 溫柔漸進提醒
-設定每次能在社群 App 上待多久、一天總共多久。用超過時，畫面會在幾分鐘內慢慢變淡，下方浮出一句「停下來深呼吸一下？」。不想停也沒關係，按一下 ✕，提醒會晚一點再出現。
+設定每次能在社群 App 上待多久、一天總共多久。用超過時，畫面會在幾分鐘內慢慢變淡，下方浮出一句「停下來深呼吸一下？」。不想停也沒關係，按一下 ✕，提醒會晚一點再出現。也可以打開柔和雨聲，畫面變淡時遠遠的雨聲會慢慢浮現，正在看的影片只會暫時變小聲，不會被暫停。
 
 ■ 沉浸呼吸練習
-點一下提醒，直接進入呼吸練習。畫面中央的蓮花吸氣時展開、吐氣時收合，跟著它就好。有四種節奏可以選：等長呼吸、盒式呼吸、4-7-8 放鬆呼吸、共振呼吸。換階段時手機會輕輕震動，也可以打開柔和的手碟聲。
+點一下提醒，直接進入呼吸練習。畫面中央的蓮花吸氣時展開、吐氣時收合，跟著它就好。有四種節奏可以選：等長呼吸、盒式呼吸、4-7-8 放鬆呼吸、共振呼吸。換階段時手機會輕輕震動，也可以打開溫暖的頌缽長音。
 
 ■ 回到生活當下
 練習結束後，Florsent 留給你一句簡單的話，例如「放下手機，去倒杯水，慢慢喝完」。按下「回到生活」，畫面恢復原樣，接下來一段時間不再提醒你。
@@ -94,10 +94,10 @@ Florsent never blocks an app. It only reminds you, gently, when you have been sc
 Most of us have tried screen-time apps that lock things when the time is up, and the first thing we do is look for a way around them. Florsent tries something softer: as the screen slowly loses its colour, scrolling feels less compelling, and a quiet question asks whether you would like a short break. Stopping is always your choice.
 
 ■ Gentle, gradual reminders
-Choose how long a session in social apps can be and how much time you want in a day. Past that, the screen fades over a few minutes and a small prompt appears: "Take a breath?" Not now? Tap ✕ and it will ask again later.
+Choose how long a session in social apps can be and how much time you want in a day. Past that, the screen fades over a few minutes and a small prompt appears: "Take a breath?" Not now? Tap ✕ and it will ask again later. Optionally, soft distant rain rises with the fade; whatever you are watching is only turned down, never paused.
 
 ■ A calm breathing break
-Tap the prompt to start breathing right away. A lotus opens as you breathe in and closes as you breathe out. Pick from four rhythms: equal breathing, box breathing, 4-7-8 relaxation and resonance breathing. Soft haptics mark each phase, and an optional handpan soundscape plays in the background.
+Tap the prompt to start breathing right away. A lotus opens as you breathe in and closes as you breathe out. Pick from four rhythms: equal breathing, box breathing, 4-7-8 relaxation and resonance breathing. Soft haptics mark each phase, and an optional warm singing-bowl drone plays in the background.
 
 ■ Back to the present
 Afterwards Florsent leaves you with one simple suggestion, such as "Put the phone down and slowly drink a glass of water." Tap "Back to life" and the screen returns to normal, with a quiet period before any further reminder.
@@ -286,9 +286,11 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 
 ## 版本說明
 
-### 0.8.2（zh-TW）
+### 0.9.0（zh-TW）
 
 ```
+・新增「變淡時播放柔和雨聲」：畫面變淡時雨聲慢慢浮現，影片只會變小聲、不會被暫停
+・呼吸練習環境音換成更寧靜的頌缽長音
 ・閉氣時花朵和進度環會停住，跟著畫面一起停下來
 ・介面文字更精簡，拿掉多餘的說明
 ・睡前引導：先觀察一週，看出你的習慣後只問一次，答應之後時間就固定下來
@@ -298,9 +300,11 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 ・使用紀錄更準確：App 重新啟動時不再記下多餘的停止與開始
 ```
 
-### 0.8.2（en-US）
+### 0.9.0（en-US）
 
 ```
+• New: soft rain while the screen fades; videos are only turned down, never paused
+• Calmer breathing ambience: a warm singing-bowl drone
 • The flower and progress ring now stand still while you hold your breath
 • Cleaner screens with less explanatory text
 • Bedtime wind-down: Florsent learns your evening habit for a week, asks once, then keeps your chosen time

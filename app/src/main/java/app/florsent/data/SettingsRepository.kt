@@ -29,6 +29,8 @@ data class UserSettings(
     val breathingPatternId: String? = null,
     val ambientSound: Boolean = false,
     val cueSound: Boolean = false,
+    /** Soft rain while the screen fades; other audio is ducked, never paused. */
+    val fadeSound: Boolean = false,
     val returnToHomeScreen: Boolean = true,
     val onboardingCompleted: Boolean = false,
     /** Android 15+: switch to true grayscale (Modes device effect) when the fade is complete. */
@@ -82,6 +84,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
                 breathingPatternId = p[Keys.PATTERN_ID],
                 ambientSound = p[Keys.AMBIENT_SOUND] ?: false,
                 cueSound = p[Keys.CUE_SOUND] ?: false,
+                fadeSound = p[Keys.FADE_SOUND] ?: false,
                 returnToHomeScreen = p[Keys.RETURN_HOME] ?: true,
                 onboardingCompleted = p[Keys.ONBOARDING_COMPLETED] ?: false,
                 zenGrayscaleFinish = p[Keys.ZEN_GRAYSCALE] ?: false,
@@ -122,6 +125,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setBreathingPattern(id: String) = dataStore.edit { it[Keys.PATTERN_ID] = id }
     suspend fun setAmbientSound(on: Boolean) = dataStore.edit { it[Keys.AMBIENT_SOUND] = on }
     suspend fun setCueSound(on: Boolean) = dataStore.edit { it[Keys.CUE_SOUND] = on }
+    suspend fun setFadeSound(on: Boolean) = dataStore.edit { it[Keys.FADE_SOUND] = on }
     suspend fun setReturnToHomeScreen(on: Boolean) = dataStore.edit { it[Keys.RETURN_HOME] = on }
 
     suspend fun setOnboardingCompleted() = dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = true }
@@ -149,6 +153,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         val PATTERN_ID = stringPreferencesKey("breathing_pattern_id")
         val AMBIENT_SOUND = booleanPreferencesKey("ambient_sound")
         val CUE_SOUND = booleanPreferencesKey("cue_sound")
+        val FADE_SOUND = booleanPreferencesKey("fade_sound")
         val RETURN_HOME = booleanPreferencesKey("return_to_home_screen")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val ZEN_GRAYSCALE = booleanPreferencesKey("zen_grayscale_finish")

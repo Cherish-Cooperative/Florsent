@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioManager
 import android.os.PowerManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
@@ -15,6 +16,8 @@ import app.florsent.appContainer
 import app.florsent.domain.ForegroundPolicy
 import app.florsent.domain.GuidanceContext
 import app.florsent.domain.GuidanceEvent
+import app.florsent.service.audio.FadeSoundController
+import app.florsent.service.audio.FadeSoundscape
 import app.florsent.service.effect.CompositeVisualEffectController
 import app.florsent.service.effect.DimOverlayController
 import app.florsent.service.effect.PlatformZenRuleGateway
@@ -44,6 +47,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
 
     private var effects: VisualEffectController? = null
     private var nudge: NudgeOverlay? = null
+    private var fadeSound: FadeSoundController? = null
     private var renderJob: Job? = null
     private var ignoredPackages: Set<String> = emptySet()
     private var lastForeground: String? = null
@@ -77,6 +81,13 @@ class FlorsentAccessibilityService : AccessibilityService() {
             .orEmpty()
 
         val container = appContainer
+        val audioManager = getSystemService(AudioManager::class.java)
+        val fadeSound = FadeSoundController(
+            player = FadeSoundscape(this) { this.fadeSound?.onFocusLost() },
+            isEnabled = { container.currentSettings.value.fadeSound },
+            inCall = { audioManager?.mode in CALL_MODES },
+        )
+        this.fadeSound = fadeSound
         effects = CompositeVisualEffectController(
             listOfNotNull(
                 DimOverlayController(this),
@@ -88,6 +99,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
                     null
                 },
                 ShizukuSaturationController(container.shizuku) { container.currentSettings.value.shizukuSaturation },
+                fadeSound,
             ),
         )
         nudge = NudgeOverlay(
@@ -119,7 +131,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
         renderJob = scope.launch {
             // Layer toggles are part of the key so switching one applies even at a steady level.
             val toggles = container.currentSettings
-                .map { it.zenGrayscaleFinish to it.shizukuSaturation }
+                .map { Triple(it.zenGrayscaleFinish, it.shizukuSaturation, it.fadeSound) }
                 .distinctUntilChanged()
             combine(coordinator.effect, toggles) { effect, _ -> effect }.collect { effect ->
                 DebugLog.d { "effect level=${"%.3f".format(effect.level)} nudge=${effect.showNudge} preview=${effect.isPreview} target=${effect.targetPackage} mode=${coordinator.state.value.mode} previewStart=${coordinator.state.value.previewStartedAtMs}" }
@@ -156,6 +168,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
     private fun onNudgeAccepted() {
         handoffFrom = lastForeground
         handoffAtMs = coordinator.now()
+        fadeSound?.handOffToBreathing()
         coordinator.dispatch(GuidanceEvent.NudgeAccepted(handoffAtMs))
         startActivity(MainActivity.breatheIntent(this))
     }
@@ -171,6 +184,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
         effects = null
         nudge?.release()
         nudge = null
+        fadeSound = null
         if (receiverRegistered) {
             runCatching { unregisterReceiver(screenReceiver) }
             receiverRegistered = false
@@ -178,5 +192,10 @@ class FlorsentAccessibilityService : AccessibilityService() {
         lastForeground = null
         coordinator.dispatch(GuidanceEvent.ForegroundChanged(null, coordinator.now()))
         coordinator.setServiceRunning(false)
+    }
+
+    private companion object {
+        /** No sound during calls or while the phone is ringing. */
+        val CALL_MODES = setOf(AudioManager.MODE_IN_CALL, AudioManager.MODE_IN_COMMUNICATION, AudioManager.MODE_RINGTONE)
     }
 }

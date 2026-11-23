@@ -66,7 +66,7 @@ class BreathingSoundscape(context: Context) : BreathingSound {
             return
         }
         if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
-        player = MediaPlayer.create(appContext, R.raw.ambient_handpan, attributes, audioManager.generateAudioSessionId())
+        player = MediaPlayer.create(appContext, R.raw.breathing_ambient, attributes, audioManager.generateAudioSessionId())
             ?.apply {
                 isLooping = true
                 setVolume(0f, 0f)

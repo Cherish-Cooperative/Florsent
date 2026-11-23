@@ -48,7 +48,10 @@
     <!-- Settings -->
     <string name="settings_title">設定</string>
     <string name="settings_section_guidance">漸進引導</string>
-    <string name="settings_ambient_hint">輕柔的手碟聲</string>
+    <string name="settings_ambient">呼吸練習環境音</string>
+    <string name="settings_ambient_hint">溫暖的頌缽長音</string>
+    <string name="settings_fade_sound">變淡時播放柔和雨聲</string>
+    <string name="settings_fade_sound_hint">其他聲音會暫時變小，不會被暫停</string>
     <string name="settings_cue_hint">換氣時輕響一聲</string>
     <string name="settings_return_home">完成後回到手機桌面</string>
     <string name="settings_service">無障礙服務</string>

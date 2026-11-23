@@ -82,6 +82,7 @@ class SettingsViewModel(
     fun setCooldown(minutes: Int) = viewModelScope.launch { repo.setCooldownMinutes(minutes) }
     fun setAmbient(on: Boolean) = viewModelScope.launch { repo.setAmbientSound(on) }
     fun setCue(on: Boolean) = viewModelScope.launch { repo.setCueSound(on) }
+    fun setFadeSound(on: Boolean) = viewModelScope.launch { repo.setFadeSound(on) }
     fun setReturnHome(on: Boolean) = viewModelScope.launch { repo.setReturnToHomeScreen(on) }
     fun setDynamicColor(on: Boolean) = viewModelScope.launch { repo.setDynamicColor(on) }
 
@@ -190,8 +191,11 @@ fun BreathingSettingsScreen(state: SettingsUiState?, vm: SettingsViewModel, onBa
         Spacer(Modifier.height(8.dp))
         SoftCard {
             Column {
-                SwitchRow(stringResource(R.string.breathe_ambient_sound),
+                SwitchRow(stringResource(R.string.settings_ambient),
                     stringResource(R.string.settings_ambient_hint), s.ambientSound) { vm.setAmbient(it) }
+                CardDivider()
+                SwitchRow(stringResource(R.string.settings_fade_sound),
+                    stringResource(R.string.settings_fade_sound_hint), s.fadeSound) { vm.setFadeSound(it) }
                 CardDivider()
                 SwitchRow(stringResource(R.string.breathe_cue_sound),
                     stringResource(R.string.settings_cue_hint), s.cueSound) { vm.setCue(it) }

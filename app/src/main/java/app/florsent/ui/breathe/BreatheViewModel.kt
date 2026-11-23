@@ -7,6 +7,7 @@ import app.florsent.domain.BreathPhaseKind
 import app.florsent.domain.BreathingPattern
 import app.florsent.domain.BreathingPatterns
 import app.florsent.service.audio.BreathingSound
+import app.florsent.util.DebugLog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -71,6 +72,7 @@ class BreatheViewModel(
         sessionPattern.value = patternForThisSession
         sessionId.value += 1
         stage.value = BreatheStage.Running
+        DebugLog.d { "breathing start ambient=${uiState.value.ambientSound}" }
         if (uiState.value.ambientSound) sound.startAmbient()
     }
 
