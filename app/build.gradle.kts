@@ -17,8 +17,8 @@ android {
         applicationId = "app.florsent"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
-        versionName = "0.9.0"
+        versionCode = 12
+        versionName = "0.10.0"
     }
 
     buildTypes {
@@ -40,6 +40,18 @@ android {
     testOptions {
         // android.util.Log and friends return defaults in JVM unit tests instead of throwing.
         unitTests.isReturnDefaultValues = true
+    }
+
+    bundle {
+        // In-app language switching needs every language on the device. With splits on, Play would
+        // only install the strings for the system language and 繁體中文 / English could not load.
+        language { enableSplit = false }
+    }
+
+    androidResources {
+        // Ship only the languages Florsent is written in, so library strings (system dialogs,
+        // time picker) never show a third language. Keep in sync with res/xml/locales_config.xml.
+        localeFilters += listOf("en", "zh-rTW")
     }
 
     buildFeatures {

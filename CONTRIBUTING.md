@@ -37,7 +37,7 @@
 ## 程式風格
 
 - Kotlin 遵循官方風格（`kotlin.code.style=official`）。
-- 使用者看得到的文字一律放在 `res/values/strings.xml`。用詞請保持一致：
+- 使用者看得到的文字一律放在字串資源，而且**兩種語言同時加**：英文在 `res/values/strings.xml`（預設），繁體中文在 `res/values-zh-rTW/strings.xml`。鍵值、陣列句數與佔位符必須一致，`StringResourcesParityTest` 會檢查。有數量的英文句子要用 `plurals`。中文用詞請保持一致：
   - 提醒：浮出的那句「停下來深呼吸一下？」
   - 變淡當動詞用，淡化當名詞用
   - 安靜時間：完成呼吸後不再提醒的期間

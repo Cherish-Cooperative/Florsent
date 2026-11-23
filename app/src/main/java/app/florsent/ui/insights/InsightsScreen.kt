@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -157,7 +158,11 @@ private fun TodayCard(today: DayUsage) {
 private fun WeekCard(days: List<DayUsage>) {
     val scheme = MaterialTheme.colorScheme
     val maxMinutes = (days.mapNotNull { it.minutes }.maxOrNull() ?: 0).coerceAtLeast(1)
-    val labels = days.mapIndexed { i, d -> if (i == days.lastIndex) stringResource(R.string.insights_today) else weekday(d.date.dayOfWeek) }
+    // The UI language, not the system default: they differ when an in-app language is chosen.
+    val locale = LocalConfiguration.current.locales[0]
+    val labels = days.mapIndexed { i, d ->
+        if (i == days.lastIndex) stringResource(R.string.insights_today) else weekday(d.date.dayOfWeek, locale)
+    }
     val description = days.mapIndexed { i, d ->
         stringResource(
             R.string.insights_bar_description, labels[i],
@@ -247,4 +252,4 @@ fun insightText(insight: Insight): String = when (insight) {
     Insight.NotEnoughData -> stringResource(R.string.insight_not_enough)
 }
 
-private fun weekday(day: DayOfWeek): String = day.getDisplayName(TextStyle.NARROW, Locale.getDefault())
+private fun weekday(day: DayOfWeek, locale: Locale): String = day.getDisplayName(TextStyle.NARROW, locale)

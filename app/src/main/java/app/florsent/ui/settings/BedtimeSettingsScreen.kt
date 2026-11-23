@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -167,7 +168,7 @@ private fun learningText(s: UserSettings, learning: BedtimeLearning?): String = 
         stringResource(R.string.bedtime_status_confident, clockText(BedtimeLearner.roundTo5(learning.minuteOfDay)))
     learning is BedtimeLearning.Irregular -> stringResource(R.string.bedtime_status_irregular)
     learning is BedtimeLearning.Learning && learning.nightsObserved > 0 ->
-        stringResource(R.string.bedtime_status_learning, learning.nightsObserved)
+        pluralStringResource(R.plurals.bedtime_status_learning, learning.nightsObserved, learning.nightsObserved)
     else -> stringResource(R.string.bedtime_status_learning_start)
 }
 

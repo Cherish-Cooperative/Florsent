@@ -1,9 +1,9 @@
 # Florsent Google Play 上架資料包
 
-這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.9.0（versionCode 11）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
+這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.10.0（versionCode 12）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
 
 - 套件名稱：`app.florsent`（上架後不能再改）
-- 介面語言：繁體中文
+- 介面語言：繁體中文、英文（跟隨系統，或在 App 內「設定 > 進階 > 語言 / Language」切換；Android 13 以上也可在系統的「App 語言」設定）
 - 權限：沒有網路權限，只有無障礙服務（只讀取前景 App 名稱）與選用的零打擾存取權
 - 隱私權政策：[PRIVACY.md](../PRIVACY.md)，上架前要先發布成公開網址
 
@@ -56,6 +56,9 @@ Florsent 會先觀察一週，看你晚上通常幾點放下手機。看得出�
 ■ 看看最近的自己
 今天、近 7 天、最常用的 App，還有一兩句話說說你最近的樣子，例如「這週比上週少滑了 1 小時」。沒有評分，也沒有排名。
 
+■ 繁體中文與英文
+介面完整支援繁體中文與英文，預設跟隨手機語言，也可以在 App 內隨時切換。
+
 ■ 隱私
 ・沒有網路權限，資料不會離開你的手機
 ・不讀取畫面內容，不記錄你輸入的文字
@@ -94,19 +97,19 @@ Florsent never blocks an app. It only reminds you, gently, when you have been sc
 Most of us have tried screen-time apps that lock things when the time is up, and the first thing we do is look for a way around them. Florsent tries something softer: as the screen slowly loses its colour, scrolling feels less compelling, and a quiet question asks whether you would like a short break. Stopping is always your choice.
 
 ■ Gentle, gradual reminders
-Choose how long a session in social apps can be and how much time you want in a day. Past that, the screen fades over a few minutes and a small prompt appears: "Take a breath?" Not now? Tap ✕ and it will ask again later. Optionally, soft distant rain rises with the fade; whatever you are watching is only turned down, never paused.
+Choose how long a session in social apps can be and how much time you want in a day. Past that, the screen fades over a few minutes and a small prompt appears: "Pause for a deep breath?" Not now? Tap ✕ and it will ask again later. Optionally, soft distant rain rises with the fade; whatever you are watching is only turned down, never paused.
 
 ■ A calm breathing break
 Tap the prompt to start breathing right away. A lotus opens as you breathe in and closes as you breathe out. Pick from four rhythms: equal breathing, box breathing, 4-7-8 relaxation and resonance breathing. Soft haptics mark each phase, and an optional warm singing-bowl drone plays in the background.
 
 ■ Back to the present
-Afterwards Florsent leaves you with one simple suggestion, such as "Put the phone down and slowly drink a glass of water." Tap "Back to life" and the screen returns to normal, with a quiet period before any further reminder.
+Afterwards Florsent leaves you with one simple suggestion, such as "Put the phone down, pour a glass of water and drink it slowly." Tap "Back to life" and the screen returns to normal, with a quiet period before any further reminder.
 
 ■ Winding down at night
-For the first week Florsent observes when you usually put the phone down at night. Once a pattern is clear, it asks once whether you would like a reminder before that time; if you agree, the time stays fixed. Bedtime reminders ask "Ready to rest?" and lead into 4-7-8 breathing, at most twice a night. Irregular schedule? Pick your own time, or skip it.
+For the first week Florsent observes when you usually put the phone down at night. Once a pattern is clear, it asks once whether you would like a reminder before that time; if you agree, the time stays fixed. Bedtime reminders ask "Time to wind down?" and lead into 4-7-8 breathing, at most twice a night. Irregular schedule? Pick your own time, or skip it.
 
 ■ A look at your recent days
-Today, the last seven days and your most used apps, with a sentence or two about how things are going, such as "About an hour less than last week." No scores, no rankings.
+Today, the last seven days and your most used apps, with a sentence or two about how things are going, such as "1 h less scrolling than last week." No scores, no rankings.
 
 ■ Privacy
 • No internet permission: your data never leaves your phone
@@ -121,7 +124,8 @@ Florsent uses an accessibility service only to know which app is in the foregrou
 • Android 15 and later: turn the screen fully grayscale at the end of a fade through the system's Modes, without affecting notifications or calls
 • For Shizuku users: fade only the app you are using from colour to grayscale
 
-The app's interface is currently in Traditional Chinese.
+■ English and Traditional Chinese
+Every screen is fully available in English and Traditional Chinese. Florsent follows your phone's language, and you can switch in the app at any time.
 
 Breathing exercises are a simple relaxation habit and are not a substitute for medical or professional mental-health care. If you feel dizzy or unwell, stop and breathe normally.
 ```
@@ -286,9 +290,11 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 
 ## 版本說明
 
-### 0.9.0（zh-TW）
+### 0.10.0（zh-TW）
 
 ```
+・完整支援英文：跟隨手機語言，也可以在「設定 > 進階 > 語言 / Language」切換
+・修正：洞察頁的星期標籤會跟著介面語言顯示
 ・新增「變淡時播放柔和雨聲」：畫面變淡時雨聲慢慢浮現，影片只會變小聲、不會被暫停
 ・呼吸練習環境音換成更寧靜的頌缽長音
 ・閉氣時花朵和進度環會停住，跟著畫面一起停下來
@@ -300,9 +306,11 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 ・使用紀錄更準確：App 重新啟動時不再記下多餘的停止與開始
 ```
 
-### 0.9.0（en-US）
+### 0.10.0（en-US）
 
 ```
+• Florsent now speaks English: it follows your phone's language, or switch in Settings > Advanced > Language
+• Fixed: weekday labels on the Recent page now match the app's language
 • New: soft rain while the screen fades; videos are only turned down, never paused
 • Calmer breathing ambience: a warm singing-bowl drone
 • The flower and progress ring now stand still while you hold your breath

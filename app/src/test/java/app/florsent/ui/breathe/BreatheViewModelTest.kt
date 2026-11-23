@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -70,7 +71,7 @@ class BreatheViewModelTest {
     @Test
     fun `a silent session never creates the sound engine`() = runTest(dispatcher) {
         vm.start()
-        vm.onPhaseStarted(BreathPhaseKind.Inhale)
+        vm.onPhaseStarted(0, 0, BreathPhaseKind.Inhale)
         vm.onBackground()
         vm.stop()
         store.clear()
@@ -91,10 +92,35 @@ class BreatheViewModelTest {
     @Test
     fun `cues play only when the cue sound is on`() = runTest(dispatcher) {
         vm.start()
-        vm.onPhaseStarted(BreathPhaseKind.Inhale)
+        vm.onPhaseStarted(0, 0, BreathPhaseKind.Inhale)
         settings.setCueSound(true)
-        vm.onPhaseStarted(BreathPhaseKind.Exhale)
+        vm.onPhaseStarted(0, 2, BreathPhaseKind.Exhale)
         assertEquals(listOf("cue:Exhale"), sound.events)
+    }
+
+    @Test
+    fun `a phase reported twice rings once, and an old phase never rings again`() = runTest(dispatcher) {
+        settings.setCueSound(true)
+        vm.start()
+        assertTrue(vm.onPhaseStarted(0, 0, BreathPhaseKind.Inhale))
+        assertFalse("same phase again", vm.onPhaseStarted(0, 0, BreathPhaseKind.Inhale))
+        assertTrue(vm.onPhaseStarted(0, 1, BreathPhaseKind.HoldIn))
+        assertFalse("clock stepped back", vm.onPhaseStarted(0, 0, BreathPhaseKind.Inhale))
+        assertFalse(vm.onPhaseStarted(0, 1, BreathPhaseKind.HoldIn))
+        assertTrue(vm.onPhaseStarted(1, 0, BreathPhaseKind.Inhale))
+        assertEquals(listOf("cue:Inhale", "cue:HoldIn", "cue:Inhale"), sound.events)
+    }
+
+    @Test
+    fun `a new session starts cueing from the first phase again`() = runTest(dispatcher) {
+        settings.setCueSound(true)
+        vm.start()
+        vm.onPhaseStarted(0, 0, BreathPhaseKind.Inhale)
+        vm.onPhaseStarted(0, 1, BreathPhaseKind.HoldIn)
+        vm.stop()
+        vm.start()
+        assertTrue(vm.onPhaseStarted(0, 0, BreathPhaseKind.Inhale))
+        assertEquals(listOf("cue:Inhale", "cue:HoldIn", "stop", "cue:Inhale"), sound.events)
     }
 
     @Test

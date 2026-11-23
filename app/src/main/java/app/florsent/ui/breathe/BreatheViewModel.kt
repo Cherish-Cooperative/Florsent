@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.florsent.data.SettingsRepository
 import app.florsent.domain.BreathPhaseKind
+import app.florsent.domain.PhaseCueGate
 import app.florsent.domain.BreathingPattern
 import app.florsent.domain.BreathingPatterns
 import app.florsent.service.audio.BreathingSound
@@ -37,6 +38,7 @@ class BreatheViewModel(
 
     private val stage = MutableStateFlow(BreatheStage.Ready)
     private val sessionId = MutableStateFlow(0)
+    private val cueGate = PhaseCueGate()
 
     /** A pattern for this session only (bedtime uses 4-7-8) without changing the saved choice. */
     private val sessionPattern = MutableStateFlow<BreathingPattern?>(null)
@@ -89,8 +91,18 @@ class BreatheViewModel(
         if (stage.value == BreatheStage.Running && uiState.value.ambientSound) sound.resumeAmbient()
     }
 
-    fun onPhaseStarted(kind: BreathPhaseKind) {
+    /**
+     * A new phase began on screen. Returns true if this phase gets its cue (haptic + chime): each
+     * (session, cycle, phase) is cued at most once and only moving forward, whatever the UI reports.
+     */
+    fun onPhaseStarted(cycleIndex: Int, phaseIndex: Int, kind: BreathPhaseKind): Boolean {
+        if (!cueGate.tryCue(sessionId.value, cycleIndex, phaseIndex)) {
+            DebugLog.d { "cue skipped (duplicate) session=${sessionId.value} cycle=$cycleIndex phase=$phaseIndex" }
+            return false
+        }
+        DebugLog.d { "cue session=${sessionId.value} cycle=$cycleIndex phase=$phaseIndex $kind sound=${uiState.value.cueSound}" }
         if (uiState.value.cueSound) sound.playCue(kind)
+        return true
     }
 
     /** Ends a session (finished, ended early or abandoned) and returns to the picker. */
