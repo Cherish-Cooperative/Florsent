@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.PowerManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
@@ -20,6 +21,8 @@ import app.florsent.service.effect.VisualEffectController
 import app.florsent.service.effect.ZenGrayscale
 import app.florsent.service.effect.ZenGrayscaleController
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -41,6 +44,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
     private var ignoredPackages: Set<String> = emptySet()
     private var lastForeground: String? = null
     private var receiverRegistered = false
+    private var isShutDown = true
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -94,12 +98,18 @@ class FlorsentAccessibilityService : AccessibilityService() {
         )
         receiverRegistered = true
 
+        // Seed the screen state: after a process restart no broadcast tells us it is already on.
+        val power = getSystemService(PowerManager::class.java)
+        val keyguard = getSystemService(KeyguardManager::class.java)
+        val usable = power?.isInteractive != false && keyguard?.isKeyguardLocked != true
+        coordinator.dispatch(GuidanceEvent.ScreenChanged(usable, coordinator.now()))
+
+        isShutDown = false
         coordinator.setServiceRunning(true)
         renderJob = scope.launch {
-            // Settings are part of the key so toggling an effect applies even at a steady level.
-            combine(coordinator.effect, container.currentSettings) { effect, settings ->
-                effect to settings.zenGrayscaleFinish
-            }.collect { (effect, _) ->
+            // The Zen toggle is part of the key so switching it applies even at a steady level.
+            val zenToggle = container.currentSettings.map { it.zenGrayscaleFinish }.distinctUntilChanged()
+            combine(coordinator.effect, zenToggle) { effect, _ -> effect }.collect { effect ->
                 effects?.render(VisualEffect(effect.level, effect.targetPackage))
                 nudge?.setVisible(effect.showNudge)
             }
@@ -133,7 +143,10 @@ class FlorsentAccessibilityService : AccessibilityService() {
         startActivity(MainActivity.breatheIntent(this))
     }
 
+    /** Called from both onUnbind and onDestroy; only the first call does anything. */
     private fun shutdown() {
+        if (isShutDown) return
+        isShutDown = true
         renderJob?.cancel()
         renderJob = null
         effects?.release()

@@ -22,6 +22,8 @@ class ForegroundPolicyTest {
     fun `system ui and keyboards do not replace the foreground app`() {
         assertNull(resolve("com.android.systemui"))
         assertNull(resolve("com.google.android.permissioncontroller"))
+        assertNull("share sheet", resolve("com.android.intentresolver"))
+        assertNull("resolver dialog", resolve("android"))
         assertNull(resolve("com.google.android.inputmethod.latin"))
         assertNull(resolve(null))
         assertNull(resolve(""))

@@ -66,7 +66,11 @@ class DimOverlayController(
     }
 
     private fun attach(): View {
-        val v = View(service).apply {
+        // A solid colour never overlaps itself, so alpha can be applied directly instead of through a
+        // full-screen offscreen layer on every frame of the fade.
+        val v = object : View(service) {
+            override fun hasOverlappingRendering() = false
+        }.apply {
             setBackgroundColor(OVERLAY_COLOR)
             alpha = 0f
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS

@@ -2,43 +2,48 @@
     <string name="app_name" translatable="false">Florsent</string>
 
     <string name="action_back">返回</string>
+    <string name="action_clear">清除</string>
     <string name="minutes_format">%d 分鐘</string>
 
+    <!-- Terminology: 提醒 = the nudge; 變淡 = the fade (verb), 淡化 only as a noun;
+         安靜時間 = cooldown; 留意的 App = watched apps. -->
+
     <!-- Home -->
-    <string name="home_tagline">放下手機的時候，慢慢來就好。</string>
+    <string name="home_tagline">慢慢放下手機就好。</string>
     <string name="greeting_morning">早安</string>
     <string name="greeting_afternoon">午安</string>
     <string name="greeting_evening">晚上好</string>
     <string name="greeting_night">夜深了，早點休息</string>
     <string name="home_breathe_now">立即呼吸練習</string>
     <string name="home_preview">30 秒體驗漸進引導</string>
-    <string name="home_preview_needs_service">開啟漸進引導之後就能體驗。</string>
-    <string name="home_watched_apps">監測的 App</string>
+    <string name="home_watched_apps">留意的 App</string>
     <string name="home_watched_apps_value">%d 個</string>
     <string name="home_settings">額度與設定</string>
     <string name="home_budget_value">單次 %1$d 分鐘・每日 %2$d 分鐘</string>
 
     <string name="today_label">今天在社群 App 上</string>
     <string name="today_of_budget">/ %d 分鐘</string>
-    <string name="status_idle">還在額度內，盡情使用吧。</string>
-    <string name="status_guiding">已經超過額度，畫面會慢慢變淡。</string>
+    <string name="today_summary">今天在社群 App 上 %1$d 分鐘，每日額度 %2$d 分鐘。%3$s</string>
+    <string name="status_idle">還在額度內。</string>
+    <string name="status_no_apps">還沒選要留意的 App。</string>
+    <string name="status_guiding">超過額度了，畫面正慢慢變淡。</string>
     <string name="status_breathing">正在呼吸練習。</string>
-    <string name="status_preview">漸進引導體驗中。</string>
-    <string name="status_cooldown">休息時間，%d 分鐘內不會打擾你。</string>
+    <string name="status_preview">正在體驗漸進引導。</string>
+    <string name="status_cooldown">安靜時間，還有 %d 分鐘。</string>
 
     <string name="setup_title">開啟漸進引導</string>
-    <string name="setup_body">在社群 App 用超過額度時，畫面會一點一點變淡，再提醒你停下來呼吸。不會封鎖任何 App。</string>
+    <string name="setup_body">用超過額度時，畫面會慢慢變淡，再提醒你停下來呼吸。不會封鎖 App。</string>
     <string name="setup_action">開始設定</string>
 
     <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
     <string name="disclosure_title">使用無障礙服務</string>
-    <string name="disclosure_body">Florsent 會透過無障礙服務知道目前在前景的是哪個 App，只用來計算你選定的社群 App 用了多久，並在畫面上顯示漸進的淡化效果和提示。\n\nFlorsent 不會讀取畫面內容，也不會記錄你輸入的文字。所有資料只存在這支手機上，不會上傳。\n\n按下「同意」後會開啟系統設定，請在「已下載的應用程式」中找到 Florsent 並開啟。</string>
-    <string name="disclosure_accept">同意並前往設定</string>
+    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，只用來計算留意的 App 用了多久，並顯示淡化效果和提醒。\n\n不讀取畫面內容，不記錄你輸入的文字，資料只存在這支手機上。\n\n接著請在系統的無障礙設定中，開啟「Florsent 漸進引導」。</string>
+    <string name="disclosure_accept">同意，前往設定</string>
     <string name="disclosure_decline">暫時不要</string>
 
     <!-- Watched apps -->
-    <string name="watched_title">監測的 App</string>
-    <string name="watched_intro">只有勾選的 App 會計入使用額度，目前選了 %d 個。</string>
+    <string name="watched_title">留意的 App</string>
+    <string name="watched_intro">已選 %d 個，只有這些 App 會計入額度。</string>
     <string name="watched_search">搜尋 App</string>
     <string name="watched_no_results">找不到符合的 App。</string>
     <string name="watched_suggested">常見的社群 App</string>
@@ -50,50 +55,50 @@
     <string name="settings_section_breathing">呼吸練習</string>
     <string name="settings_section_guidance">漸進引導</string>
     <string name="settings_ambient_hint">練習時播放輕柔的手碟聲。</string>
-    <string name="settings_cue_hint">每次換階段時響一聲柔和的鈴聲。</string>
+    <string name="settings_cue_hint">換吸氣、吐氣時輕響一聲。</string>
     <string name="settings_return_home">完成後回到手機桌面</string>
-    <string name="settings_return_home_hint">按下「回到生活」後直接離開 Florsent。</string>
+    <string name="settings_return_home_hint">按「回到生活」後直接離開 Florsent。</string>
     <string name="settings_service">無障礙服務</string>
     <string name="settings_service_on">已開啟</string>
-    <string name="settings_service_off">未開啟，點這裡前往設定</string>
+    <string name="settings_service_off">未開啟，輕觸前往設定</string>
     <string name="settings_footer">Florsent %s・資料只存在這支手機上</string>
-    <string name="budget_intro">超過任一個額度，畫面就會開始慢慢變淡。</string>
+    <string name="budget_intro">超過任一額度，畫面就會慢慢變淡。</string>
     <string name="budget_session">單次額度</string>
-    <string name="budget_session_hint">連續使用多久後開始引導，離開 10 分鐘以上會重算。</string>
+    <string name="budget_session_hint">連續用多久後開始變淡。離開 10 分鐘就重新計算。</string>
     <string name="budget_daily">每日額度</string>
-    <string name="budget_daily_hint">一天內累計超過之後，每次打開用了 2 分鐘就會開始引導。</string>
-    <string name="budget_cooldown">休息時間</string>
-    <string name="budget_cooldown_hint">做完呼吸練習之後，這段時間內不會再打擾你。</string>
+    <string name="budget_daily_hint">今天累計超過後，每次打開 2 分鐘就開始變淡。</string>
+    <string name="budget_cooldown">安靜時間</string>
+    <string name="budget_cooldown_hint">做完呼吸練習後，這段時間不再提醒。</string>
 
     <!-- Breathe -->
     <string name="breathe_title">呼吸練習</string>
-    <string name="breathe_pick_rhythm">選一種節奏，跟著花慢慢呼吸。</string>
+    <string name="breathe_pick_rhythm">選一種節奏，跟著花呼吸。</string>
     <string name="breathe_start">開始</string>
     <string name="breathe_ambient_sound">環境音</string>
     <string name="breathe_cue_sound">提示音</string>
     <string name="breathe_cycle">第 %1$d 輪，共 %2$d 輪</string>
+    <string name="breathe_countdown_description">還有 %1$d 秒，第 %2$d 輪，共 %3$d 輪</string>
     <string name="breathe_end_early">提早結束</string>
     <string name="phase_inhale">吸氣</string>
     <string name="phase_hold_in">屏息</string>
     <string name="phase_exhale">吐氣</string>
     <string name="phase_hold_out">停頓</string>
-    <string name="pattern_duration">%1$d 輪，約 %2$d 分 %3$d 秒</string>
+    <string name="pattern_duration">%1$d 輪・約 %2$d 分 %3$d 秒</string>
+    <string name="pattern_duration_even">%1$d 輪・約 %2$d 分鐘</string>
     <string name="pattern_equal">等長呼吸</string>
-    <string name="pattern_equal_desc">吸氣、屏息、吐氣各四秒，幫助專注。</string>
+    <string name="pattern_equal_desc">三段一樣長，幫助專注。</string>
     <string name="pattern_box">盒式呼吸</string>
-    <string name="pattern_box_desc">四個步驟各四秒，讓心情穩定下來。</string>
+    <string name="pattern_box_desc">四段一樣長，讓心情穩定。</string>
     <string name="pattern_478">4-7-8 放鬆呼吸</string>
-    <string name="pattern_478_desc">拉長屏息和吐氣，幫助身體放鬆。</string>
+    <string name="pattern_478_desc">拉長吐氣，幫助放鬆。</string>
     <string name="pattern_resonance">共振呼吸</string>
-    <string name="pattern_resonance_desc">吸吐各 5.5 秒，每分鐘大約五次半。</string>
+    <string name="pattern_resonance_desc">每分鐘約五次半，讓呼吸慢下來。</string>
 
     <!-- Grounding -->
     <string name="grounding_label">回到當下</string>
     <string name="grounding_another">換一句</string>
     <string name="grounding_return">回到生活</string>
-    <string name="grounding_return_hint_home">會回到手機桌面</string>
-    <string name="grounding_return_hint_app">會回到 Florsent 首頁</string>
-    <string name="grounding_cooldown">接下來 %d 分鐘，Florsent 不會打擾你。</string>
+    <string name="grounding_cooldown">接下來 %d 分鐘不再提醒。</string>
     <string-array name="grounding_prompts">
         <item>看看四周，找出三樣綠色的東西。</item>
         <item>感受雙腳踩在地上的重量。</item>
@@ -111,47 +116,48 @@
 
     <!-- Onboarding -->
     <string name="onboarding_purpose_title">不封鎖任何 App，\n只在你用太久時，溫柔地提醒。</string>
-    <string name="onboarding_step_fade">社群 App 用超過額度時，畫面會慢慢變淡</string>
+    <string name="onboarding_step_fade">用超過額度時，畫面會慢慢變淡</string>
     <string name="onboarding_step_nudge">畫面下方浮出提醒，問你要不要停下來</string>
     <string name="onboarding_step_breathe">花一分鐘呼吸，然後回到生活</string>
-    <string name="onboarding_apps_title">哪些 App 需要提醒？</string>
-    <string name="onboarding_apps_body">只有選取的 App 會計入使用時間。之後也能在「監測的 App」裡調整。</string>
-    <string name="onboarding_apps_none">這支手機上沒有找到常見的社群 App。之後可以在「監測的 App」裡自己加入。</string>
+    <string name="onboarding_apps_title">想留意哪些 App？</string>
+    <string name="onboarding_apps_body">只有選取的 App 會計入時間，之後隨時能調整。</string>
+    <string name="onboarding_apps_none">沒有找到常見的社群 App，之後可以自己加入。</string>
     <string name="onboarding_disclosure_title">最後一步：開啟無障礙服務</string>
-    <string name="onboarding_disclosure_body">Florsent 需要透過無障礙服務，才能知道你正在用哪個 App，並在畫面上顯示淡化效果和提醒。</string>
+    <string name="onboarding_disclosure_body">Florsent 要透過無障礙服務，才知道你正在用哪個 App。</string>
     <string name="onboarding_does_title">Florsent 會做的事</string>
     <string name="onboarding_does_1">只讀取目前在前景的 App 名稱</string>
-    <string name="onboarding_does_2">計算你選取的 App 用了多久</string>
+    <string name="onboarding_does_2">計算留意的 App 用了多久</string>
     <string name="onboarding_does_3">在畫面上顯示淡化效果和呼吸提醒</string>
     <string name="onboarding_doesnt_title">Florsent 不會做的事</string>
     <string name="onboarding_doesnt_1">不讀取畫面上的文字和內容</string>
     <string name="onboarding_doesnt_2">不記錄你輸入的任何東西</string>
     <string name="onboarding_doesnt_3">不上傳任何資料，一切只存在這支手機上</string>
-    <string name="onboarding_enable_hint">按下「同意並前往開啟」後，請在「已下載的應用程式」中找到「Florsent 漸進引導」並開啟。</string>
+    <string name="onboarding_enable_hint">接著請在系統的無障礙設定中，開啟「Florsent 漸進引導」。</string>
     <string name="onboarding_service_ready">已經開啟，一切就緒。</string>
     <string name="onboarding_begin">開始</string>
     <string name="onboarding_next">下一步</string>
-    <string name="onboarding_enable">同意並前往開啟</string>
+    <string name="onboarding_enable">同意，前往設定</string>
     <string name="onboarding_start_using">開始使用</string>
     <string name="onboarding_later">稍後再說</string>
+    <string name="onboarding_page_description">第 %1$d 頁，共 %2$d 頁</string>
 
     <!-- True grayscale finish (Android 15+) -->
-    <string name="settings_zen_grayscale">淡化到底時切換成灰階</string>
-    <string name="settings_zen_grayscale_hint">透過系統的「模式」把畫面變成黑白，不會改變通知和鈴聲。需要「零打擾」存取權。</string>
-    <string name="settings_zen_grayscale_lost">「零打擾」存取權已關閉，目前只會淡化，不會切換灰階。</string>
+    <string name="settings_zen_grayscale">淡到底時改成黑白</string>
+    <string name="settings_zen_grayscale_hint">透過系統「模式」切換，不影響通知和鈴聲。需要「零打擾」存取權。</string>
+    <string name="settings_zen_grayscale_lost">「零打擾」存取權已關閉，目前只會變淡。</string>
     <string name="zen_access_title">需要「零打擾」存取權</string>
-    <string name="zen_access_body">Florsent 只會用這個權限建立一個名為「Florsent 漸進灰階」的模式，在淡化到底時把畫面切成黑白，不會變更你的通知或其他模式。\n\n接下來會開啟系統設定，請找到 Florsent 並允許存取。</string>
+    <string name="zen_access_body">Florsent 只會建立「Florsent 漸進灰階」模式，在淡到底時把畫面切成黑白，不更動通知或其他模式。\n\n接著請在系統設定允許 Florsent 存取。</string>
     <string name="zen_access_confirm">前往設定</string>
     <string name="zen_access_cancel">取消</string>
     <string name="zen_rule_name">Florsent 漸進灰階</string>
-    <string name="zen_rule_trigger">在社群 App 用超過額度、淡化到底時開啟</string>
+    <string name="zen_rule_trigger">在留意的 App 上淡到底時開啟</string>
 
     <!-- Nudge overlay -->
     <string name="nudge_message">停下來深呼吸一下？</string>
-    <string name="nudge_accept_description">停下來深呼吸一下，開啟呼吸練習</string>
-    <string name="nudge_dismiss_description">先不要，稍後再提醒</string>
+    <string name="nudge_accept_description">開始呼吸練習</string>
+    <string name="nudge_dismiss_description">先不要</string>
 
     <!-- Accessibility service -->
     <string name="accessibility_service_label">Florsent 漸進引導</string>
-    <string name="accessibility_service_description">只用來偵測目前在前景的 App，計算你選定的社群 App 使用時間，並顯示漸進的淡化效果和呼吸提醒。不會讀取畫面內容或你輸入的文字，資料不會離開這支手機。</string>
+    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計算留意的 App 用了多久，並顯示淡化效果和呼吸提醒。不讀取畫面內容或你輸入的文字，資料不會離開這支手機。</string>
 </resources>

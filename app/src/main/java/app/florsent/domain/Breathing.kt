@@ -81,7 +81,9 @@ object BreathingTimeline {
     fun expansionAt(pattern: BreathingPattern, elapsedMs: Long): Float {
         if (elapsedMs >= pattern.totalMs) return 0f
         var t = elapsedMs.coerceAtLeast(0) % pattern.cycleMs
-        for (phase in pattern.phases) {
+        val phases = pattern.phases
+        for (i in phases.indices) { // index loop: no Iterator allocation per frame
+            val phase = phases[i]
             if (t < phase.durationMs) {
                 val p = t.toFloat() / phase.durationMs
                 return when (phase.kind) {

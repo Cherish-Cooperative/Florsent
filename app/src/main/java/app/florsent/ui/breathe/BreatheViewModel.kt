@@ -27,8 +27,12 @@ data class BreatheUiState(
 
 class BreatheViewModel(
     private val container: AppContainer,
-    private val sound: BreathingSoundscape,
+    soundFactory: () -> BreathingSoundscape,
 ) : ViewModel() {
+
+    // Built on first use, so opening the app never loads SoundPool or decodes audio.
+    private val soundDelegate = lazy(LazyThreadSafetyMode.NONE, soundFactory)
+    private val sound by soundDelegate
 
     private val stage = MutableStateFlow(BreatheStage.Ready)
     private val sessionId = MutableStateFlow(0)
@@ -51,7 +55,7 @@ class BreatheViewModel(
     fun setAmbientSound(on: Boolean) {
         viewModelScope.launch { container.settings.setAmbientSound(on) }
         if (stage.value == BreatheStage.Running) {
-            if (on) sound.startAmbient() else sound.stopAmbient()
+            if (on) sound.startAmbient() else if (soundDelegate.isInitialized()) sound.stopAmbient()
         }
     }
 
@@ -65,6 +69,19 @@ class BreatheViewModel(
         if (uiState.value.ambientSound) sound.startAmbient()
     }
 
+    /** Touch the soundscape so SoundPool has decoded the cue before the first phase. */
+    fun warmUpSound() {
+        sound
+    }
+
+    fun onBackground() {
+        if (soundDelegate.isInitialized()) sound.pauseAmbient()
+    }
+
+    fun onForeground() {
+        if (stage.value == BreatheStage.Running && uiState.value.ambientSound) sound.resumeAmbient()
+    }
+
     fun onPhaseStarted(kind: BreathPhaseKind) {
         if (uiState.value.cueSound) sound.playCue(kind)
     }
@@ -72,10 +89,10 @@ class BreatheViewModel(
     /** Ends a session (finished, ended early or abandoned) and returns to the picker. */
     fun stop() {
         stage.value = BreatheStage.Ready
-        sound.stopAmbient()
+        if (soundDelegate.isInitialized()) sound.stopAmbient()
     }
 
     override fun onCleared() {
-        sound.release()
+        if (soundDelegate.isInitialized()) sound.release()
     }
 }

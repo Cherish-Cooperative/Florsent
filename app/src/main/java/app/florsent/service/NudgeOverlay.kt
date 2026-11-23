@@ -15,6 +15,7 @@ import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -115,13 +116,15 @@ class NudgeOverlay(
             text = ctx.getString(R.string.nudge_message)
             setTextColor(onSurface)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            maxWidth = dp(240f).toInt() // stays on screen at the largest font scale
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
         }
-        val close = TextView(ctx).apply {
-            text = "✕"
-            gravity = Gravity.CENTER
-            setTextColor(muted)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+        val close = ImageView(ctx).apply {
+            setImageResource(R.drawable.ic_close)
+            imageTintList = ColorStateList.valueOf(muted)
+            scaleType = ImageView.ScaleType.CENTER
+            val pad = dp(14f).toInt()
+            setPadding(pad, pad, pad, pad)
             contentDescription = ctx.getString(R.string.nudge_dismiss_description)
             background = RippleDrawable(ColorStateList.valueOf(ripple), null, GradientDrawable().apply {
                 setShape(GradientDrawable.OVAL)
@@ -136,11 +139,15 @@ class NudgeOverlay(
         pill.addView(message, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
         ))
-        val closeSize = dp(44f).toInt()
+        val closeSize = dp(48f).toInt() // minimum touch target
         pill.addView(close, LinearLayout.LayoutParams(closeSize, closeSize).apply { marginStart = dp(6f).toInt() })
 
         // Padding leaves room for the elevation shadow inside the wrap-content window.
         val container = FrameLayout(ctx).apply {
+            // TalkBack announces the pill as it slides in, like a system pane.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                accessibilityPaneTitle = ctx.getString(R.string.nudge_message)
+            }
             val pad = dp(16f).toInt()
             setPadding(pad, pad, pad, pad)
             clipChildren = false

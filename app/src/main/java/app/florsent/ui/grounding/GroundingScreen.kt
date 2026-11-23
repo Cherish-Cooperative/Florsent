@@ -5,16 +5,20 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,6 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,16 +50,17 @@ import kotlin.random.Random
 @Composable
 fun GroundingScreen(
     cooldownMinutes: Int?,
-    returnToHomeScreen: Boolean,
     onReturnToLife: () -> Unit,
 ) {
     val prompts = stringArrayResource(R.array.grounding_prompts)
     var index by rememberSaveable { mutableIntStateOf(Random.nextInt(prompts.size)) }
 
+    BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .heightIn(min = maxHeight)
             .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -64,6 +71,7 @@ fun GroundingScreen(
             stringResource(R.string.grounding_label),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.semantics { heading() },
         )
         Spacer(Modifier.height(28.dp))
         AnimatedContent(
@@ -95,15 +103,13 @@ fun GroundingScreen(
                 modifier = Modifier.padding(bottom = 12.dp),
             )
         }
-        Button(onClick = onReturnToLife, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+        Button(
+            onClick = onReturnToLife,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp).height(56.dp),
+        ) {
             Text(stringResource(R.string.grounding_return), style = MaterialTheme.typography.titleMedium)
         }
-        Text(
-            stringResource(if (returnToHomeScreen) R.string.grounding_return_hint_home else R.string.grounding_return_hint_app),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.padding(top = 10.dp, bottom = 16.dp),
-        )
+    }
     }
 }
 

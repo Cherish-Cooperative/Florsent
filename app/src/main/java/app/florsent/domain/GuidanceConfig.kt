@@ -29,8 +29,13 @@ data class GuidanceConfig(
     val sessionGapMs: Long = 10 * MINUTE_MS,
     /** A breathing session left open longer than this is treated as abandoned. */
     val breathingTimeoutMs: Long = 15 * MINUTE_MS,
-    /** Upper bound for one accounting step, so sleep or clock jumps are not counted as usage. */
-    val maxTickGapMs: Long = 5_000L,
+    /** Longest the runtime sleeps between ticks when nothing visible changes. */
+    val maxTickIntervalMs: Long = 15_000L,
+    /**
+     * Upper bound for one accounting step, so a frozen process or a clock jump is not counted as
+     * usage. Must exceed [maxTickIntervalMs].
+     */
+    val maxTickGapMs: Long = 20_000L,
     val preview: PreviewConfig = PreviewConfig(),
 )
 

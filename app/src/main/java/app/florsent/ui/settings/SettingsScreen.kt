@@ -19,6 +19,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -32,7 +33,12 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -158,7 +164,7 @@ fun SettingsScreen(
             Text(
                 stringResource(R.string.settings_footer, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 28.dp),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
@@ -225,7 +231,7 @@ private fun SectionTitle(text: String) {
         text,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 24.dp, bottom = 10.dp, start = 4.dp),
+        modifier = Modifier.padding(top = 24.dp, bottom = 10.dp, start = 4.dp).semantics { heading() },
     )
 }
 
@@ -270,11 +276,12 @@ private fun MinutesSlider(
             range.first.toFloat()..range.last.toFloat(),
         )
     }
+    val valueText = stringResource(R.string.minutes_format, state.value.roundToInt())
     Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(
-                stringResource(R.string.minutes_format, state.value.roundToInt()),
+                valueText,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -285,6 +292,16 @@ private fun MinutesSlider(
             state = state,
             onValueChange = { state.value = it },
             onValueChangeFinished = { onChange(state.value.roundToInt()) },
+            // TalkBack reads "單次額度, 15 分鐘" instead of a percentage.
+            modifier = Modifier.semantics {
+                contentDescription = title
+                stateDescription = valueText
+            },
+            // The dense step dots add noise; the value label already shows the step.
+            colors = SliderDefaults.colors(
+                activeTickColor = Color.Transparent,
+                inactiveTickColor = Color.Transparent,
+            ),
         )
     }
 }

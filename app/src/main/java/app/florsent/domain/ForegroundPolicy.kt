@@ -14,6 +14,8 @@ object ForegroundPolicy {
         "com.android.systemui",
         "com.android.permissioncontroller",
         "com.google.android.permissioncontroller",
+        "android", // share sheet / resolver dialogs on older releases
+        "com.android.intentresolver", // share sheet on Android 14+
     )
 
     fun resolve(

@@ -15,8 +15,10 @@ import java.time.ZoneId
 /**
  * Pure state machine for budget tracking and gradual guidance. Every call is deterministic given
  * (state, event, config), which keeps the Android side a thin adapter.
+ *
+ * @param zone read on every use, so a time-zone change (travel) moves the day boundary right away.
  */
-class GuidanceEngine(private val zone: ZoneId = ZoneId.systemDefault()) {
+class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
 
     fun reduce(state: GuidanceState, event: GuidanceEvent, config: GuidanceConfig): GuidanceState {
         val now = event.nowMs
@@ -96,9 +98,39 @@ class GuidanceEngine(private val zone: ZoneId = ZoneId.systemDefault()) {
         }
     }
 
-    /** Whether the runtime should send [Tick] events every second. */
+    /** Whether the runtime should send [Tick] events at all. */
     fun needsTick(state: GuidanceState, config: GuidanceConfig): Boolean =
         state.previewStartedAtMs != null || state.isCounting(config)
+
+    /**
+     * How long the runtime may sleep before the next [Tick], or null when nothing is time-dependent
+     * (screen off, unwatched app). Ticks run every second only while something visibly changes (the
+     * fade or the preview); otherwise the runtime sleeps until the next deadline (budget reached,
+     * snooze or cooldown over), capped at [GuidanceConfig.maxTickIntervalMs]. Usage accounting is
+     * exact either way because each tick adds the real elapsed time.
+     */
+    fun nextTickDelayMs(state: GuidanceState, config: GuidanceConfig, nowMs: Long): Long? {
+        if (!needsTick(state, config)) return null
+        if (state.previewStartedAtMs != null) return FAST_TICK_MS
+        val untilDeadline = when (state.mode) {
+            GuidanceMode.Cooldown -> state.cooldownUntilMs - nowMs
+            GuidanceMode.Breathing -> config.maxTickIntervalMs
+            GuidanceMode.Tracking -> when {
+                state.overBudgetMs <= 0 -> {
+                    val toSession = config.sessionBudgetMs - state.sessionUsedMs
+                    val toDaily = maxOf(
+                        config.dailyBudgetMs - dailyUsedMs(state, nowMs),
+                        config.dailyGraceMs - state.sessionUsedMs,
+                    )
+                    minOf(toSession, toDaily)
+                }
+                fadeProgress(state, config) < 1f -> return FAST_TICK_MS
+                nowMs < state.nudgeSnoozedUntilMs -> state.nudgeSnoozedUntilMs - nowMs
+                else -> config.maxTickIntervalMs
+            }
+        }
+        return untilDeadline.coerceIn(FAST_TICK_MS, config.maxTickIntervalMs)
+    }
 
     /** Whether a [BreathingCompleted] right now would start a cooldown (mirrors [reduce]). */
     fun completionStartsCooldown(state: GuidanceState): Boolean = when (state.mode) {
@@ -115,11 +147,17 @@ class GuidanceEngine(private val zone: ZoneId = ZoneId.systemDefault()) {
         else (state.overBudgetMs.toFloat() / config.fadeDurationMs).coerceIn(0f, 1f)
 
     private fun epochDay(nowMs: Long): Long =
-        Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate().toEpochDay()
+        Instant.ofEpochMilli(nowMs).atZone(zone()).toLocalDate().toEpochDay()
 
+    /**
+     * Rolls forward only. Flying west across midnight (or a small clock correction) briefly shows
+     * "yesterday" again; resetting then would hand out a second daily budget. A jump back of more
+     * than a day is treated as a real clock reset.
+     */
     private fun GuidanceState.rollDay(now: Long): GuidanceState {
         val today = epochDay(now)
-        return if (today == epochDay) this else copy(epochDay = today, dailyUsedMs = 0)
+        val reset = today > epochDay || today < epochDay - 1
+        return if (reset) copy(epochDay = today, dailyUsedMs = 0) else this
     }
 
     private fun GuidanceState.accumulate(now: Long, config: GuidanceConfig): GuidanceState {
@@ -148,7 +186,7 @@ class GuidanceEngine(private val zone: ZoneId = ZoneId.systemDefault()) {
     }
 
     private fun GuidanceState.expireTimers(now: Long, config: GuidanceConfig): GuidanceState {
-        var s = this
+        var s = sanitizeClock(now, config)
         if (s.mode == GuidanceMode.Cooldown && now >= s.cooldownUntilMs) {
             s = s.copy(mode = GuidanceMode.Tracking, modeSinceMs = now).clearSession()
         }
@@ -162,9 +200,26 @@ class GuidanceEngine(private val zone: ZoneId = ZoneId.systemDefault()) {
         return s
     }
 
+    /**
+     * Wall-clock deadlines can be stretched by a user moving the clock back. Clamp every deadline to
+     * its natural maximum and drop timestamps that lie in the future.
+     */
+    private fun GuidanceState.sanitizeClock(now: Long, config: GuidanceConfig): GuidanceState {
+        var s = this
+        if (s.cooldownUntilMs > now + config.cooldownMs) s = s.copy(cooldownUntilMs = now + config.cooldownMs)
+        if (s.nudgeSnoozedUntilMs > now + config.nudgeSnoozeMs) {
+            s = s.copy(nudgeSnoozedUntilMs = now + config.nudgeSnoozeMs)
+        }
+        if (s.modeSinceMs > now) s = s.copy(modeSinceMs = now)
+        s.previewStartedAtMs?.let { if (it > now) s = s.copy(previewStartedAtMs = null) }
+        return s
+    }
+
     private fun GuidanceState.resetSessionIfStale(now: Long, config: GuidanceConfig): GuidanceState {
         val lastWatched = lastWatchedAtMs ?: return this
-        val stale = mode == GuidanceMode.Tracking && now - lastWatched >= config.sessionGapMs
+        // A last-watched time in the future means the clock went back; treat it as stale.
+        val stale = mode == GuidanceMode.Tracking &&
+            (now - lastWatched >= config.sessionGapMs || lastWatched > now)
         return if (stale) clearSession() else this
     }
 
@@ -181,4 +236,8 @@ class GuidanceEngine(private val zone: ZoneId = ZoneId.systemDefault()) {
             cooldownUntilMs = now + config.cooldownMs,
             breathingFromPreview = false,
         )
+
+    private companion object {
+        const val FAST_TICK_MS = 1_000L
+    }
 }

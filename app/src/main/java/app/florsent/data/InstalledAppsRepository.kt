@@ -21,7 +21,10 @@ class InstalledAppsRepository(context: Context) {
 
     private val appContext = context.applicationContext
     private val packageManager: PackageManager = appContext.packageManager
-    private val iconCache = LruCache<String, Bitmap>(64)
+    /** Sized in bytes (about 4 MB, ~650 icons at 40dp/xxhdpi) and keyed by size. */
+    private val iconCache = object : LruCache<String, Bitmap>(ICON_CACHE_BYTES) {
+        override fun sizeOf(key: String, value: Bitmap) = value.allocationByteCount
+    }
 
     suspend fun launchableApps(): List<InstalledApp> = withContext(Dispatchers.IO) {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
@@ -42,12 +45,22 @@ class InstalledAppsRepository(context: Context) {
         }
     }
 
+    /** Cache-only lookup for the first frame; never touches PackageManager. */
+    fun peekIcon(packageName: String, sizePx: Int): Bitmap? = iconCache.get(cacheKey(packageName, sizePx))
+
     suspend fun icon(packageName: String, sizePx: Int): Bitmap? {
-        iconCache.get(packageName)?.let { return it }
+        val key = cacheKey(packageName, sizePx)
+        iconCache.get(key)?.let { return it }
         return withContext(Dispatchers.IO) {
             runCatching {
                 packageManager.getApplicationIcon(packageName).toBitmap(sizePx, sizePx)
-            }.getOrNull()?.also { iconCache.put(packageName, it) }
+            }.getOrNull()?.also { iconCache.put(key, it) }
         }
+    }
+
+    private fun cacheKey(packageName: String, sizePx: Int) = "$packageName@$sizePx"
+
+    private companion object {
+        const val ICON_CACHE_BYTES = 4 * 1024 * 1024
     }
 }

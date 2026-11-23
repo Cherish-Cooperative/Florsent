@@ -48,7 +48,13 @@ class BreathingSoundscape(context: Context) {
     }
 
     fun startAmbient() {
-        if (player != null) return
+        val existing = player
+        if (existing != null) {
+            // Possibly mid fade-out: cancel it and fade back in instead of going silent.
+            if (!existing.isPlaying) existing.start()
+            fadeTo(AMBIENT_VOLUME, FADE_IN_MS) {}
+            return
+        }
         if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
         player = MediaPlayer.create(appContext, R.raw.ambient_handpan, attributes, audioManager.generateAudioSessionId())
             ?.apply {
@@ -56,6 +62,25 @@ class BreathingSoundscape(context: Context) {
                 setVolume(0f, 0f)
                 start()
             }
+        fadeTo(AMBIENT_VOLUME, FADE_IN_MS) {}
+    }
+
+    /** App went to the background mid-session: hold the loop (and give back audio focus). */
+    fun pauseAmbient() {
+        val current = player ?: return
+        fade?.cancel()
+        if (current.isPlaying) current.pause()
+        volume = 0f
+        current.setVolume(0f, 0f)
+        audioManager.abandonAudioFocusRequest(focusRequest)
+    }
+
+    /** Back in front: resume a paused loop with a short fade. */
+    fun resumeAmbient() {
+        val current = player ?: return
+        if (current.isPlaying) return
+        if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
+        current.start()
         fadeTo(AMBIENT_VOLUME, FADE_IN_MS) {}
     }
 

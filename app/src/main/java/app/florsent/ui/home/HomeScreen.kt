@@ -32,7 +32,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.florsent.R
@@ -84,7 +87,10 @@ fun HomeScreen(
         Spacer(Modifier.height(28.dp))
 
         if (state.loaded && !state.serviceRunning) {
-            SetupCard(onEnable = { showDisclosure = true })
+            // The disclosure was already accepted (onboarding or earlier): go straight to settings.
+            SetupCard(onEnable = {
+                if (state.disclosureAccepted) onOpenAccessibilitySettings() else showDisclosure = true
+            })
         } else {
             TodayCard(state)
         }
@@ -96,22 +102,12 @@ fun HomeScreen(
         ) {
             Text(stringResource(R.string.home_breathe_now), style = MaterialTheme.typography.titleMedium)
         }
-        Spacer(Modifier.height(12.dp))
-        FilledTonalButton(
-            onClick = onPreview,
-            enabled = state.serviceRunning,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-        ) {
-            Text(stringResource(R.string.home_preview))
-        }
-        if (state.loaded && !state.serviceRunning) {
-            Text(
-                stringResource(R.string.home_preview_needs_service),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            )
+        // The preview needs the service; until then the setup card is the one call to action.
+        if (state.serviceRunning) {
+            Spacer(Modifier.height(12.dp))
+            FilledTonalButton(onClick = onPreview, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                Text(stringResource(R.string.home_preview))
+            }
         }
 
         Spacer(Modifier.height(28.dp))
@@ -178,7 +174,11 @@ private fun greeting(): String {
 private fun SetupCard(onEnable: () -> Unit) {
     SoftCard {
         Column(Modifier.padding(24.dp)) {
-            Text(stringResource(R.string.setup_title), style = MaterialTheme.typography.titleLarge)
+            Text(
+                stringResource(R.string.setup_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.semantics { heading() },
+            )
             Spacer(Modifier.height(8.dp))
             Text(
                 stringResource(R.string.setup_body),
@@ -193,8 +193,11 @@ private fun SetupCard(onEnable: () -> Unit) {
 
 @Composable
 private fun TodayCard(state: HomeUiState) {
+    val status = statusText(state)
+    val summary = stringResource(R.string.today_summary, state.todayUsedMinutes, state.dailyBudgetMinutes, status)
     SoftCard {
-        Column(Modifier.padding(24.dp)) {
+        // One TalkBack node instead of "23", "/ 60 分鐘", "38%" fragments.
+        Column(Modifier.padding(24.dp).clearAndSetSemantics { contentDescription = summary }) {
             Text(
                 stringResource(R.string.today_label),
                 style = MaterialTheme.typography.labelLarge,
@@ -221,7 +224,7 @@ private fun TodayCard(state: HomeUiState) {
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                statusText(state),
+                status,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -231,7 +234,8 @@ private fun TodayCard(state: HomeUiState) {
 
 @Composable
 private fun statusText(state: HomeUiState): String = when (state.status) {
-    GuidanceStatus.Idle -> stringResource(R.string.status_idle)
+    GuidanceStatus.Idle ->
+        stringResource(if (state.watchedCount == 0) R.string.status_no_apps else R.string.status_idle)
     GuidanceStatus.Guiding -> stringResource(R.string.status_guiding)
     GuidanceStatus.Breathing -> stringResource(R.string.status_breathing)
     GuidanceStatus.Preview -> stringResource(R.string.status_preview)

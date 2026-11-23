@@ -17,6 +17,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -29,12 +33,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import app.florsent.R
@@ -64,7 +74,8 @@ fun WatchedAppsScreen(
         val selectedCount = state.suggested.count { it.watched } + state.others.count { it.watched }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            // edge-to-edge + adjustResize: keep the last rows above the keyboard while searching.
+            modifier = Modifier.fillMaxSize().imePadding(),
             contentPadding = padding,
         ) {
             item {
@@ -80,6 +91,15 @@ fun WatchedAppsScreen(
                     value = query,
                     onValueChange = { query = it },
                     placeholder = { Text(stringResource(R.string.watched_search)) },
+                    leadingIcon = { Icon(painterResource(R.drawable.ic_search), contentDescription = null) },
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            IconButton(onClick = { query = "" }) {
+                                Icon(painterResource(R.drawable.ic_close), stringResource(R.string.action_clear))
+                            }
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     singleLine = true,
                     shape = RoundedCornerShape(28.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -113,13 +133,16 @@ fun WatchedAppsScreen(
     }
 }
 
+/** Synchronous cache lookup for icons; provided by screens that own an InstalledAppsRepository. */
+val LocalIconPeek = staticCompositionLocalOf<(String, Int) -> Bitmap?> { { _, _ -> null } }
+
 @Composable
 private fun SectionHeader(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 8.dp),
+        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 8.dp).semantics { heading() },
     )
 }
 
@@ -145,15 +168,17 @@ internal fun AppToggleRow(
 
 @Composable
 private fun AppIcon(packageName: String, loadIcon: suspend (String, Int) -> Bitmap?) {
+    val peekIcon = LocalIconPeek.current
     val sizePx = with(LocalDensity.current) { 40.dp.roundToPx() }
-    val bitmap by produceState<Bitmap?>(initialValue = null, packageName) {
-        value = loadIcon(packageName, sizePx)
+    // Seed from the cache so scrolling back never flashes the placeholder.
+    val bitmap by produceState(initialValue = peekIcon(packageName, sizePx), packageName) {
+        if (value == null) value = loadIcon(packageName, sizePx)
     }
     val shape = RoundedCornerShape(12.dp)
     val image = bitmap
     if (image != null) {
         Image(
-            bitmap = image.asImageBitmap(),
+            bitmap = remember(image) { image.asImageBitmap() },
             contentDescription = null,
             modifier = Modifier.size(40.dp).clip(shape),
         )

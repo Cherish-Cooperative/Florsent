@@ -43,6 +43,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -177,7 +181,7 @@ fun OnboardingScreen(
 @Composable
 private fun PurposePage() {
     val reducedMotion = rememberReducedMotion()
-    val clock = rememberFrameClock(key = Unit, running = !reducedMotion)
+    val clock = rememberFrameClock(key = Unit, running = !reducedMotion, idle = true)
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -199,6 +203,7 @@ private fun PurposePage() {
             stringResource(R.string.onboarding_purpose_title),
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
         )
         Spacer(Modifier.height(32.dp))
         Column(verticalArrangement = Arrangement.spacedBy(18.dp), modifier = Modifier.fillMaxWidth()) {
@@ -235,7 +240,11 @@ private fun AppsPage(
 ) {
     Column(Modifier.fillMaxSize()) {
         Spacer(Modifier.height(40.dp))
-        Text(stringResource(R.string.onboarding_apps_title), style = MaterialTheme.typography.headlineSmall)
+        Text(
+            stringResource(R.string.onboarding_apps_title),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() },
+        )
         Spacer(Modifier.height(10.dp))
         Text(
             stringResource(R.string.onboarding_apps_body),
@@ -268,7 +277,11 @@ private fun AppsPage(
 private fun DisclosurePage(serviceRunning: Boolean) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.height(40.dp))
-        Text(stringResource(R.string.onboarding_disclosure_title), style = MaterialTheme.typography.headlineSmall)
+        Text(
+            stringResource(R.string.onboarding_disclosure_title),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() },
+        )
         Spacer(Modifier.height(10.dp))
         Text(
             stringResource(R.string.onboarding_disclosure_body),
@@ -307,10 +320,14 @@ private fun DisclosurePage(serviceRunning: Boolean) {
 private fun PromiseCard(title: String, items: List<String>) {
     SoftCard {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
             items.forEach { item ->
                 Row {
-                    Text("·", color = MaterialTheme.colorScheme.primary, modifier = Modifier.width(16.dp))
+                    Text(
+                        "·",
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.width(16.dp).clearAndSetSemantics {},
+                    )
                     Text(item, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -320,7 +337,11 @@ private fun PromiseCard(title: String, items: List<String>) {
 
 @Composable
 private fun PageDots(current: Int, modifier: Modifier = Modifier) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    val description = stringResource(R.string.onboarding_page_description, current + 1, PAGES)
+    Row(
+        modifier.clearAndSetSemantics { contentDescription = description },
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         repeat(PAGES) { i ->
             Box(
                 Modifier
@@ -328,7 +349,7 @@ private fun PageDots(current: Int, modifier: Modifier = Modifier) {
                     .clip(CircleShape)
                     .background(
                         if (i == current) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.outlineVariant,
+                        else MaterialTheme.colorScheme.outline,
                     ),
             )
         }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -27,6 +30,7 @@ import app.florsent.data.UserSettings
 import app.florsent.domain.GuidanceEvent
 import app.florsent.service.audio.BreathingSoundscape
 import app.florsent.service.effect.ZenGrayscale
+import app.florsent.ui.apps.LocalIconPeek
 import app.florsent.ui.apps.WatchedAppsScreen
 import app.florsent.ui.apps.WatchedAppsViewModel
 import app.florsent.ui.breathe.BreatheScreen
@@ -62,7 +66,10 @@ fun FlorsentAppUi(
     val context = LocalContext.current
     val breatheVm: BreatheViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { BreatheViewModel(container, BreathingSoundscape(context.applicationContext)) }
+            initializer {
+                val appContext = context.applicationContext
+                BreatheViewModel(container) { BreathingSoundscape(appContext) }
+            }
         },
     )
     val loadedSettings by container.settings.settings.collectAsStateWithLifecycle(initialValue = null)
@@ -104,6 +111,7 @@ fun FlorsentAppUi(
         }
     }
 
+    CompositionLocalProvider(LocalIconPeek provides container.installedApps::peekIcon) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         // Wait for settings so first-run users never see a flash of the home screen (or vice versa).
         val current = loadedSettings ?: return@Surface
@@ -156,16 +164,18 @@ fun FlorsentAppUi(
                         onStart = breatheVm::start,
                         onPhaseStarted = breatheVm::onPhaseStarted,
                         onFinished = finishBreathing,
+                        onWarmUpSound = breatheVm::warmUpSound,
+                        onBackground = breatheVm::onBackground,
+                        onForeground = breatheVm::onForeground,
                     )
                 }
                 Route.Grounding -> {
-                    val guidanceState by guidance.state.collectAsStateWithLifecycle()
-                    val startsCooldown = remember(guidanceState) {
-                        guidance.engine.completionStartsCooldown(guidanceState)
+                    val startsCooldownFlow = remember {
+                        guidance.state.map { guidance.engine.completionStartsCooldown(it) }.distinctUntilChanged()
                     }
+                    val startsCooldown by startsCooldownFlow.collectAsStateWithLifecycle(initialValue = false)
                     GroundingScreen(
                         cooldownMinutes = if (startsCooldown) settings.cooldownMinutes else null,
-                        returnToHomeScreen = settings.returnToHomeScreen,
                         onReturnToLife = { returnToLife(settings.returnToHomeScreen) },
                     )
                 }
@@ -196,5 +206,6 @@ fun FlorsentAppUi(
                 }
             }
         }
+    }
     }
 }

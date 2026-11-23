@@ -32,7 +32,7 @@ class GuidanceEngineTest {
 
     /** Drives the engine like the runtime does: events plus one Tick per second. */
     private inner class Harness(startMs: Long = T0, cfg: GuidanceConfig = config) {
-        val engine = GuidanceEngine(ZoneOffset.UTC)
+        val engine = GuidanceEngine { ZoneOffset.UTC }
         var config = cfg
         var now = startMs
         var state = GuidanceState()
@@ -375,6 +375,107 @@ class GuidanceEngineTest {
 
         assertEquals(before.mode, h.state.mode)
         assertEquals(before.sessionUsedMs, h.state.sessionUsedMs)
+    }
+
+    @Test
+    fun `ticks are fast only while the fade moves, otherwise they wait for the next deadline`() {
+        val h = Harness()
+        assertEquals("nothing to do with no watched app in front", null, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+
+        h.open(social)
+        assertEquals("under budget: sleep, capped", h.config.maxTickIntervalMs, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+        repeat(39) { // the real cadence: 39 x 15 s = 9:45
+            h.now += h.config.maxTickIntervalMs
+            h.send { Tick(it) }
+        }
+        h.now += 10_000
+        h.send { Tick(it) } // 9:55 used
+        assertEquals("wake exactly when the budget runs out", 5_000L, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+
+        h.advance(10_000) // now fading
+        assertEquals(1_000L, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+
+        h.advance(3 * MIN) // fully faded
+        assertEquals(h.config.maxTickIntervalMs, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+
+        h.send { NudgeDismissed(it) }
+        assertEquals("wake when the snooze ends", h.config.maxTickIntervalMs, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+        h.now += 50_000
+        h.send { Tick(it) }
+        assertEquals(10_000L, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+
+        h.send { ScreenChanged(false, it) }
+        assertEquals(null, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+    }
+
+    @Test
+    fun `slow ticks still count usage exactly`() {
+        val h = Harness()
+        h.open(social)
+        repeat(36) { // 36 x 15 s = 9 min without 1 s ticks
+            h.now += h.config.maxTickIntervalMs
+            h.send { Tick(it) }
+        }
+        assertEquals(9 * MIN, h.state.sessionUsedMs)
+        assertEquals(9 * MIN, h.state.dailyUsedMs)
+    }
+
+    @Test
+    fun `moving the clock back cannot stretch a cooldown or a snooze`() {
+        val h = Harness()
+        h.open(social)
+        h.advance(11 * MIN)
+        h.send { NudgeAccepted(it) }
+        h.open("app.florsent")
+        h.send { BreathingCompleted(it) }
+        assertEquals(GuidanceMode.Cooldown, h.state.mode)
+
+        h.now -= DAY // user sets the clock back a day
+        h.send { Tick(it) }
+        assertTrue(h.state.cooldownUntilMs <= h.now + h.config.cooldownMs)
+
+        h.now += h.config.cooldownMs
+        h.send { Tick(it) }
+        assertEquals(GuidanceMode.Tracking, h.state.mode)
+    }
+
+    @Test
+    fun `a preview started in the future (clock moved back) is dropped`() {
+        val h = Harness()
+        h.send { PreviewStarted(it) }
+        h.now -= 10 * MIN
+        h.send { Tick(it) }
+        assertEquals(null, h.state.previewStartedAtMs)
+        assertFalse(h.engine.needsTick(h.state, h.config))
+    }
+
+    @Test
+    fun `last watched time in the future is treated as a stale session`() {
+        val h = Harness()
+        h.open(social)
+        h.advance(8 * MIN)
+        h.open(other)
+        h.now -= 1 * DAY
+        h.open(social)
+        assertEquals(0L, h.state.sessionUsedMs)
+    }
+
+    @Test
+    fun `flying west across midnight does not hand out a second daily budget`() {
+        var zone: java.time.ZoneId = ZoneOffset.ofHours(9)
+        val engine = GuidanceEngine { zone }
+        val cfg = config
+        // 00:30 on day N+1 in UTC+9 is 15:30 on day N in UTC.
+        var now = DAY + 30 * MIN - 9 * 60 * MIN
+        var s = engine.reduce(GuidanceState(), ForegroundChanged(social, now), cfg)
+        repeat(60) { now += 1_000; s = engine.reduce(s, Tick(now), cfg) }
+        val usedBefore = s.dailyUsedMs
+
+        zone = ZoneOffset.ofHours(-8) // land on the previous calendar day
+        now += 1_000
+        s = engine.reduce(s, Tick(now), cfg)
+
+        assertTrue("usage kept across the backwards date change", s.dailyUsedMs >= usedBefore)
     }
 
     @Test

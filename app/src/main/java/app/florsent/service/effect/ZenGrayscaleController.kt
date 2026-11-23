@@ -29,26 +29,39 @@ class ZenGrayscaleController(
     private val isEnabled: () -> Boolean,
 ) : VisualEffectController {
 
-    private var active = false
+    /**
+     * Null until the first render. The rule's state outlives our process (crash, update, low-memory
+     * kill), so the first render always syncs the platform instead of assuming "off".
+     */
+    private var active: Boolean? = null
 
     override fun render(effect: VisualEffect) {
-        val allowed = isEnabled() && ZenGrayscale.hasAccess(context)
         // Hysteresis so a level hovering around the top does not flicker the whole display.
-        val want = allowed && effect.level >= if (active) OFF_BELOW else ON_AT
+        val nearTop = effect.level >= if (active == true) OFF_BELOW else ON_AT
+        // Binder calls (access check) only when the answer can matter.
+        val want = nearTop && isEnabled() && ZenGrayscale.hasAccess(context)
         if (want != active) setActive(want)
     }
 
     override fun release() {
-        if (active) setActive(false)
+        if (active != false) setActive(false)
     }
 
     private fun setActive(on: Boolean) {
         runCatching {
-            val id = ZenGrayscale.ensureRule(context)
-            val state = if (on) Condition.STATE_TRUE else Condition.STATE_FALSE
-            ZenGrayscale.manager(context).setAutomaticZenRuleState(
-                id, Condition(ZenGrayscale.CONDITION_ID, context.getString(R.string.zen_rule_name), state),
-            )
+            val nm = ZenGrayscale.manager(context)
+            val id = when {
+                on -> ZenGrayscale.ensureRule(context)
+                // Turning off never creates a rule, and without access there is nothing we may touch.
+                ZenGrayscale.hasAccess(context) -> ZenGrayscale.findRule(context)
+                else -> null
+            }
+            if (id != null) {
+                val state = if (on) Condition.STATE_TRUE else Condition.STATE_FALSE
+                nm.setAutomaticZenRuleState(
+                    id, Condition(ZenGrayscale.CONDITION_ID, context.getString(R.string.zen_rule_name), state),
+                )
+            }
         }.onFailure { Log.w(TAG, "Could not switch grayscale finish to $on", it) }
         // Even on failure, don't retry every tick; the next level change re-evaluates.
         active = on
@@ -75,11 +88,15 @@ object ZenGrayscale {
 
     fun accessSettingsIntent(): Intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
 
+    /** The id of our rule if it exists. Requires notification-policy access. */
+    fun findRule(context: Context): String? =
+        manager(context).automaticZenRules.entries.firstOrNull { it.value.conditionId == CONDITION_ID }?.key
+
     /** Returns the id of our rule, creating it on first use. */
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun ensureRule(context: Context): String {
         val nm = manager(context)
-        nm.automaticZenRules.entries.firstOrNull { it.value.conditionId == CONDITION_ID }?.let { return it.key }
+        findRule(context)?.let { return it }
         val rule = AutomaticZenRule.Builder(context.getString(R.string.zen_rule_name), CONDITION_ID)
             .setType(AutomaticZenRule.TYPE_OTHER)
             .setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)

@@ -1,5 +1,6 @@
 package app.florsent.service
 
+import android.util.Log
 import app.florsent.data.GuidanceStateStore
 import app.florsent.domain.GuidanceConfig
 import app.florsent.domain.GuidanceEffect
@@ -16,20 +17,27 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
  * Process-wide owner of the guidance state. The accessibility service feeds it events and renders
  * [effect]; the UI reads [state] and sends user actions. All mutation goes through [dispatch], which
  * runs the pure [GuidanceEngine].
+ *
+ * Power: there is no polling. Ticks are scheduled from [GuidanceEngine.nextTickDelayMs]: every
+ * second only while the fade or preview is moving, otherwise at the next deadline (at most every
+ * 15 s), and not at all with the screen off or an unwatched app in front.
  */
 class GuidanceCoordinator(
     private val scope: CoroutineScope,
     val engine: GuidanceEngine,
-    configFlow: Flow<GuidanceConfig>,
+    private val configFlow: Flow<GuidanceConfig>,
     private val store: GuidanceStateStore,
     private val clock: () -> Long,
 ) {
@@ -50,27 +58,40 @@ class GuidanceCoordinator(
 
     init {
         scope.launch {
-            val persisted = store.load()
-            _state.update { live ->
-                persisted.copy(foregroundPackage = live.foregroundPackage, screenOn = live.screenOn)
+            try {
+                // Wait for the real watch list too: events evaluated against the empty default
+                // config would skip the "started counting" bookkeeping.
+                configFlow.first()
+                val persisted = store.load()
+                _state.value = persisted.copy(
+                    foregroundPackage = _state.value.foregroundPackage,
+                    screenOn = _state.value.screenOn,
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not restore guidance state; starting fresh", e)
+            } finally {
+                loaded.complete(Unit)
             }
-            loaded.complete(Unit)
         }
-        // Persist at most every few seconds; StateFlow conflation hands us the latest value.
+        // Routine persistence: only when a durable field changed, at most every 30 s.
         scope.launch {
             loaded.await()
-            _state.collect { s ->
-                store.save(s)
-                delay(PERSIST_INTERVAL_MS)
-            }
-        }
-        // Tick only while something is time-dependent (watched app in front, or preview running).
-        scope.launch {
-            combine(_state, config) { s, c -> engine.needsTick(s, c) }
+            _state.map { it.durable() }
                 .distinctUntilChanged()
-                .collectLatest { needsTick ->
-                    while (needsTick) {
-                        delay(TICK_INTERVAL_MS)
+                .drop(1) // the value we just loaded
+                .conflate()
+                .collect { s ->
+                    store.save(s)
+                    delay(PERSIST_INTERVAL_MS)
+                }
+        }
+        // Tick scheduling: every state change (including the tick itself) re-arms the timer, so no
+        // distinctUntilChanged here; two equal consecutive delays must still schedule two ticks.
+        scope.launch {
+            combine(_state, config) { s, c -> engine.nextTickDelayMs(s, c, clock()) }
+                .collectLatest { delayMs ->
+                    if (delayMs != null) {
+                        delay(delayMs)
                         dispatch(GuidanceEvent.Tick(clock()))
                     }
                 }
@@ -96,11 +117,36 @@ class GuidanceCoordinator(
 
     private fun apply(event: GuidanceEvent) {
         val config = config.value
-        _state.update { engine.reduce(it, event, config) }
+        val before = _state.value
+        _state.value = engine.reduce(before, event, config)
+        val after = _state.value
+        if (isMilestone(before, after, config)) {
+            scope.launch { store.save(after.durable()) }
+        }
     }
 
+    /**
+     * Changes worth saving immediately rather than at the next 30 s window: mode switches, a new day,
+     * and the moment counting stops (screen off / leaving the app), which is when the process is most
+     * likely to be reclaimed.
+     */
+    private fun isMilestone(before: GuidanceState, after: GuidanceState, config: GuidanceConfig): Boolean =
+        before.mode != after.mode ||
+            before.epochDay != after.epochDay ||
+            before.cooldownUntilMs != after.cooldownUntilMs ||
+            (before.isCounting(config) && !after.isCounting(config))
+
+    /** The persisted projection; transient fields are blanked so equality reflects what is stored. */
+    private fun GuidanceState.durable() = copy(
+        foregroundPackage = null,
+        screenOn = true,
+        lastTickAtMs = null,
+        previewStartedAtMs = null,
+        breathingFromPreview = false,
+    )
+
     private companion object {
-        const val TICK_INTERVAL_MS = 1_000L
-        const val PERSIST_INTERVAL_MS = 5_000L
+        const val TAG = "GuidanceCoordinator"
+        const val PERSIST_INTERVAL_MS = 30_000L
     }
 }
