@@ -313,9 +313,13 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 |---|---|---|
 | `res/raw/breathing_ambient.ogg` | 呼吸練習環境音 | 暖調頌缽共鳴與柔霧粉紅噪聲，48 秒，無敲擊節奏 |
 | `res/raw/fade_ambient.ogg` | 變淡時的柔和雨聲 | 遠雨與晚風，42 秒 |
-| `res/raw/cue_soft.m4a` | 提示音 | 10 KB，依階段改變播放速率 |
+| `res/raw/cue_soft.wav` | 提示音 | 1.6 秒，22.05 kHz 單聲道 16-bit PCM（70 KB），依階段改變播放速率 |
 
-- 兩首環境音由音景團隊以程式合成，沒有版權風險。原檔是 AAC（.m4a），但 AAC 編碼器會在開頭補約 46 ms 靜音，`MediaPlayer` 循環時不會去掉，每一圈都會斷一下。所以從去掉補位的 PCM 轉成 Opus（112 kbps VBR，Ogg 容器）；Opus 的 pre-skip 由解碼器處理，循環沒有縫。轉檔後長度精準（48.0000 秒、42.0000 秒）、平均音量都是 -20.5 dB。
+- 兩首環境音由音景團隊以程式合成，沒有版權風險。原檔是 AAC（.m4a），但 AAC 編碼器會在開頭補約 46 ms 靜音，`MediaPlayer` 循環時不會去掉，每一圈都會斷一下。所以從去掉補位的 PCM 轉成 Opus（112 kbps VBR，Ogg 容器），轉檔後長度精準（48.0000 秒、42.0000 秒）、平均音量都是 -20.5 dB。
+- **無縫循環（`GaplessLoop`）**：檔案本身沒有縫還不夠。`MediaPlayer.isLooping` 每一圈結束都會跳回開頭，解碼器要重新預熱（Opus pre-roll 80 ms），可能聽到短暫斷音。所以頌缽與雨聲都用 `setNextMediaPlayer` 把兩個播放器接起來：下一圈事先準備好，由系統無縫接手（logcat 會看到 `info (2, 0)` = `MEDIA_INFO_STARTED_AS_NEXT`），播完的那圈釋放、再排下一圈。
+- **提示音（`CuePlayer`）**：預先解碼的 WAV 放進靜態 `AudioTrack`，每次只是重頭播放、以 `playbackRate` 改音高；指定 `PERFORMANCE_MODE_POWER_SAVING`，和頌缽走同一條大緩衝輸出，不會像 `SoundPool`（預設低延遲）那樣每響一次就喚醒另一條輸出、讓頌缽卡一下。所有呼叫在 `florsent-cue` 執行緒，不佔主執行緒。
+- **提示音只響一次（`PhaseCueGate`）**：去重在 ViewModel，以（session、輪次、階段）為鍵，只接受嚴格遞增的階段。畫面重建、同一階段被回報兩次、時鐘倒退，都不會讓提示音或震動重複。
+- 音量淡入淡出（`VolumeRamp`）依實際經過時間計算，不受系統「移除動畫」影響。
 - **變淡時播放**（`FadeSoundController` + `FadeSoundscape`）是視覺效果組合裡的一層，和淡化層收到同樣的淡化程度：
   - 淡化程度大於 0、開關打開、沒有在通話（`MODE_IN_CALL`／`IN_COMMUNICATION`／`RINGTONE`）才播放。
   - 音訊焦點用 `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`，系統自動把前景 App 壓低音量，不會暫停；講話內容（Podcast 等）由系統自行暫停。
@@ -374,7 +378,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ## 編譯與測試
 
 ```sh
-./gradlew testDebugUnitTest      # 170 個 JVM 測試
+./gradlew testDebugUnitTest      # 186 個 JVM 測試
 ./gradlew assembleDebug
 ./gradlew assembleRelease        # 確認 R8 沒有移除 ShellService
 ```
@@ -405,8 +409,9 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `UsageLogTest`（8）、`UsageInsightsTest`（7） | 編碼與壞行、區段記錄、程序被殺變成 `U`、放棄殘留區段；跨午夜拆分、沒有資料不是 0、只比較完整的兩週、前三名 App |
 | `UsageRecordingTest`（7） | 寫入順序、新程序補 `U`、重啟不寫多餘的停止與開始、服務沒來時收尾、沒有同意不寫、清除後重新開始、壞行與保存期限 |
 | `SettingsRepositoryTest`（6）、`GuidanceStateStoreTest`（3） | 真實 DataStore 檔案上的預設值、往返與持久化 |
-| `BreatheViewModelTest`（8） | 聲音延遲建立、背景暫停、提示音開關、釋放 |
+| `BreatheViewModelTest`（10） | 聲音延遲建立、背景暫停、提示音開關、同一階段只響一次、新練習重新計算、釋放 |
 | `StringResourcesParityTest`（8） | 中英文鍵值、陣列句數、佔位符、複數、無漏翻、無句尾句號、`locales_config` 與資源一致、語言代碼對應 |
+| `PhaseCueGateTest`（5）、`GaplessLoopTest`（5）、`WavReaderTest`（4） | 每階段只響一次、只往前、整段練習重複回報仍只響一次、新練習重來；循環接力、音量延續、暫停與釋放；WAV 解析、拒絕不支援格式、內建提示音規格與音高 |
 | `FadeSoundControllerTest`（10） | 淡化開始播放一次、關閉不播、中途關閉淡出、通話不播、交接延長淡出、焦點被搶不重試、拒絕不重試、釋放、音量曲線 |
 | `ContrastAuditTest`（4） | WCAG 公式、品牌深淺色全部通過 AA |
 
@@ -458,6 +463,8 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 | Onboarding 與無障礙服務 | 揭露頁、同意、使用者自己在系統設定開啟服務，綁定正常 |
 | 30 秒預覽 | 0 秒開始淡化，約 12 秒浮出提醒，30 秒兩個 overlay 都移除 |
 | 呼吸蓮花 | 約 28 秒 1,682 影格，jank 0.12%，p50 6 ms、p90 10 ms、p99 16 ms |
+| 頌缽＋提示音（v0.10.0） | 等長呼吸完整 72 秒：提示音 18 次、重複 0 次、間隔 4.0 秒；第 48 秒 `MEDIA_INFO_STARTED_AS_NEXT` 無縫接手；兩條播放軌同在大緩衝輸出（HAL frame 1920），欠載全程 0 |
+| 背景雨聲（Android 17） | 預覽全程 `started`、`muted=none`、焦點 `GAIN_TRANSIENT_MAY_DUCK`，無 AudioHardening 紀錄；系統記錄 ducking 了正在播的影片 App；淡出 1.5 秒；點提醒後與呼吸環境音重疊約 3.2 秒 |
 | 閉氣時停住 | 盒式呼吸：吸氣後閉氣 5 張、吐氣後停頓 6 張連續截圖的花朵與進度環像素完全相同 |
 | 環境音 | 練習中 `MediaPlayer` started；按 Home 變 paused、交還音訊焦點；回來恢復；離開練習後釋放 |
 | Zen 灰階收尾 | 需要使用者授予零打擾存取權後再驗證 |

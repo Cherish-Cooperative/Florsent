@@ -4,10 +4,6 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.media.MediaPlayer
-import android.os.Handler
-import android.os.Looper
-import android.os.SystemClock
 import app.florsent.R
 import app.florsent.service.effect.VisualEffect
 import app.florsent.service.effect.VisualEffectController
@@ -120,11 +116,9 @@ class FadeSoundscape(
         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
         .build()
 
-    private var player: MediaPlayer? = null
+    private var loop: GaplessLoop? = null
     private var stopping = false
-    private val handler = Handler(Looper.getMainLooper())
-    private var ramp: Runnable? = null
-    private var progress = 0f
+    private val ramp = VolumeRamp { p -> loop?.setVolume(FadeSoundCurve.volumeAt(p)) }
 
     private val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
         .setAudioAttributes(attributes)
@@ -140,71 +134,39 @@ class FadeSoundscape(
         .build()
 
     override fun start(fadeInMs: Long): Boolean {
-        if (player == null) {
+        if (loop == null) {
             if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return false
-            player = MediaPlayer.create(appContext, R.raw.fade_ambient, attributes, audioManager.generateAudioSessionId())
-                ?.apply {
-                    isLooping = true
-                    setVolume(0f, 0f)
-                    start()
-                }
-            if (player == null) {
+            val created = GaplessLoop.forRaw(appContext, R.raw.fade_ambient, attributes, audioManager.generateAudioSessionId())
+            if (!created.isValid) {
                 audioManager.abandonAudioFocusRequest(focusRequest)
                 return false
             }
-            progress = 0f
+            loop = created
+            ramp.set(0f)
+            created.start()
         }
-        DebugLog.d { "fade sound start (progress=$progress)" }
+        DebugLog.d { "fade sound start (progress=${ramp.progress})" }
         // From wherever it is (silence, or part-way through a fade-out) up to full.
         stopping = false
-        rampTo(1f, ((1f - progress) * fadeInMs).toLong()) {}
+        ramp.to(1f, ((1f - ramp.progress) * fadeInMs).toLong())
         return true
     }
 
     override fun stop(fadeOutMs: Long) {
-        val current = player ?: return
-        DebugLog.d { "fade sound stop (progress=$progress)" }
+        val current = loop ?: return
+        DebugLog.d { "fade sound stop (progress=${ramp.progress})" }
         stopping = true
-        rampTo(0f, (progress * fadeOutMs).toLong().coerceAtLeast(1)) {
-            if (player === current) release()
+        ramp.to(0f, (ramp.progress * fadeOutMs).toLong()) {
+            if (loop === current) release()
         }
     }
 
     override fun release() {
-        if (player != null) DebugLog.d { "fade sound released" }
-        ramp?.let(handler::removeCallbacks)
-        ramp = null
-        player?.release()
-        player = null
-        progress = 0f
+        if (loop != null) DebugLog.d { "fade sound released" }
+        ramp.cancel()
+        loop?.release()
+        loop = null
         stopping = false
         audioManager.abandonAudioFocusRequest(focusRequest)
-    }
-
-    private fun rampTo(target: Float, durationMs: Long, onEnd: () -> Unit) {
-        ramp?.let(handler::removeCallbacks)
-        val from = progress
-        val startedAt = SystemClock.uptimeMillis()
-        val duration = durationMs.coerceAtLeast(1)
-        val step = object : Runnable {
-            override fun run() {
-                val t = ((SystemClock.uptimeMillis() - startedAt).toFloat() / duration).coerceIn(0f, 1f)
-                progress = from + (target - from) * t
-                val v = FadeSoundCurve.volumeAt(progress)
-                player?.setVolume(v, v)
-                if (t < 1f) {
-                    handler.postDelayed(this, RAMP_STEP_MS)
-                } else {
-                    ramp = null
-                    onEnd()
-                }
-            }
-        }
-        ramp = step
-        step.run()
-    }
-
-    private companion object {
-        const val RAMP_STEP_MS = 50L
     }
 }

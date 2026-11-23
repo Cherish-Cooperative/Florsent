@@ -88,7 +88,7 @@ fun BreatheScreen(
     onAmbientChange: (Boolean) -> Unit,
     onCueChange: (Boolean) -> Unit,
     onStart: () -> Unit,
-    onPhaseStarted: (BreathPhaseKind) -> Unit,
+    onPhaseStarted: (cycleIndex: Int, phaseIndex: Int, kind: BreathPhaseKind) -> Boolean,
     onFinished: () -> Unit,
     onWarmUpSound: () -> Unit,
     onBackground: () -> Unit,
@@ -280,7 +280,7 @@ private fun BreathingSession(
     pattern: BreathingPattern,
     sessionId: Int,
     reducedMotion: Boolean,
-    onPhaseStarted: (BreathPhaseKind) -> Unit,
+    onPhaseStarted: (cycleIndex: Int, phaseIndex: Int, kind: BreathPhaseKind) -> Boolean,
     onFinished: () -> Unit,
     onBackground: () -> Unit,
     onForeground: () -> Unit,
@@ -293,7 +293,6 @@ private fun BreathingSession(
     val latestOnPhase by rememberUpdatedState(onPhaseStarted)
     val latestOnFinished by rememberUpdatedState(onFinished)
     // Survives rotation so a restored session does not replay the current phase's cue.
-    var lastCuedPhase by rememberSaveable(sessionId) { mutableStateOf(-1) }
 
     DisposableEffect(view) {
         view.keepScreenOn = true
@@ -307,14 +306,15 @@ private fun BreathingSession(
     LaunchedEffect(pattern, sessionId) {
         snapshotFlow { display.cycleIndex * PHASE_KEY_STRIDE + display.phaseIndex }
             .distinctUntilChanged()
-            .collect { key ->
-                if (display.finished || key == lastCuedPhase) return@collect
-                lastCuedPhase = key
+            .collect {
+                if (display.finished) return@collect
+                // The ViewModel's gate decides; a phase is never cued twice, even if this screen is
+                // recreated or reports the same phase again.
+                if (!latestOnPhase(display.cycleIndex, display.phaseIndex, display.kind)) return@collect
                 view.performHapticFeedback(
                     if (Build.VERSION.SDK_INT >= 34) HapticFeedbackConstants.SEGMENT_TICK
                     else HapticFeedbackConstants.CLOCK_TICK,
                 )
-                latestOnPhase(display.kind)
             }
     }
     LaunchedEffect(pattern, sessionId) {
