@@ -18,11 +18,16 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,24 +57,57 @@ fun WatchedAppsScreen(
             }
             return@Scaffold
         }
+        var query by rememberSaveable { mutableStateOf("") }
+        val matches: (AppRow) -> Boolean = { query.isBlank() || it.label.contains(query.trim(), ignoreCase = true) }
+        val suggested = state.suggested.filter(matches)
+        val others = state.others.filter(matches)
+        val selectedCount = state.suggested.count { it.watched } + state.others.count { it.watched }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = padding,
         ) {
             item {
                 Text(
-                    stringResource(R.string.watched_intro),
+                    stringResource(R.string.watched_intro, selectedCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                 )
             }
-            if (state.suggested.isNotEmpty()) {
-                item { SectionHeader(stringResource(R.string.watched_suggested)) }
-                items(state.suggested, key = { it.packageName }) { AppToggleRow(it, onToggle, loadIcon) }
+            item {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    placeholder = { Text(stringResource(R.string.watched_search)) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(28.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    ),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+                )
             }
-            item { SectionHeader(stringResource(R.string.watched_others)) }
-            items(state.others, key = { it.packageName }) { AppToggleRow(it, onToggle, loadIcon) }
+            if (suggested.isNotEmpty()) {
+                item { SectionHeader(stringResource(R.string.watched_suggested)) }
+                items(suggested, key = { it.packageName }) { AppToggleRow(it, onToggle, loadIcon) }
+            }
+            if (others.isNotEmpty()) {
+                item { SectionHeader(stringResource(R.string.watched_others)) }
+                items(others, key = { it.packageName }) { AppToggleRow(it, onToggle, loadIcon) }
+            }
+            if (suggested.isEmpty() && others.isEmpty()) {
+                item {
+                    Text(
+                        stringResource(R.string.watched_no_results),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(24.dp),
+                    )
+                }
+            }
             item { Spacer(Modifier.height(24.dp)) }
         }
     }

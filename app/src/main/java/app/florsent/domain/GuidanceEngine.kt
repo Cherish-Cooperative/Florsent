@@ -100,6 +100,13 @@ class GuidanceEngine(private val zone: ZoneId = ZoneId.systemDefault()) {
     fun needsTick(state: GuidanceState, config: GuidanceConfig): Boolean =
         state.previewStartedAtMs != null || state.isCounting(config)
 
+    /** Whether a [BreathingCompleted] right now would start a cooldown (mirrors [reduce]). */
+    fun completionStartsCooldown(state: GuidanceState): Boolean = when (state.mode) {
+        GuidanceMode.Breathing -> !state.breathingFromPreview
+        GuidanceMode.Tracking -> state.overBudgetMs > 0
+        GuidanceMode.Cooldown -> false
+    }
+
     fun dailyUsedMs(state: GuidanceState, nowMs: Long): Long =
         if (state.epochDay == epochDay(nowMs)) state.dailyUsedMs else 0
 

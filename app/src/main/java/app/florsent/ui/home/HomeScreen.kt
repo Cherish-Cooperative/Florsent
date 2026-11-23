@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,6 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.florsent.R
 import app.florsent.domain.GuidanceStatus
+import app.florsent.ui.breathe.BreathingFlower
+import java.time.LocalTime
 import app.florsent.ui.components.NavigationRow
 import app.florsent.ui.components.SoftCard
 import app.florsent.ui.theme.FlorsentTheme
@@ -45,7 +49,7 @@ fun HomeScreen(
     onBreathe: () -> Unit,
     onPreview: () -> Unit,
     onOpenWatchedApps: () -> Unit,
-    onOpenBudget: () -> Unit,
+    onOpenSettings: () -> Unit,
     onAcceptDisclosure: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
 ) {
@@ -58,19 +62,26 @@ fun HomeScreen(
             .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(horizontal = 24.dp),
     ) {
-        Spacer(Modifier.height(40.dp))
-        Text(
-            stringResource(R.string.app_name),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(36.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.app_name),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(greeting(), style = MaterialTheme.typography.headlineMedium)
+            }
+            BreathingFlower(expansion = { 0.7f }, timeSeconds = { 0f }, modifier = Modifier.size(76.dp))
+        }
+        Spacer(Modifier.height(8.dp))
         Text(
             stringResource(R.string.home_tagline),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(28.dp))
 
         if (state.loaded && !state.serviceRunning) {
             SetupCard(onEnable = { showDisclosure = true })
@@ -116,13 +127,13 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.outlineVariant,
                 )
                 NavigationRow(
-                    title = stringResource(R.string.home_budget),
+                    title = stringResource(R.string.home_settings),
                     value = stringResource(
                         R.string.home_budget_value,
                         state.sessionBudgetMinutes,
                         state.dailyBudgetMinutes,
                     ),
-                    onClick = onOpenBudget,
+                    onClick = onOpenSettings,
                 )
             }
         }
@@ -148,6 +159,19 @@ fun HomeScreen(
             },
         )
     }
+}
+
+@Composable
+private fun greeting(): String {
+    val hour = remember { LocalTime.now().hour }
+    return stringResource(
+        when (hour) {
+            in 5..10 -> R.string.greeting_morning
+            in 11..16 -> R.string.greeting_afternoon
+            in 17..22 -> R.string.greeting_evening
+            else -> R.string.greeting_night
+        },
+    )
 }
 
 @Composable
@@ -223,7 +247,7 @@ private fun HomePreview() {
                 loaded = true, serviceRunning = true, todayUsedMinutes = 23, dailyBudgetMinutes = 60,
                 sessionBudgetMinutes = 15, watchedCount = 4,
             ),
-            onBreathe = {}, onPreview = {}, onOpenWatchedApps = {}, onOpenBudget = {},
+            onBreathe = {}, onPreview = {}, onOpenWatchedApps = {}, onOpenSettings = {},
             onAcceptDisclosure = {}, onOpenAccessibilitySettings = {},
         )
     }

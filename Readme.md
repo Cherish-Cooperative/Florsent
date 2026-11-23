@@ -27,11 +27,13 @@ app.florsent
 │   ├── GuidanceEngine     額度狀態機：reduce(state, event, config)、effect()、status()
 │   ├── GuidanceState      狀態、事件、輸出效果
 │   ├── GuidanceConfig     額度、淡化時間、提示時機、冷卻等參數
-│   └── ForegroundPolicy   把無障礙事件轉成「目前在前景的 App」
+│   ├── ForegroundPolicy   把無障礙事件轉成「目前在前景的 App」
+│   └── Breathing          四種呼吸法與時間軸（展開程度、階段、倒數）
 ├── data/      DataStore（使用者設定、引擎狀態）、已安裝 App 清單
 ├── service/   無障礙服務、GuidanceCoordinator（全域狀態與每秒 tick）、浮出提示
-│   └── effect/  VisualEffectController 擴充點與中性灰 overlay
-└── ui/        Compose 畫面（home、apps、budget、breathe）與主題
+│   ├── effect/  VisualEffectController 擴充點與中性灰 overlay
+│   └── audio/   呼吸練習的環境音與提示音
+└── ui/        Compose 畫面（home、breathe、grounding、apps、settings）與主題
 ```
 
 資料流是單向的：無障礙服務和 UI 把事件送進 `GuidanceCoordinator.dispatch()`，由 `GuidanceEngine` 算出新狀態，再由服務把 `effect` 畫到畫面上。
@@ -42,6 +44,12 @@ app.florsent
 - 單次額度或每日額度任一個超過後開始淡化，用 smoothstep 曲線在 3 分鐘內從無到最強。淡化到一半時浮出提示。
 - 點提示進入呼吸練習，完成後進入冷卻時間；按「×」則延後 2 分鐘再提示。
 - 離開監測的 App 超過 10 分鐘，單次額度重新計算；每日額度在當地午夜歸零。
+
+### 呼吸動畫
+
+`BreathingFlower` 用 Compose Canvas 畫兩層花瓣、光暈和進度環。路徑、漸層和筆觸在 `drawWithCache` 裡建好；動畫時間用 `withFrameNanos` 對齊單調時鐘，只在 draw lambda 裡讀取，所以每一幀只重畫、不會 recomposition。階段文字透過 `derivedStateOf` 每秒最多更新一次。換階段時有輕微震動，可選提示音。系統關閉動畫時花會保持靜止，文字和進度環照常更新。練習中螢幕保持常亮，App 離開前景時計時會暫停。
+
+內建呼吸法：4-4-4 等長呼吸、4-4-4-4 盒式呼吸、4-7-8 放鬆呼吸（4 輪）、5.5-5.5 共振呼吸，每種約 1 分 15 秒。
 
 ### 視覺效果擴充點
 

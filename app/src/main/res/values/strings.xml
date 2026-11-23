@@ -6,12 +6,16 @@
 
     <!-- Home -->
     <string name="home_tagline">放下手機的時候，慢慢來就好。</string>
+    <string name="greeting_morning">早安</string>
+    <string name="greeting_afternoon">午安</string>
+    <string name="greeting_evening">晚上好</string>
+    <string name="greeting_night">夜深了，早點休息</string>
     <string name="home_breathe_now">立即呼吸練習</string>
     <string name="home_preview">30 秒體驗漸進引導</string>
     <string name="home_preview_needs_service">開啟漸進引導之後就能體驗。</string>
     <string name="home_watched_apps">監測的 App</string>
     <string name="home_watched_apps_value">%d 個</string>
-    <string name="home_budget">使用額度</string>
+    <string name="home_settings">額度與設定</string>
     <string name="home_budget_value">單次 %1$d 分鐘・每日 %2$d 分鐘</string>
 
     <string name="today_label">今天在社群 App 上</string>
@@ -34,12 +38,25 @@
 
     <!-- Watched apps -->
     <string name="watched_title">監測的 App</string>
-    <string name="watched_intro">只有勾選的 App 會計入使用額度。</string>
+    <string name="watched_intro">只有勾選的 App 會計入使用額度，目前選了 %d 個。</string>
+    <string name="watched_search">搜尋 App</string>
+    <string name="watched_no_results">找不到符合的 App。</string>
     <string name="watched_suggested">常見的社群 App</string>
     <string name="watched_others">其他 App</string>
 
-    <!-- Budget -->
-    <string name="budget_title">使用額度</string>
+    <!-- Settings -->
+    <string name="settings_title">額度與設定</string>
+    <string name="settings_section_budget">使用額度</string>
+    <string name="settings_section_breathing">呼吸練習</string>
+    <string name="settings_section_guidance">漸進引導</string>
+    <string name="settings_ambient_hint">練習時播放輕柔的手碟聲。</string>
+    <string name="settings_cue_hint">每次換階段時響一聲柔和的鈴聲。</string>
+    <string name="settings_return_home">完成後回到手機桌面</string>
+    <string name="settings_return_home_hint">按下「回到生活」後直接離開 Florsent。</string>
+    <string name="settings_service">無障礙服務</string>
+    <string name="settings_service_on">已開啟</string>
+    <string name="settings_service_off">未開啟，點這裡前往設定</string>
+    <string name="settings_footer">Florsent %s・資料只存在這支手機上</string>
     <string name="budget_intro">超過任一個額度，畫面就會開始慢慢變淡。</string>
     <string name="budget_session">單次額度</string>
     <string name="budget_session_hint">連續使用多久後開始引導，離開 10 分鐘以上會重算。</string>
@@ -48,11 +65,49 @@
     <string name="budget_cooldown">休息時間</string>
     <string name="budget_cooldown_hint">做完呼吸練習之後，這段時間內不會再打擾你。</string>
 
-    <!-- Breathe (P2 placeholder) -->
+    <!-- Breathe -->
     <string name="breathe_title">呼吸練習</string>
-    <string name="breathe_placeholder_body">慢慢吸氣，停一下，再慢慢吐氣。\n完整的呼吸動畫會在下一版加入。</string>
-    <string name="breathe_complete">完成練習</string>
-    <string name="breathe_later">先不要</string>
+    <string name="breathe_pick_rhythm">選一種節奏，跟著花慢慢呼吸。</string>
+    <string name="breathe_start">開始</string>
+    <string name="breathe_ambient_sound">環境音</string>
+    <string name="breathe_cue_sound">提示音</string>
+    <string name="breathe_cycle">第 %1$d 輪，共 %2$d 輪</string>
+    <string name="breathe_end_early">提早結束</string>
+    <string name="phase_inhale">吸氣</string>
+    <string name="phase_hold_in">屏息</string>
+    <string name="phase_exhale">吐氣</string>
+    <string name="phase_hold_out">停頓</string>
+    <string name="pattern_duration">%1$d 輪，約 %2$d 分 %3$d 秒</string>
+    <string name="pattern_equal">等長呼吸</string>
+    <string name="pattern_equal_desc">吸氣、屏息、吐氣各四秒，幫助專注。</string>
+    <string name="pattern_box">盒式呼吸</string>
+    <string name="pattern_box_desc">四個步驟各四秒，讓心情穩定下來。</string>
+    <string name="pattern_478">4-7-8 放鬆呼吸</string>
+    <string name="pattern_478_desc">拉長屏息和吐氣，幫助身體放鬆。</string>
+    <string name="pattern_resonance">共振呼吸</string>
+    <string name="pattern_resonance_desc">吸吐各 5.5 秒，每分鐘大約五次半。</string>
+
+    <!-- Grounding -->
+    <string name="grounding_label">回到當下</string>
+    <string name="grounding_another">換一句</string>
+    <string name="grounding_return">回到生活</string>
+    <string name="grounding_return_hint_home">會回到手機桌面</string>
+    <string name="grounding_return_hint_app">會回到 Florsent 首頁</string>
+    <string name="grounding_cooldown">接下來 %d 分鐘，Florsent 不會打擾你。</string>
+    <string-array name="grounding_prompts">
+        <item>看看四周，找出三樣綠色的東西。</item>
+        <item>感受雙腳踩在地上的重量。</item>
+        <item>放下手機，去倒杯水，慢慢喝完。</item>
+        <item>聽聽看，現在離你最遠的聲音是什麼？</item>
+        <item>讓肩膀放鬆，往下沉一點點。</item>
+        <item>看向窗外最遠的地方，讓眼睛休息一下。</item>
+        <item>摸摸身邊的東西，感覺它的溫度和觸感。</item>
+        <item>站起來伸個懶腰，讓背慢慢延展開。</item>
+        <item>想一件今天還不錯的小事。</item>
+        <item>深深吸一口氣，聞聞空氣裡有什麼味道。</item>
+        <item>留意眼前最亮的那個顏色，靜靜看它一會兒。</item>
+        <item>跟身邊的人說說話，或抬頭看看天空。</item>
+    </string-array>
 
     <!-- Nudge overlay -->
     <string name="nudge_message">停下來深呼吸一下？</string>

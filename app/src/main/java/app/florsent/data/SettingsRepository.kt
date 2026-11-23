@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import app.florsent.domain.GuidanceConfig
 import java.io.IOException
@@ -21,6 +22,10 @@ data class UserSettings(
     val dailyBudgetMinutes: Int = DEFAULT_DAILY_MINUTES,
     val cooldownMinutes: Int = DEFAULT_COOLDOWN_MINUTES,
     val disclosureAccepted: Boolean = false,
+    val breathingPatternId: String? = null,
+    val ambientSound: Boolean = false,
+    val cueSound: Boolean = false,
+    val returnToHomeScreen: Boolean = true,
 ) {
     fun toGuidanceConfig(): GuidanceConfig = GuidanceConfig(
         watchedPackages = watchedPackages,
@@ -49,6 +54,10 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
                 dailyBudgetMinutes = p[Keys.DAILY_MINUTES] ?: UserSettings.DEFAULT_DAILY_MINUTES,
                 cooldownMinutes = p[Keys.COOLDOWN_MINUTES] ?: UserSettings.DEFAULT_COOLDOWN_MINUTES,
                 disclosureAccepted = p[Keys.DISCLOSURE_ACCEPTED] ?: false,
+                breathingPatternId = p[Keys.PATTERN_ID],
+                ambientSound = p[Keys.AMBIENT_SOUND] ?: false,
+                cueSound = p[Keys.CUE_SOUND] ?: false,
+                returnToHomeScreen = p[Keys.RETURN_HOME] ?: true,
             )
         }
         .distinctUntilChanged()
@@ -77,6 +86,11 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setDisclosureAccepted(accepted: Boolean) =
         dataStore.edit { it[Keys.DISCLOSURE_ACCEPTED] = accepted }
 
+    suspend fun setBreathingPattern(id: String) = dataStore.edit { it[Keys.PATTERN_ID] = id }
+    suspend fun setAmbientSound(on: Boolean) = dataStore.edit { it[Keys.AMBIENT_SOUND] = on }
+    suspend fun setCueSound(on: Boolean) = dataStore.edit { it[Keys.CUE_SOUND] = on }
+    suspend fun setReturnToHomeScreen(on: Boolean) = dataStore.edit { it[Keys.RETURN_HOME] = on }
+
     private object Keys {
         val WATCHED = stringSetPreferencesKey("watched_packages")
         val WATCHED_INITIALIZED = booleanPreferencesKey("watched_initialized")
@@ -84,5 +98,9 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         val DAILY_MINUTES = intPreferencesKey("daily_budget_minutes")
         val COOLDOWN_MINUTES = intPreferencesKey("cooldown_minutes")
         val DISCLOSURE_ACCEPTED = booleanPreferencesKey("a11y_disclosure_accepted")
+        val PATTERN_ID = stringPreferencesKey("breathing_pattern_id")
+        val AMBIENT_SOUND = booleanPreferencesKey("ambient_sound")
+        val CUE_SOUND = booleanPreferencesKey("cue_sound")
+        val RETURN_HOME = booleanPreferencesKey("return_to_home_screen")
     }
 }

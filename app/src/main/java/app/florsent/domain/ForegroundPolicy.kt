@@ -6,8 +6,15 @@ package app.florsent.domain
  */
 object ForegroundPolicy {
 
-    /** Shade, keyguard, volume dialog and similar transient system surfaces. */
-    private val transientPackages = setOf("com.android.systemui")
+    /**
+     * Shade, keyguard, volume dialog and runtime-permission prompts: transient system surfaces
+     * shown on top of the app the user is still in.
+     */
+    private val transientPackages = setOf(
+        "com.android.systemui",
+        "com.android.permissioncontroller",
+        "com.google.android.permissioncontroller",
+    )
 
     fun resolve(
         packageName: CharSequence?,

@@ -13,27 +13,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.florsent.AppContainer
+import app.florsent.data.UserSettings
 import app.florsent.domain.GuidanceEvent
+import app.florsent.service.audio.BreathingSoundscape
 import app.florsent.ui.apps.WatchedAppsScreen
 import app.florsent.ui.apps.WatchedAppsViewModel
 import app.florsent.ui.breathe.BreatheScreen
-import app.florsent.ui.budget.BudgetScreen
-import app.florsent.ui.budget.BudgetViewModel
+import app.florsent.ui.breathe.BreatheStage
+import app.florsent.ui.breathe.BreatheViewModel
+import app.florsent.ui.grounding.GroundingScreen
 import app.florsent.ui.home.HomeScreen
 import app.florsent.ui.home.HomeViewModel
+import app.florsent.ui.settings.SettingsScreen
+import app.florsent.ui.settings.SettingsViewModel
 
-enum class Route { Home, Breathe, WatchedApps, Budget }
+enum class Route { Home, Breathe, Grounding, WatchedApps, Settings }
 
 /**
- * Four screens do not justify a navigation library; a saveable enum plus BackHandler is enough.
+ * Five screens do not justify a navigation library; a saveable enum plus BackHandler is enough.
+ *
+ * @param requestedRoute a route requested from outside (the nudge); [Route.Breathe] from there
+ *   starts the session right away so the user is one tap from breathing.
  */
 @Composable
 fun FlorsentAppUi(
@@ -42,29 +52,58 @@ fun FlorsentAppUi(
     onRouteConsumed: () -> Unit,
     onStartPreview: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
+    onGoToLauncher: () -> Unit,
 ) {
     var route by rememberSaveable { mutableStateOf(Route.Home) }
     val guidance = container.guidance
+    val context = LocalContext.current
+    val breatheVm: BreatheViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer { BreatheViewModel(container, BreathingSoundscape(context.applicationContext)) }
+        },
+    )
+    val settings by container.settings.settings.collectAsStateWithLifecycle(UserSettings())
 
     LaunchedEffect(requestedRoute) {
         if (requestedRoute != null) {
             route = requestedRoute
+            if (requestedRoute == Route.Breathe && breatheVm.uiState.value.stage == BreatheStage.Ready) {
+                breatheVm.start()
+            }
             onRouteConsumed()
         }
     }
 
-    val leaveBreathe = {
+    val leaveBreathing = {
+        breatheVm.stop()
         guidance.dispatch(GuidanceEvent.BreathingCancelled(guidance.now()))
         route = Route.Home
     }
+    val finishBreathing = {
+        if (route == Route.Breathe) {
+            breatheVm.stop()
+            route = Route.Grounding
+        }
+    }
+    val returnToLife = { goToLauncher: Boolean ->
+        guidance.dispatch(GuidanceEvent.BreathingCompleted(guidance.now()))
+        route = Route.Home
+        if (goToLauncher) onGoToLauncher()
+    }
+
     BackHandler(enabled = route != Route.Home) {
-        if (route == Route.Breathe) leaveBreathe() else route = Route.Home
+        when (route) {
+            Route.Breathe ->
+                if (breatheVm.uiState.value.stage == BreatheStage.Running) leaveBreathing() else route = Route.Home
+            Route.Grounding -> returnToLife(false)
+            else -> route = Route.Home
+        }
     }
 
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         AnimatedContent(
             targetState = route,
-            transitionSpec = { fadeIn(tween(260)) togetherWith fadeOut(tween(180)) },
+            transitionSpec = { fadeIn(tween(320)) togetherWith fadeOut(tween(200)) },
             label = "route",
         ) { current ->
             when (current) {
@@ -79,18 +118,35 @@ fun FlorsentAppUi(
                             onStartPreview()
                         },
                         onOpenWatchedApps = { route = Route.WatchedApps },
-                        onOpenBudget = { route = Route.Budget },
+                        onOpenSettings = { route = Route.Settings },
                         onAcceptDisclosure = vm::acceptDisclosure,
                         onOpenAccessibilitySettings = onOpenAccessibilitySettings,
                     )
                 }
-                Route.Breathe -> BreatheScreen(
-                    onComplete = {
-                        guidance.dispatch(GuidanceEvent.BreathingCompleted(guidance.now()))
-                        route = Route.Home
-                    },
-                    onCancel = leaveBreathe,
-                )
+                Route.Breathe -> {
+                    val state by breatheVm.uiState.collectAsStateWithLifecycle()
+                    BreatheScreen(
+                        state = state,
+                        onBack = { route = Route.Home },
+                        onSelectPattern = breatheVm::selectPattern,
+                        onAmbientChange = breatheVm::setAmbientSound,
+                        onCueChange = breatheVm::setCueSound,
+                        onStart = breatheVm::start,
+                        onPhaseStarted = breatheVm::onPhaseStarted,
+                        onFinished = finishBreathing,
+                    )
+                }
+                Route.Grounding -> {
+                    val guidanceState by guidance.state.collectAsStateWithLifecycle()
+                    val startsCooldown = remember(guidanceState) {
+                        guidance.engine.completionStartsCooldown(guidanceState)
+                    }
+                    GroundingScreen(
+                        cooldownMinutes = if (startsCooldown) settings.cooldownMinutes else null,
+                        returnToHomeScreen = settings.returnToHomeScreen,
+                        onReturnToLife = { returnToLife(settings.returnToHomeScreen) },
+                    )
+                }
                 Route.WatchedApps -> {
                     val vm: WatchedAppsViewModel =
                         viewModel(factory = viewModelFactory { initializer { WatchedAppsViewModel(container) } })
@@ -102,16 +158,15 @@ fun FlorsentAppUi(
                         loadIcon = vm::icon,
                     )
                 }
-                Route.Budget -> {
-                    val vm: BudgetViewModel =
-                        viewModel(factory = viewModelFactory { initializer { BudgetViewModel(container) } })
-                    val settings by vm.settings.collectAsStateWithLifecycle()
-                    BudgetScreen(
-                        settings = settings,
+                Route.Settings -> {
+                    val vm: SettingsViewModel =
+                        viewModel(factory = viewModelFactory { initializer { SettingsViewModel(container) } })
+                    val state by vm.uiState.collectAsStateWithLifecycle()
+                    SettingsScreen(
+                        state = state,
+                        vm = vm,
                         onBack = { route = Route.Home },
-                        onSessionChange = { vm.setSession(it) },
-                        onDailyChange = { vm.setDaily(it) },
-                        onCooldownChange = { vm.setCooldown(it) },
+                        onOpenAccessibilitySettings = onOpenAccessibilitySettings,
                     )
                 }
             }
