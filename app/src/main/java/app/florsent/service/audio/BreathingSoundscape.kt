@@ -1,0 +1,151 @@
+package app.florsent.service.audio
+
+import android.animation.ValueAnimator
+import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.media.SoundPool
+import android.view.animation.LinearInterpolator
+import app.florsent.R
+import app.florsent.domain.BreathPhaseKind
+
+/**
+ * Optional sound for the breathing session: a looping ambient bed that fades in and out, plus a
+ * soft bell at phase changes (pitched per phase via the SoundPool playback rate, so one 10 KB asset
+ * covers all phases). Must be used from the main thread.
+ */
+/** Sound for a breathing session; an interface so the ViewModel can be tested without audio. */
+interface BreathingSound {
+    fun startAmbient()
+    fun stopAmbient()
+    fun pauseAmbient()
+    fun resumeAmbient()
+    fun playCue(kind: BreathPhaseKind)
+    fun release()
+}
+
+class BreathingSoundscape(context: Context) : BreathingSound {
+
+    private val appContext = context.applicationContext
+    private val audioManager = appContext.getSystemService(AudioManager::class.java)
+    private val attributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .build()
+
+    private val soundPool = SoundPool.Builder().setMaxStreams(2).setAudioAttributes(attributes).build()
+    private var cueId = 0
+    private var cueLoaded = false
+
+    private var player: MediaPlayer? = null
+    private var fade: ValueAnimator? = null
+    private var volume = 0f
+
+    private val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+        .setAudioAttributes(attributes)
+        .setOnAudioFocusChangeListener { change ->
+            if (change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                stopAmbient()
+            }
+        }
+        .build()
+
+    init {
+        soundPool.setOnLoadCompleteListener { _, id, status -> if (id == cueId && status == 0) cueLoaded = true }
+        cueId = soundPool.load(appContext, R.raw.cue_soft, 1)
+    }
+
+    override fun startAmbient() {
+        val existing = player
+        if (existing != null) {
+            // Possibly mid fade-out: cancel it and fade back in instead of going silent.
+            if (!existing.isPlaying) existing.start()
+            fadeTo(AMBIENT_VOLUME, FADE_IN_MS) {}
+            return
+        }
+        if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
+        player = MediaPlayer.create(appContext, R.raw.breathing_ambient, attributes, audioManager.generateAudioSessionId())
+            ?.apply {
+                isLooping = true
+                setVolume(0f, 0f)
+                start()
+            }
+        fadeTo(AMBIENT_VOLUME, FADE_IN_MS) {}
+    }
+
+    /** App went to the background mid-session: hold the loop (and give back audio focus). */
+    override fun pauseAmbient() {
+        val current = player ?: return
+        fade?.cancel()
+        if (current.isPlaying) current.pause()
+        volume = 0f
+        current.setVolume(0f, 0f)
+        audioManager.abandonAudioFocusRequest(focusRequest)
+    }
+
+    /** Back in front: resume a paused loop with a short fade. */
+    override fun resumeAmbient() {
+        val current = player ?: return
+        if (current.isPlaying) return
+        if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
+        current.start()
+        fadeTo(AMBIENT_VOLUME, FADE_IN_MS) {}
+    }
+
+    override fun stopAmbient() {
+        val current = player ?: return
+        fadeTo(0f, FADE_OUT_MS) {
+            if (player === current) {
+                current.release()
+                player = null
+                audioManager.abandonAudioFocusRequest(focusRequest)
+            }
+        }
+    }
+
+    override fun playCue(kind: BreathPhaseKind) {
+        if (!cueLoaded) return
+        val rate = when (kind) {
+            BreathPhaseKind.Inhale -> 1.0f
+            BreathPhaseKind.HoldIn -> 0.89f
+            BreathPhaseKind.Exhale -> 0.75f
+            BreathPhaseKind.HoldOut -> 0.84f
+        }
+        soundPool.play(cueId, CUE_VOLUME, CUE_VOLUME, 1, 0, rate)
+    }
+
+    override fun release() {
+        fade?.cancel()
+        player?.release()
+        player = null
+        audioManager.abandonAudioFocusRequest(focusRequest)
+        soundPool.release()
+    }
+
+    private fun fadeTo(target: Float, durationMs: Long, onEnd: () -> Unit) {
+        fade?.cancel()
+        fade = ValueAnimator.ofFloat(volume, target).apply {
+            duration = durationMs
+            interpolator = LinearInterpolator()
+            addUpdateListener {
+                volume = it.animatedValue as Float
+                player?.setVolume(volume, volume)
+            }
+            addListener(object : android.animation.AnimatorListenerAdapter() {
+                private var cancelled = false
+                override fun onAnimationCancel(animation: android.animation.Animator) { cancelled = true }
+                override fun onAnimationEnd(animation: android.animation.Animator) { if (!cancelled) onEnd() }
+            })
+            start()
+        }
+    }
+
+    private companion object {
+        const val AMBIENT_VOLUME = 0.45f
+        const val CUE_VOLUME = 0.35f
+        const val FADE_IN_MS = 2_500L
+        const val FADE_OUT_MS = 1_200L
+    }
+}

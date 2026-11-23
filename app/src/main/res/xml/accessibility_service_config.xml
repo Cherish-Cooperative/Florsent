@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Minimal footprint: only window-state changes (which app is in front), no window content,
+  no gestures. Florsent is not an accessibility tool, so isAccessibilityTool is false and the
+  in-app prominent disclosure plus the Play Console declaration are required.
+-->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeAllMask"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:accessibilityEventTypes="typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:notificationTimeout="100"
-    android:canRetrieveWindowContent="true"
     android:accessibilityFlags="flagDefault"
-    android:settingsActivity="com.example.zhenailife.SettingsActivity"
-    android:canPerformGestures="true"
-    />
+    android:canRetrieveWindowContent="false"
+    android:description="@string/accessibility_service_description"
+    android:isAccessibilityTool="false"
+    android:notificationTimeout="0"
+    tools:targetApi="31" />
