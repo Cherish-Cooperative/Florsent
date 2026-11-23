@@ -50,6 +50,19 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun `the watch list repair runs exactly once, so a later manual change sticks`() = runTest {
+        val repo = repository()
+        repo.initializeWatchedIfNeeded(setOf("com.google.android.youtube"))
+        repo.repairWatchedOnce { it + "app.morphe.android.youtube" }
+        assertEquals(setOf("com.google.android.youtube", "app.morphe.android.youtube"), repo.settings.first().watchedPackages)
+
+        // The user unwatches the client afterwards; the next app start must not add it back.
+        repo.setWatched("app.morphe.android.youtube", false)
+        repo.repairWatchedOnce { it + "app.morphe.android.youtube" }
+        assertEquals(setOf("com.google.android.youtube"), repo.settings.first().watchedPackages)
+    }
+
+        @Test
     fun `editing the list before initialization also counts as initialized`() = runTest {
         val repo = repository()
         repo.setWatched("x", true)

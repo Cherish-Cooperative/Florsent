@@ -1,6 +1,6 @@
 # Florsent Google Play 上架資料包
 
-這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.10.0（versionCode 12）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
+這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.10.1（versionCode 13）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
 
 - 套件名稱：`app.florsent`（上架後不能再改）
 - 介面語言：繁體中文、英文（跟隨系統，或在 App 內「設定 > 進階 > 語言 / Language」切換；Android 13 以上也可在系統的「App 語言」設定）
@@ -290,9 +290,11 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 
 ## 版本說明
 
-### 0.10.0（zh-TW）
+### 0.10.1（zh-TW）
 
 ```
+・修正：部分手機在解鎖後不會計時，用再久也不會出現提醒
+・自動找到你實際在用的 YouTube、Instagram 等 App，包括非官方版本
 ・完整支援英文：跟隨手機語言，也可以在「設定 > 進階 > 語言 / Language」切換
 ・修正：洞察頁的星期標籤會跟著介面語言顯示
 ・新增「變淡時播放柔和雨聲」：畫面變淡時雨聲慢慢浮現，影片只會變小聲、不會被暫停
@@ -306,9 +308,11 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 ・使用紀錄更準確：App 重新啟動時不再記下多餘的停止與開始
 ```
 
-### 0.10.0（en-US）
+### 0.10.1（en-US）
 
 ```
+• Fixed: on some phones time was not counted after unlocking, so reminders never appeared
+• Florsent now finds the YouTube, Instagram and other apps you actually use, including unofficial clients
 • Florsent now speaks English: it follows your phone's language, or switch in Settings > Advanced > Language
 • Fixed: weekday labels on the Recent page now match the app's language
 • New: soft rain while the screen fades; videos are only turned down, never paused

@@ -44,21 +44,18 @@ object ForegroundPolicy {
         pkg == leftPackage && nowMs - leftAtMs in 0 until HANDOFF_ECHO_MS
 }
 
-/** Common feed-style social apps, used to preselect the watch list on first launch. */
-object KnownSocialApps {
-    val packages: Set<String> = linkedSetOf(
-        "com.instagram.android",
-        "com.instagram.barcelona", // Threads
-        "com.facebook.katana",
-        "com.facebook.lite",
-        "com.zhiliaoapp.musically", // TikTok
-        "com.ss.android.ugc.trill", // TikTok (some regions)
-        "com.google.android.youtube",
-        "com.twitter.android", // X
-        "com.reddit.frontpage",
-        "com.snapchat.android",
-        "com.pinterest",
-        "tv.twitch.android.app",
-        "com.xingin.xhs", // 小紅書
-    )
+/**
+ * When is the screen "in use" (unlocked, so watched apps can be timed)?
+ *
+ * ACTION_USER_PRESENT cannot be relied on: on Android 17 it is sent with a defer-until-active policy
+ * and an accessibility service's process can sit in a cached state, so the broadcast may never
+ * arrive. SCREEN_ON comes while the lock screen is still up. The reliable signal is the first
+ * window event after unlocking (launcher or app): at that moment the device is interactive and the
+ * keyguard is gone.
+ */
+object ScreenPolicy {
+    /** True when a window event shows the user has unlocked, but the engine still thinks it is locked. */
+    fun unlockNotYetSeen(engineScreenOn: Boolean, interactive: Boolean, keyguardLocked: Boolean): Boolean =
+        !engineScreenOn && interactive && !keyguardLocked
 }
+

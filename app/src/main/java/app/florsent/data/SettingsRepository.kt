@@ -107,6 +107,19 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     }
 
     /** Preselects [defaults] the first time only; later edits by the user are never overwritten. */
+    /**
+     * One-time repair of the watch list (v0.10.1): [repair] receives the current list and returns
+     * the repaired one. Runs once per install, so a later manual change is never undone.
+     */
+    suspend fun repairWatchedOnce(repair: (Set<String>) -> Set<String>) {
+        dataStore.edit { p ->
+            if (p[Keys.WATCHED_INITIALIZED] == true && p[Keys.WATCHED_REPAIRED] != true) {
+                p[Keys.WATCHED] = repair(p[Keys.WATCHED].orEmpty())
+            }
+            p[Keys.WATCHED_REPAIRED] = true
+        }
+    }
+
     suspend fun initializeWatchedIfNeeded(defaults: Set<String>) {
         dataStore.edit { p ->
             if (p[Keys.WATCHED_INITIALIZED] != true) {
@@ -146,6 +159,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     private object Keys {
         val WATCHED = stringSetPreferencesKey("watched_packages")
         val WATCHED_INITIALIZED = booleanPreferencesKey("watched_initialized")
+        val WATCHED_REPAIRED = booleanPreferencesKey("watched_variants_repaired_v1")
         val SESSION_MINUTES = intPreferencesKey("session_budget_minutes")
         val DAILY_MINUTES = intPreferencesKey("daily_budget_minutes")
         val COOLDOWN_MINUTES = intPreferencesKey("cooldown_minutes")

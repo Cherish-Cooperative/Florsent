@@ -9,7 +9,7 @@ import app.florsent.data.UserSettings
 import app.florsent.data.guidanceDataStore
 import app.florsent.data.settingsDataStore
 import app.florsent.domain.GuidanceEngine
-import app.florsent.domain.KnownSocialApps
+import app.florsent.domain.SocialAppMatcher
 import app.florsent.data.UsageLogStore
 import app.florsent.service.GuidanceCoordinator
 import app.florsent.service.UsageAnalysis
@@ -66,7 +66,11 @@ class AppContainer(context: Context) {
 
     init {
         scope.launch {
-            settings.initializeWatchedIfNeeded(installedApps.installedPackages(KnownSocialApps.packages))
+            // Only launchable apps (a disabled official app must not be watched instead of the
+            // client actually in use), matched by package or brand label.
+            val launchable = installedApps.launchableLabels()
+            settings.initializeWatchedIfNeeded(SocialAppMatcher.suggest(launchable))
+            settings.repairWatchedOnce { SocialAppMatcher.repair(it, launchable) }
         }
         // Recording follows the real (loaded) settings, the service and the guidance state; event
         // driven, so it adds no wakeups of its own.

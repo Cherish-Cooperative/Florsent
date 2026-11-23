@@ -132,6 +132,8 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - **跨日**：日期只往前跑；往回超過一天才視為真正的時鐘重設。時區每次重新讀取。
 - **時鐘保護**：安靜時間、延後提醒的到期時間都有上限；未來的時間戳記（時鐘被調回去）會被丟掉或視為過期。
 - **新的一段使用**：開始計時時，若距離上次使用超過 `sessionGapMs`，清除本段累計。
+- **螢幕「使用中」的判斷**：只有解鎖後才計時。`SCREEN_ON` 會在鎖定畫面時就送來，不能當作解鎖；`ACTION_USER_PRESENT` 在 Android 17 帶有「延後到 App 活躍才送」的策略，而無障礙服務的程序可能停在快取狀態（實機 `curProcState=16`），結果解鎖廣播永遠送不到，第一次關螢幕之後就再也不計時（v0.10.1 修正的 P0）。現在每個視窗事件都會檢查：引擎仍認為螢幕鎖著、但裝置已亮且已解鎖時（`ScreenPolicy.unlockNotYetSeen`），立即回報螢幕使用中。解鎖後一定有桌面或 App 的視窗事件，所以不依賴任何廣播。`USER_PRESENT` 仍保留，在舊版系統上更早觸發。
+- **留意哪些 App（`SocialAppMatcher`）**：首次啟動只從「可啟動」的 App 裡挑，依官方套件或名稱中的品牌字（YouTube、Instagram、Threads…）判斷，排除 YouTube Music／Studio／Kids 等非動態 App。已停用的官方 App 仍算「已安裝」，以前會被勾選，而實際在用的修改版用戶端（例如 `app.morphe.android.youtube`「YouTube Morphe」）卻沒被留意。既有使用者在 v0.10.1 執行一次修復（`repairWatchedOnce`，旗標 `watched_variants_repaired_v1`）：若某品牌留意的 App 都無法啟動，補上同品牌可啟動的 App；只做一次，之後手動取消不會被加回。
 - **點提醒後的延遲事件**：點提醒開啟呼吸畫面後 2 秒內，剛離開的 App 送來的視窗事件一律忽略（`ForegroundPolicy.isHandoffEcho`）。否則像 YouTube 這類 App 收尾時的事件會被當成「回到 App」，取消呼吸，讓淡化和提醒蓋在呼吸畫面上。
 - **完成呼吸**：從真正的引導進入才會進入安靜時間；從預覽進入不會；在首頁主動練習、而且已經超過額度時也會。
 
@@ -378,7 +380,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ## 編譯與測試
 
 ```sh
-./gradlew testDebugUnitTest      # 186 個 JVM 測試
+./gradlew testDebugUnitTest      # 194 個 JVM 測試
 ./gradlew assembleDebug
 ./gradlew assembleRelease        # 確認 R8 沒有移除 ShellService
 ```
@@ -399,7 +401,9 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 |---|---|
 | `GuidanceEngineTest`（27） | 額度、淡化、提醒、呼吸、安靜時間、預覽、跨日、時鐘保護、tick 排程 |
 | `BreathingTimelineTest`（12） | 四種呼吸法、展開連續性、倒數、結束、閉氣時停住 |
-| `ForegroundPolicyTest`（4） | 系統介面、輸入法、自己的 overlay、點提醒後的延遲事件 |
+| `ForegroundPolicyTest`（5） | 系統介面、輸入法、自己的 overlay、點提醒後的延遲事件、沒有 USER_PRESENT 也能辨認解鎖 |
+| `ScreenUnlockRegressionTest`（1） | 重現 Android 17 實機：鎖過一次後不再計時，以及視窗事件回報解鎖後恢復 |
+| `SocialAppMatcherTest`（5） | 停用的官方 App 不勾選、依名稱找到修改版、既有清單修復只補使用者選過的品牌、排除非動態 App |
 | `SaturationPlannerTest`（6）、`SaturationSessionTest`（10） | 量化、還原優先、當機補救、失敗降級 |
 | `GuidanceCoordinatorTest`（7） | 虛擬時間下的零輪詢、每秒淡化、寫入節流、載入前事件排隊 |
 | `ZenGrayscaleControllerTest`（7） | 第一次同步、遲滯、存取權、失敗不重試 |
@@ -408,7 +412,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `BedtimeGuidanceTest`（11） | 時段邊界、累計門檻、門檻選項、每晚兩次上限、點提醒後效果全部清除、情境凍結、午夜不歸零、早上結束、未設定、tick 期限 |
 | `UsageLogTest`（8）、`UsageInsightsTest`（7） | 編碼與壞行、區段記錄、程序被殺變成 `U`、放棄殘留區段；跨午夜拆分、沒有資料不是 0、只比較完整的兩週、前三名 App |
 | `UsageRecordingTest`（7） | 寫入順序、新程序補 `U`、重啟不寫多餘的停止與開始、服務沒來時收尾、沒有同意不寫、清除後重新開始、壞行與保存期限 |
-| `SettingsRepositoryTest`（6）、`GuidanceStateStoreTest`（3） | 真實 DataStore 檔案上的預設值、往返與持久化 |
+| `SettingsRepositoryTest`（7）、`GuidanceStateStoreTest`（3） | 真實 DataStore 檔案上的預設值、往返與持久化 |
 | `BreatheViewModelTest`（10） | 聲音延遲建立、背景暫停、提示音開關、同一階段只響一次、新練習重新計算、釋放 |
 | `StringResourcesParityTest`（8） | 中英文鍵值、陣列句數、佔位符、複數、無漏翻、無句尾句號、`locales_config` 與資源一致、語言代碼對應 |
 | `PhaseCueGateTest`（5）、`GaplessLoopTest`（5）、`WavReaderTest`（4） | 每階段只響一次、只往前、整段練習重複回報仍只響一次、新練習重來；循環接力、音量延續、暫停與釋放；WAV 解析、拒絕不支援格式、內建提示音規格與音高 |
@@ -465,6 +469,7 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 | 呼吸蓮花 | 約 28 秒 1,682 影格，jank 0.12%，p50 6 ms、p90 10 ms、p99 16 ms |
 | 頌缽＋提示音（v0.10.0） | 等長呼吸完整 72 秒：提示音 18 次、重複 0 次、間隔 4.0 秒；第 48 秒 `MEDIA_INFO_STARTED_AS_NEXT` 無縫接手；兩條播放軌同在大緩衝輸出（HAL frame 1920），欠載全程 0 |
 | 背景雨聲（Android 17） | 預覽全程 `started`、`muted=none`、焦點 `GAIN_TRANSIENT_MAY_DUCK`，無 AudioHardening 紀錄；系統記錄 ducking 了正在播的影片 App；淡出 1.5 秒；點提醒後與呼吸環境音重疊約 3.2 秒 |
+| 計時（v0.10.1 前） | 鎖過一次螢幕後完全不計時：`SCREEN_ON`／`SCREEN_OFF` 有送達，44 次 `USER_PRESENT` 一次都沒送到 Florsent；YouTube 實際用的是 `app.morphe.android.youtube`，官方 YouTube 已停用 |
 | 閉氣時停住 | 盒式呼吸：吸氣後閉氣 5 張、吐氣後停頓 6 張連續截圖的花朵與進度環像素完全相同 |
 | 環境音 | 練習中 `MediaPlayer` started；按 Home 變 paused、交還音訊焦點；回來恢復；離開練習後釋放 |
 | Zen 灰階收尾 | 需要使用者授予零打擾存取權後再驗證 |

@@ -17,6 +17,7 @@ import app.florsent.data.AppLocales
 import app.florsent.domain.ForegroundPolicy
 import app.florsent.domain.GuidanceContext
 import app.florsent.domain.GuidanceEvent
+import app.florsent.domain.ScreenPolicy
 import app.florsent.service.audio.FadeSoundController
 import app.florsent.service.audio.FadeSoundscape
 import app.florsent.service.effect.CompositeVisualEffectController
@@ -56,15 +57,20 @@ class FlorsentAccessibilityService : AccessibilityService() {
     private var handoffAtMs = 0L
     private var receiverRegistered = false
     private var isShutDown = true
+    private val power by lazy { getSystemService(PowerManager::class.java) }
+    private val keyguard by lazy { getSystemService(KeyguardManager::class.java) }
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val now = coordinator.now()
             when (intent.action) {
-                Intent.ACTION_SCREEN_OFF -> coordinator.dispatch(GuidanceEvent.ScreenChanged(false, now))
+                Intent.ACTION_SCREEN_OFF -> {
+                    DebugLog.d { "screen off" }
+                    coordinator.dispatch(GuidanceEvent.ScreenChanged(false, now))
+                }
+                // Still listened to (prompt on older releases), but not required: see ScreenPolicy.
                 Intent.ACTION_USER_PRESENT -> coordinator.dispatch(GuidanceEvent.ScreenChanged(true, now))
                 Intent.ACTION_SCREEN_ON -> {
-                    val keyguard = getSystemService(KeyguardManager::class.java)
                     if (keyguard?.isKeyguardLocked != true) {
                         coordinator.dispatch(GuidanceEvent.ScreenChanged(true, now))
                     }
@@ -126,8 +132,6 @@ class FlorsentAccessibilityService : AccessibilityService() {
         receiverRegistered = true
 
         // Seed the screen state: after a process restart no broadcast tells us it is already on.
-        val power = getSystemService(PowerManager::class.java)
-        val keyguard = getSystemService(KeyguardManager::class.java)
         val usable = power?.isInteractive != false && keyguard?.isKeyguardLocked != true
         coordinator.dispatch(GuidanceEvent.ScreenChanged(usable, coordinator.now()))
 
@@ -148,6 +152,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        markScreenInUseIfUnlocked()
         val pkg = ForegroundPolicy.resolve(event.packageName, event.className, packageName, ignoredPackages)
             ?: return
         DebugLog.d { "window event pkg=${event.packageName} class=${event.className} -> $pkg" }
@@ -155,6 +160,20 @@ class FlorsentAccessibilityService : AccessibilityService() {
         if (pkg == lastForeground) return
         lastForeground = pkg
         coordinator.dispatch(GuidanceEvent.ForegroundChanged(pkg, coordinator.now()))
+    }
+
+    /**
+     * The unlock may never be announced (see [ScreenPolicy]); every window event re-checks it. Cheap:
+     * two system-service reads, and only while the engine still believes the screen is locked.
+     */
+    private fun markScreenInUseIfUnlocked() {
+        if (coordinator.state.value.screenOn) return
+        val interactive = power?.isInteractive != false
+        val locked = keyguard?.isKeyguardLocked == true
+        if (ScreenPolicy.unlockNotYetSeen(engineScreenOn = false, interactive = interactive, keyguardLocked = locked)) {
+            DebugLog.d { "screen in use (unlock seen through a window event)" }
+            coordinator.dispatch(GuidanceEvent.ScreenChanged(true, coordinator.now()))
+        }
     }
 
     override fun onInterrupt() = Unit
