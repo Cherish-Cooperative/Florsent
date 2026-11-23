@@ -31,6 +31,8 @@ data class UserSettings(
     val zenGrayscaleFinish: Boolean = false,
     /** Advanced: per-app desaturation through Shizuku. */
     val shizukuSaturation: Boolean = false,
+    /** Android 12+: use the wallpaper-based Material You palette instead of Florsent's sage. */
+    val dynamicColor: Boolean = false,
 ) {
     fun toGuidanceConfig(): GuidanceConfig = GuidanceConfig(
         watchedPackages = watchedPackages,
@@ -66,6 +68,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
                 onboardingCompleted = p[Keys.ONBOARDING_COMPLETED] ?: false,
                 zenGrayscaleFinish = p[Keys.ZEN_GRAYSCALE] ?: false,
                 shizukuSaturation = p[Keys.SHIZUKU_SATURATION] ?: false,
+                dynamicColor = p[Keys.DYNAMIC_COLOR] ?: false,
             )
         }
         .distinctUntilChanged()
@@ -102,6 +105,7 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setOnboardingCompleted() = dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = true }
     suspend fun setZenGrayscaleFinish(on: Boolean) = dataStore.edit { it[Keys.ZEN_GRAYSCALE] = on }
     suspend fun setShizukuSaturation(on: Boolean) = dataStore.edit { it[Keys.SHIZUKU_SATURATION] = on }
+    suspend fun setDynamicColor(on: Boolean) = dataStore.edit { it[Keys.DYNAMIC_COLOR] = on }
 
     private object Keys {
         val WATCHED = stringSetPreferencesKey("watched_packages")
@@ -117,5 +121,6 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val ZEN_GRAYSCALE = booleanPreferencesKey("zen_grayscale_finish")
         val SHIZUKU_SATURATION = booleanPreferencesKey("shizuku_saturation")
+        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     }
 }

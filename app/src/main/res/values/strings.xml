@@ -152,6 +152,11 @@
     <string name="zen_rule_name">Florsent 漸進灰階</string>
     <string name="zen_rule_trigger">在留意的 App 上淡到底時開啟</string>
 
+    <!-- Appearance -->
+    <string name="settings_section_appearance">外觀</string>
+    <string name="settings_dynamic_color">跟隨系統主題色</string>
+    <string name="settings_dynamic_color_hint">使用桌布的配色，而不是 Florsent 的鼠尾草綠。</string>
+
     <!-- Per-app desaturation via Shizuku (advanced, optional) -->
     <string name="settings_section_advanced">進階</string>
     <string name="shizuku_title">讓 App 自己慢慢褪色</string>

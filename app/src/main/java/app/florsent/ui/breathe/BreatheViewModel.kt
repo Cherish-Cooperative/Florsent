@@ -2,11 +2,11 @@ package app.florsent.ui.breathe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.florsent.AppContainer
+import app.florsent.data.SettingsRepository
 import app.florsent.domain.BreathPhaseKind
 import app.florsent.domain.BreathingPattern
 import app.florsent.domain.BreathingPatterns
-import app.florsent.service.audio.BreathingSoundscape
+import app.florsent.service.audio.BreathingSound
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,8 +26,8 @@ data class BreatheUiState(
 )
 
 class BreatheViewModel(
-    private val container: AppContainer,
-    soundFactory: () -> BreathingSoundscape,
+    private val settings: SettingsRepository,
+    soundFactory: () -> BreathingSound,
 ) : ViewModel() {
 
     // Built on first use, so opening the app never loads SoundPool or decodes audio.
@@ -38,7 +38,7 @@ class BreatheViewModel(
     private val sessionId = MutableStateFlow(0)
 
     val uiState: StateFlow<BreatheUiState> =
-        combine(container.settings.settings, stage, sessionId) { settings, stage, session ->
+        combine(settings.settings, stage, sessionId) { settings, stage, session ->
             BreatheUiState(
                 pattern = BreathingPatterns.byId(settings.breathingPatternId),
                 stage = stage,
@@ -49,18 +49,18 @@ class BreatheViewModel(
         }.stateIn(viewModelScope, SharingStarted.Eagerly, BreatheUiState())
 
     fun selectPattern(pattern: BreathingPattern) {
-        viewModelScope.launch { container.settings.setBreathingPattern(pattern.id) }
+        viewModelScope.launch { settings.setBreathingPattern(pattern.id) }
     }
 
     fun setAmbientSound(on: Boolean) {
-        viewModelScope.launch { container.settings.setAmbientSound(on) }
+        viewModelScope.launch { settings.setAmbientSound(on) }
         if (stage.value == BreatheStage.Running) {
             if (on) sound.startAmbient() else if (soundDelegate.isInitialized()) sound.stopAmbient()
         }
     }
 
     fun setCueSound(on: Boolean) {
-        viewModelScope.launch { container.settings.setCueSound(on) }
+        viewModelScope.launch { settings.setCueSound(on) }
     }
 
     fun start() {

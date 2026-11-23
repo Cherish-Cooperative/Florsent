@@ -15,6 +15,17 @@ import androidx.annotation.RequiresApi
 import app.florsent.MainActivity
 import app.florsent.R
 
+/** Platform side of the grayscale finish, so the switching logic below is testable on the JVM. */
+interface ZenRuleGateway {
+    fun hasAccess(): Boolean
+
+    /** Creates the rule if needed and turns it on. May throw; the controller handles it. */
+    fun activate()
+
+    /** Turns the rule off if it exists; never creates one. May throw. */
+    fun deactivate()
+}
+
 /**
  * Android 15+ true-grayscale finish. When the guidance level reaches the top, a Florsent-owned
  * AutomaticZenRule (Modes) is activated whose only device effect is grayscale. Its interruption
@@ -23,9 +34,8 @@ import app.florsent.R
  * Fail-safe: every platform call is guarded; without notification-policy access, on older Android,
  * or on any error, this controller simply does nothing and the dim overlay remains the effect.
  */
-@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 class ZenGrayscaleController(
-    private val context: Context,
+    private val gateway: ZenRuleGateway,
     private val isEnabled: () -> Boolean,
 ) : VisualEffectController {
 
@@ -39,7 +49,7 @@ class ZenGrayscaleController(
         // Hysteresis so a level hovering around the top does not flicker the whole display.
         val nearTop = effect.level >= if (active == true) OFF_BELOW else ON_AT
         // Binder calls (access check) only when the answer can matter.
-        val want = nearTop && isEnabled() && ZenGrayscale.hasAccess(context)
+        val want = nearTop && isEnabled() && gateway.hasAccess()
         if (want != active) setActive(want)
     }
 
@@ -49,28 +59,38 @@ class ZenGrayscaleController(
 
     private fun setActive(on: Boolean) {
         runCatching {
-            val nm = ZenGrayscale.manager(context)
-            val id = when {
-                on -> ZenGrayscale.ensureRule(context)
-                // Turning off never creates a rule, and without access there is nothing we may touch.
-                ZenGrayscale.hasAccess(context) -> ZenGrayscale.findRule(context)
-                else -> null
-            }
-            if (id != null) {
-                val state = if (on) Condition.STATE_TRUE else Condition.STATE_FALSE
-                nm.setAutomaticZenRuleState(
-                    id, Condition(ZenGrayscale.CONDITION_ID, context.getString(R.string.zen_rule_name), state),
-                )
+            when {
+                on -> gateway.activate()
+                // Without access there is nothing we may touch (and nothing we could have turned on).
+                gateway.hasAccess() -> gateway.deactivate()
             }
         }.onFailure { Log.w(TAG, "Could not switch grayscale finish to $on", it) }
         // Even on failure, don't retry every tick; the next level change re-evaluates.
         active = on
     }
 
-    private companion object {
-        const val TAG = "ZenGrayscale"
+    companion object {
+        private const val TAG = "ZenGrayscale"
         const val ON_AT = 0.98f
         const val OFF_BELOW = 0.9f
+    }
+}
+
+/** The real gateway: one Florsent-owned AutomaticZenRule. */
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+class PlatformZenRuleGateway(private val context: Context) : ZenRuleGateway {
+    override fun hasAccess() = ZenGrayscale.hasAccess(context)
+
+    override fun activate() = setState(ZenGrayscale.ensureRule(context), Condition.STATE_TRUE)
+
+    override fun deactivate() {
+        ZenGrayscale.findRule(context)?.let { setState(it, Condition.STATE_FALSE) }
+    }
+
+    private fun setState(id: String, state: Int) {
+        ZenGrayscale.manager(context).setAutomaticZenRuleState(
+            id, Condition(ZenGrayscale.CONDITION_ID, context.getString(R.string.zen_rule_name), state),
+        )
     }
 }
 

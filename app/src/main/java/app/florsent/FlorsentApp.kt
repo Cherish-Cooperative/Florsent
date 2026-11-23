@@ -11,6 +11,7 @@ import app.florsent.data.settingsDataStore
 import app.florsent.domain.GuidanceEngine
 import app.florsent.domain.KnownSocialApps
 import app.florsent.service.GuidanceCoordinator
+import app.florsent.service.shizuku.PlatformShizukuClient
 import app.florsent.service.shizuku.ShizukuSaturation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +44,7 @@ class AppContainer(context: Context) {
     val installedApps = InstalledAppsRepository(context)
 
     /** Optional third visual layer; inert unless the user installs Shizuku and turns it on. */
-    val shizuku = ShizukuSaturation(context)
+    val shizuku: ShizukuSaturation = PlatformShizukuClient.saturation(context)
     val guidance = GuidanceCoordinator(
         scope = scope,
         engine = GuidanceEngine(),

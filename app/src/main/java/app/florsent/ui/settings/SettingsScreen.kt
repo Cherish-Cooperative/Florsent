@@ -53,6 +53,7 @@ import app.florsent.data.UserSettings
 import app.florsent.service.effect.ZenGrayscale
 import app.florsent.service.shizuku.ShizukuSaturation
 import app.florsent.service.shizuku.ShizukuState
+import app.florsent.ui.theme.supportsDynamicColor
 import app.florsent.ui.components.FlorsentTopBar
 import app.florsent.ui.components.NavigationRow
 import app.florsent.ui.components.SoftCard
@@ -80,6 +81,7 @@ class SettingsViewModel(
     fun setAmbient(on: Boolean) = viewModelScope.launch { repo.setAmbientSound(on) }
     fun setCue(on: Boolean) = viewModelScope.launch { repo.setCueSound(on) }
     fun setReturnHome(on: Boolean) = viewModelScope.launch { repo.setReturnToHomeScreen(on) }
+    fun setDynamicColor(on: Boolean) = viewModelScope.launch { repo.setDynamicColor(on) }
 
     fun hasZenAccess(): Boolean = ZenGrayscale.hasAccess(appContext)
 
@@ -161,6 +163,17 @@ fun SettingsScreen(
                     CardDivider()
                     SwitchRow(stringResource(R.string.settings_return_home),
                         stringResource(R.string.settings_return_home_hint), s.returnToHomeScreen) { vm.setReturnHome(it) }
+                }
+            }
+
+            if (supportsDynamicColor) {
+                SectionTitle(stringResource(R.string.settings_section_appearance))
+                SoftCard {
+                    SwitchRow(
+                        stringResource(R.string.settings_dynamic_color),
+                        stringResource(R.string.settings_dynamic_color_hint),
+                        s.dynamicColor,
+                    ) { vm.setDynamicColor(it) }
                 }
             }
 

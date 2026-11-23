@@ -2,32 +2,19 @@
   <img src="docs/assets/github-hero.png" alt="Florsent：不封鎖任何 App，只在你用太久時，溫柔地提醒。" width="100%">
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white" alt="Platform: Android">
-  <img src="https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin 2.4">
-  <img src="https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white" alt="Jetpack Compose, Material 3">
-  <img src="https://img.shields.io/badge/Min%20SDK-26%20(Android%208.0)-56705A" alt="Min SDK 26">
-  <img src="https://img.shields.io/badge/APK-4.6%20MB-56705A" alt="Release APK 4.6 MB">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-56705A" alt="License: Apache 2.0"></a>
-</p>
+# Florsent
 
-<p align="center">
-  一個幫你慢慢放下手機的 Android App。<br>
-  不封鎖、不說教，只在你用太久時，讓畫面溫柔地變淡。
-</p>
+Florsent 是一個幫你慢慢放下手機的 Android App。
 
-<p align="center">
-  <b>第一次認識 Florsent？請先看 <a href="docs/PRODUCT.md">產品介紹</a></b><br>
-  <sub>寫給一般使用者：理念、使用方式、呼吸法怎麼選、隱私與常見問題</sub>
-</p>
+它不會封鎖任何 App，也不會對你說教。只有在你滑社群滑得比自己預期還久的時候，畫面才會一點一點變淡，輕輕問你一句：「停下來深呼吸一下？」
 
----
+## 為什麼這樣設計
 
-## 理念
+很多人都試過「限制使用時間」的 App。時間一到，App 被鎖住，然後我們做的第一件事，通常是找方法解鎖。
 
-封鎖會讓人想繞過去，跳出來的警告也容易被反射性地關掉。Florsent 換了一個方向：當你在社群 App 上用超過自己設定的額度，畫面會一點一點變淡，顏色和對比慢慢退去，滑動的吸引力自然下降。
+Florsent 想試試另一種方式。比起被擋住，我們更相信被溫柔地提醒。當畫面慢慢失去顏色，滑動也就沒那麼吸引人；這時候如果有人輕聲問你要不要休息一下，停下來會變得容易許多。
 
-要不要停下來，始終由你決定。提醒可以按「✕」延後，App 也從來不會被擋住。
+要不要停，永遠由你決定。
 
 ## 三個時刻
 
@@ -35,138 +22,95 @@
   <img src="docs/assets/promo-showcase.png" alt="Florsent 的三個時刻：溫柔漸進提醒、沉浸呼吸練習、回到生活當下" width="100%">
 </p>
 
-1. **溫柔漸進提醒**：超過額度後，畫面在 3 分鐘內慢慢變淡；淡到一半時，畫面下方浮出「停下來深呼吸一下？」。
-2. **沉浸呼吸練習**：點提醒直接開始。畫面上的蓮花跟著節奏開合，有四種呼吸法可以選，每種大約一分多鐘。
-3. **回到生活當下**：練習結束後出現一句簡短的感官提示，例如「感受雙腳踩在地上的重量」。按「回到生活」後畫面恢復，接下來的安靜時間內不再提醒。
+### 一、溫柔漸進提醒
 
-## 特色
+你可以設定每次能在社群 App 上待多久，以及一天總共多久。用超過的時候，畫面會在幾分鐘內慢慢變淡，接著畫面下方浮出一句小小的提醒：「停下來深呼吸一下？」
 
-- **只看你選的 App**：只計算你勾選的社群 App 在前景、而且螢幕開著的時間。首次使用會自動勾選手機上常見的社群 App。
-- **兩種額度**：單次額度（預設 15 分鐘）和每日額度（預設 60 分鐘）。每日額度用完後，每次打開還有 2 分鐘緩衝，不會一打開就被擋住。
-- **四種呼吸法**：4-4-4 等長呼吸、4-4-4-4 盒式呼吸、4-7-8 放鬆呼吸（上限 4 輪）、5.5-5.5 共振呼吸。
-- **安靜的細節**：換階段時輕微震動；環境音（手碟）和提示音（柔和鈴聲）可以分別開關，預設都關閉。
-- **30 秒體驗**：首頁可以直接預覽整個漸進引導，不必真的等到超過額度。
-- **無障礙**：完整的 TalkBack 語意、48dp 觸控目標、深淺色模式下的文字都符合 WCAG AA，關閉系統動畫時會自動降級，橫向和大字級也放得下。
-- **小**：Release APK 4.6 MB，沒有網路權限，沒有第三方分析或廣告 SDK。
+不想停也沒關係，按一下「✕」，提醒會晚一點再出現。
 
-## 漸進式灰階：三層設計
+### 二、沉浸呼吸練習
 
-Android 沒有開放一般 App 調整整個螢幕的飽和度，所以 Florsent 把視覺效果拆成三層，透過同一個 `VisualEffectController` 介面串接：
+點一下提醒，就會直接進入呼吸練習。畫面中央有一朵蓮花，吸氣時慢慢展開，吐氣時輕輕收合，你只要跟著它就好。整段練習大約一分多鐘，換階段時手機會輕輕震一下。想聽輕柔的手碟聲或提示鈴聲，也可以自己打開。
 
-| 層 | 做法 | 需要 | 狀態 |
-|---|---|---|---|
-| **基本層** | 無障礙服務的 overlay 視窗，以中性灰（#858585）半透明疊加，透明度最高 0.6。混入中間灰會同時降低對比和飽和度，畫面是變淡而不是變色 | 開啟無障礙服務 | 已完成 |
-| **灰階收尾** | 淡到底時啟用 Florsent 自己的系統「模式」（`AutomaticZenRule`），唯一的效果是灰階（`ZenDeviceEffects`）。中斷過濾設為 ALL，不影響通知和鈴聲 | Android 15 以上，並授予「零打擾」存取權 | 已完成，選用 |
-| **逐 App 去飽和** | 透過 Shizuku 的 UserService 執行 `cmd color_display set-layer-saturation`，只讓正在用的 App 從 100 慢慢降到 0 | 自行安裝並啟動 Shizuku，允許 Florsent 使用 | 已完成，進階選用 |
+### 三、回到生活當下
 
-設計重點：
+練習結束後，Florsent 會留給你一句簡單的話，例如「感受雙腳踩在地上的重量」或「放下手機，去倒杯水，慢慢喝完」。按下「回到生活」，畫面恢復原本的樣子；接下來的一段安靜時間裡，Florsent 不會再提醒你。
 
-- 無障礙 overlay 是受信任的視窗，透明度再高也不會擋住觸控。一般懸浮窗超過 0.8 就會被系統擋下。
-- 灰階收尾的每個系統呼叫都有保護。沒有權限、權限被收回或發生任何錯誤時，都會退回基本層。服務啟動時會先同步一次，就算 App 曾經當掉，畫面也不會停在黑白。
-- 關閉灰階開關時，會把模式從系統的「模式」清單刪除。
+## 四種呼吸法，什麼時候用
 
-### 第三層怎麼保證不會卡在黑白
-
-逐 App 去飽和的設定存在系統裡，Florsent 的程序結束後也不會消失，所以這一層有最嚴格的還原規則：
-
-- **先記錄再變灰**：每個 App 在被調低飽和度之前，先同步寫入「待還原清單」；成功恢復到 100 才從清單移除。
-- **任何離開都還原**：離開那個 App、進入呼吸練習、安靜時間、關閉開關、關閉無障礙服務，都會先把飽和度恢復到 100。
-- **當機也能補救**：Florsent 重新啟動，或 Shizuku 重新連上時，會先把待還原清單裡的 App 全部恢復。
-- **失敗就退回**：任何一次指令失敗，這一層就暫停並嘗試還原，由第一、二層繼續引導。
-- **說實話**：如果 Shizuku 在途中停止，Florsent 沒辦法還原，設定頁會清楚提示「重新啟動 Shizuku 或重新開機就會恢復」。系統重新開機本身也會清除所有設定。
-- **權限最小**：在 Shizuku 程序裡執行的服務只開放一個操作，由服務自己用驗證過的參數組出固定指令，不提供任意指令執行。
-
-這些規則由 `SaturationPlanner` 和 `SaturationSession` 實作，全部有單元測試，並在模擬器上實測過程序被強制結束、Shizuku 中途停止等情境。
-
-## 效能與省電
-
-- **零輪詢**：螢幕關閉或前景不是留意的 App 時，沒有任何計時器在跑。在留意的 App 裡，只有畫面正在變淡時才每秒更新，其他時候直接睡到下一個時間點，最多 15 秒醒一次。
-- **流暢的淡化**：overlay 每秒接一段一秒長的線性動畫，以螢幕刷新率連續變化。只改 view 的透明度，並關閉 overlapping rendering，每一幀只需要合成。
-- **呼吸動畫零 recomposition**：蓮花用 Compose Canvas 繪製。路徑、徑向漸層和筆觸在 `drawWithCache` 裡建好，時間來自 `withFrameNanos` 的單調時鐘，只在 draw 階段讀取，所以每一幀只重畫、不重組，也不配置新物件。
-- **少寫入**：引擎狀態只在需要保存的欄位改變時才寫入，最多 30 秒一次；切換模式、跨日、關螢幕時立刻寫入。
-- **時間正確**：時鐘被調回去不會拉長安靜時間；日期只往前跑；時區每次重新讀取。旋轉螢幕時，呼吸練習接著進行。
-
-## 隱私承諾
-
-- 無障礙服務**只**接收 `TYPE_WINDOW_STATE_CHANGED`，用來知道前景是哪個 App。`canRetrieveWindowContent=false`，所以讀不到畫面上的任何文字或內容。
-- 沒有網路權限，所有資料只存在手機上，也不會被雲端備份或轉移到其他裝置。
-- 進階的 Shizuku 功能完全選用。Shizuku SDK 只加入與 Shizuku 溝通用的 `moe.shizuku.manager.permission.API_V23`，不會加入網路或其他權限。
-- 首次使用時，會先清楚說明 Florsent 用無障礙服務做什麼、不做什麼，使用者同意後才會帶到系統設定。
-
-完整內容請見 [隱私權政策 PRIVACY.md](PRIVACY.md)。
-
-## 架構
-
-```
-app.florsent
-├── domain/    純 Kotlin 狀態機與呼吸時間軸，全部有單元測試
-├── data/      DataStore（設定、引擎狀態）、已安裝 App 清單
-├── service/   無障礙服務、GuidanceCoordinator、浮出提醒
-│   ├── effect/  VisualEffectController、中性灰 overlay、灰階收尾
-│   └── audio/   環境音與提示音
-└── ui/        Compose 畫面：onboarding、home、breathe、grounding、apps、settings
-```
-
-資料流是單向的：無障礙服務和 UI 把事件送進 `GuidanceCoordinator.dispatch()`，由純函式的 `GuidanceEngine.reduce()` 算出新狀態，再由服務把效果畫到畫面上。所有時間相關的規則都在 domain 層，可以不靠模擬器直接測試。
-
-## 本機編譯與測試
-
-需要 JDK 17 以上（Android Studio 內建的 JDK 即可）和 Android SDK（compileSdk 37.1）。
-
-```sh
-git clone https://github.com/Cherish-Cooperative/Florsent.git
-cd Florsent
-./gradlew testDebugUnitTest   # 57 個單元測試
-./gradlew assembleDebug       # debug APK
-./gradlew assembleRelease     # R8 與資源縮減
-```
-
-| 項目 | 版本 |
-|---|---|
-| AGP／Gradle | 9.5.2／9.9.2 |
-| Kotlin | 2.4.21（Compose compiler plugin） |
-| Compose BOM | 2026.11.01 |
-| SDK | minSdk 26、targetSdk 36、compileSdk 37.1 |
-
-### 在模擬器上試用
-
-```sh
-# 開啟無障礙服務（等同使用者在設定裡打開）
-adb shell settings put secure enabled_accessibility_services app.florsent/app.florsent.service.FlorsentAccessibilityService
-adb shell settings put secure accessibility_enabled 1
-
-# 授予「零打擾」存取權，測試灰階收尾（Android 15 以上）
-adb shell cmd notification allow_dnd app.florsent
-```
-
-- 首頁的「30 秒體驗漸進引導」會在 20 秒內跑完整個淡化，第 12 秒浮出提醒。
-- 模擬器無法顯示色彩轉換，灰階收尾的畫面效果要用實機確認。可以用 `adb shell dumpsys notification` 查看「Florsent 漸進灰階」模式的狀態。
-- `uiautomator dump` 執行時會暫停其他無障礙服務。之後立刻檢查畫面，會誤以為服務沒開，請等幾秒，或改用截圖確認。
-- `am force-stop` 和 `pm clear` 會讓系統移除已啟用的無障礙服務，之後需要重新開啟。
-
-## Google Play 上架素材
-
-| 用途 | 檔案 | 尺寸 |
+| 呼吸法 | 節奏 | 適合的時候 |
 |---|---|---|
-| Play 商店主視覺（Feature Graphic） | [`docs/assets/play-feature-graphic.png`](docs/assets/play-feature-graphic.png) | 1024 × 500 |
-| 三步驟體驗展示圖 | [`docs/assets/promo-showcase.png`](docs/assets/promo-showcase.png) | 1600 × 900 |
-| GitHub 首頁橫幅 | [`docs/assets/github-hero.png`](docs/assets/github-hero.png) | 1280 × 640 |
-| App 圖示 | `app/src/main/res/drawable/ic_launcher_*.xml`（向量 adaptive icon，含 monochrome 圖層） | 向量 |
-| 隱私權政策 | [`PRIVACY.md`](PRIVACY.md) | |
+| **等長呼吸** | 吸氣 4 秒、屏息 4 秒、吐氣 4 秒 | 想讓腦袋清楚一點，準備開始做事的時候 |
+| **盒式呼吸** | 吸氣、屏息、吐氣、停頓，各 4 秒 | 心裡有點亂、有點焦躁，想先穩定下來的時候 |
+| **4-7-8 放鬆呼吸** | 吸氣 4 秒、屏息 7 秒、吐氣 8 秒 | 睡前，或想讓身體放鬆的時候。最多 4 輪 |
+| **共振呼吸** | 吸氣、吐氣各 5.5 秒 | 不知道選哪一個的時候。節奏平穩，很適合當作每天的習慣 |
 
-上架前還要準備：
+如果練習時覺得頭暈或不舒服，就停下來，恢復平常的呼吸。呼吸練習是幫助放鬆的小習慣，不能取代醫療或專業的心理照護。
 
-- Play Console 的**無障礙 API 聲明**，附上示範影片。Florsent 不是輔助工具，所以 `isAccessibilityTool=false`。
-- 512 × 512 的高解析度圖示：可在 Android Studio 的 Image Asset 工具中，以現有的向量圖示匯出。
-- 手機截圖。
-- 將 `PRIVACY.md` 發布成公開網址，填入 Play Console。
+## 你可以自己決定的事
 
-applicationId 是 `app.florsent`，正式上架後不能再改。
+- **要留意哪些 App**：只有你選的 App 會計算時間。第一次使用時，Florsent 會先幫你勾選手機上常見的社群 App。
+- **額度有多長**：每次可以用多久、一天總共多久、完成練習後要安靜多久，都可以調整。
+- **聲音**：環境音和提示鈴聲預設都是關的，在公共場合也不會突然出聲。
+- **練完之後去哪裡**：可以直接回到手機桌面，也可以留在 Florsent。
+- **配色**：喜歡和手機桌布一致的顏色？可以開啟「跟隨系統主題色」，讓 Florsent 換上你的桌布配色。
+- **讓畫面變成黑白**：較新的手機可以選擇在畫面淡到底時，整個變成黑白。這是選用功能，預設關閉。
+- **讓 App 自己慢慢褪色（進階）**：如果你熟悉手機設定，可以另外安裝一個叫 Shizuku 的小工具。開啟後，只有你正在用的那個 App 會從彩色慢慢變成黑白，其他畫面不受影響。離開那個 App、完成呼吸練習或關掉這個選項時，顏色都會立刻恢復。
 
-## 參與貢獻
+第一次想看看會發生什麼事？首頁有一個「30 秒體驗漸進引導」，不用真的等到超過時間，就能完整體驗一次。
 
-歡迎回報問題或提出想法。開始之前，請先讀 [CONTRIBUTING.md](CONTRIBUTING.md)，裡面說明了開發流程、程式風格，以及 Florsent 在產品上的幾個堅持。
+## 我們對隱私的承諾
 
-## 授權
+- Florsent 只需要知道「你現在正在用哪個 App」，用來計算時間。它看不到你的訊息、看不到畫面上的內容，也不會記錄你輸入的任何文字。
+- 所有資料都只存在你的手機裡。Florsent 沒有連網功能，不會上傳、不會備份到雲端，也不會分享給任何人。
+- App 裡沒有廣告，也沒有任何追蹤工具。
+- 不想用了，解除安裝就會把資料全部刪除。
 
-Florsent 以 [Apache License 2.0](LICENSE) 授權釋出。
+完整內容請見[隱私權政策](PRIVACY.md)。
+
+## 常見問題
+
+### Florsent 會封鎖我的 App 嗎？
+
+不會。Florsent 只會讓畫面慢慢變淡，再輕輕提醒你。你隨時都可以繼續使用任何 App。
+
+### 為什麼要開啟「無障礙服務」？
+
+這是 Android 讓 Florsent 知道「你正在用哪個 App」，並在畫面上顯示淡化效果的方法。Florsent 只用它來做這兩件事，看不到畫面內容，也不會代替你操作手機。開啟前，App 會先完整說明，你同意之後才會帶你去設定。
+
+### 會不會很耗電？
+
+不會。手機螢幕關閉，或你沒有在用選定的 App 時，Florsent 完全不會在背景工作。
+
+### 畫面變淡的時候，我可以先不理它嗎？
+
+可以。按提醒旁邊的「✕」，提醒會晚一點再出現。畫面會繼續變淡，但不會擋住你。
+
+### 每天的額度用完了會怎樣？
+
+之後每次打開選定的 App，會先讓你用 2 分鐘，畫面才開始慢慢變淡。比平常早一點提醒，但不會一打開就被擋住。每天午夜會重新計算。
+
+### 練習做到一半想停下來呢？
+
+按「提早結束」就好。如果直接離開練習、回到社群 App，畫面會回到原本淡化的程度。
+
+### 換新手機的話，設定會跟著過去嗎？
+
+不會。為了讓資料真的只留在這支手機上，Florsent 不使用雲端備份。在新手機上重新設定一次就好，只要一分鐘。
+
+### 怎麼停用 Florsent？
+
+在手機的「設定 > 無障礙」中關閉「Florsent 漸進引導」即可。想刪除所有資料，直接解除安裝 Florsent。
+
+## 想知道更多
+
+- [技術文件](docs/TECHNICAL.md)：架構、三層漸進灰階、效能與省電、編譯與測試。給開發者與協助開發的 AI agent。
+- [隱私權政策](PRIVACY.md)：中文與英文。
+- [參與貢獻](CONTRIBUTING.md)：回報問題、提出想法或送出程式碼。
+- 授權：[Apache License 2.0](LICENSE)
+
+---
+
+<p align="center">
+  慢慢放下手機就好。
+</p>

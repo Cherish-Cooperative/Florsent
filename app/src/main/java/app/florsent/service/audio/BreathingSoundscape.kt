@@ -16,7 +16,17 @@ import app.florsent.domain.BreathPhaseKind
  * soft bell at phase changes (pitched per phase via the SoundPool playback rate, so one 10 KB asset
  * covers all phases). Must be used from the main thread.
  */
-class BreathingSoundscape(context: Context) {
+/** Sound for a breathing session; an interface so the ViewModel can be tested without audio. */
+interface BreathingSound {
+    fun startAmbient()
+    fun stopAmbient()
+    fun pauseAmbient()
+    fun resumeAmbient()
+    fun playCue(kind: BreathPhaseKind)
+    fun release()
+}
+
+class BreathingSoundscape(context: Context) : BreathingSound {
 
     private val appContext = context.applicationContext
     private val audioManager = appContext.getSystemService(AudioManager::class.java)
@@ -47,7 +57,7 @@ class BreathingSoundscape(context: Context) {
         cueId = soundPool.load(appContext, R.raw.cue_soft, 1)
     }
 
-    fun startAmbient() {
+    override fun startAmbient() {
         val existing = player
         if (existing != null) {
             // Possibly mid fade-out: cancel it and fade back in instead of going silent.
@@ -66,7 +76,7 @@ class BreathingSoundscape(context: Context) {
     }
 
     /** App went to the background mid-session: hold the loop (and give back audio focus). */
-    fun pauseAmbient() {
+    override fun pauseAmbient() {
         val current = player ?: return
         fade?.cancel()
         if (current.isPlaying) current.pause()
@@ -76,7 +86,7 @@ class BreathingSoundscape(context: Context) {
     }
 
     /** Back in front: resume a paused loop with a short fade. */
-    fun resumeAmbient() {
+    override fun resumeAmbient() {
         val current = player ?: return
         if (current.isPlaying) return
         if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return
@@ -84,7 +94,7 @@ class BreathingSoundscape(context: Context) {
         fadeTo(AMBIENT_VOLUME, FADE_IN_MS) {}
     }
 
-    fun stopAmbient() {
+    override fun stopAmbient() {
         val current = player ?: return
         fadeTo(0f, FADE_OUT_MS) {
             if (player === current) {
@@ -95,7 +105,7 @@ class BreathingSoundscape(context: Context) {
         }
     }
 
-    fun playCue(kind: BreathPhaseKind) {
+    override fun playCue(kind: BreathPhaseKind) {
         if (!cueLoaded) return
         val rate = when (kind) {
             BreathPhaseKind.Inhale -> 1.0f
@@ -106,7 +116,7 @@ class BreathingSoundscape(context: Context) {
         soundPool.play(cueId, CUE_VOLUME, CUE_VOLUME, 1, 0, rate)
     }
 
-    fun release() {
+    override fun release() {
         fade?.cancel()
         player?.release()
         player = null

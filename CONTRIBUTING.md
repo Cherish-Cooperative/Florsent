@@ -23,7 +23,7 @@
 ./gradlew assembleRelease     # 確認 R8 與資源縮減沒有問題
 ```
 
-在模擬器上開啟無障礙服務、授予權限的指令，請見 [README 的「在模擬器上試用」](README.md#在模擬器上試用)。
+在模擬器上開啟無障礙服務、授予權限的指令，請見[技術文件的「模擬器測試與踩坑」](docs/TECHNICAL.md#模擬器測試與踩坑)。架構、測試架構與不可違反的規則，也都整理在 [docs/TECHNICAL.md](docs/TECHNICAL.md)。
 
 ## 專案結構與分層
 

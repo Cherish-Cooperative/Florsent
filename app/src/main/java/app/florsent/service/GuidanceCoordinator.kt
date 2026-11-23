@@ -1,7 +1,7 @@
 package app.florsent.service
 
 import android.util.Log
-import app.florsent.data.GuidanceStateStore
+import app.florsent.data.GuidanceStatePersistence
 import app.florsent.domain.GuidanceConfig
 import app.florsent.domain.GuidanceEffect
 import app.florsent.domain.GuidanceEngine
@@ -38,7 +38,7 @@ class GuidanceCoordinator(
     private val scope: CoroutineScope,
     val engine: GuidanceEngine,
     private val configFlow: Flow<GuidanceConfig>,
-    private val store: GuidanceStateStore,
+    private val store: GuidanceStatePersistence,
     private val clock: () -> Long,
 ) {
     val config: StateFlow<GuidanceConfig> =
@@ -63,6 +63,7 @@ class GuidanceCoordinator(
                 // config would skip the "started counting" bookkeeping.
                 configFlow.first()
                 val persisted = store.load()
+                lastPersisted = persisted.durable()
                 _state.value = persisted.copy(
                     foregroundPackage = _state.value.foregroundPackage,
                     screenOn = _state.value.screenOn,
@@ -81,7 +82,7 @@ class GuidanceCoordinator(
                 .drop(1) // the value we just loaded
                 .conflate()
                 .collect { s ->
-                    store.save(s)
+                    persist(s)
                     delay(PERSIST_INTERVAL_MS)
                 }
         }
@@ -121,8 +122,17 @@ class GuidanceCoordinator(
         _state.value = engine.reduce(before, event, config)
         val after = _state.value
         if (isMilestone(before, after, config)) {
-            scope.launch { store.save(after.durable()) }
+            scope.launch { persist(after.durable()) }
         }
+    }
+
+    /** Last state written by either path; identical states are never written twice. */
+    @Volatile private var lastPersisted: GuidanceState? = null
+
+    private suspend fun persist(durable: GuidanceState) {
+        if (durable == lastPersisted) return
+        store.save(durable)
+        lastPersisted = durable
     }
 
     /**

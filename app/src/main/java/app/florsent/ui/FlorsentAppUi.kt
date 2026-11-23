@@ -68,7 +68,7 @@ fun FlorsentAppUi(
         factory = viewModelFactory {
             initializer {
                 val appContext = context.applicationContext
-                BreatheViewModel(container) { BreathingSoundscape(appContext) }
+                BreatheViewModel(container.settings) { BreathingSoundscape(appContext) }
             }
         },
     )

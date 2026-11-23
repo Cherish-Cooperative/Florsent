@@ -17,8 +17,8 @@ android {
         applicationId = "app.florsent"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "0.6.0"
+        versionCode = 7
+        versionName = "0.7.0"
     }
 
     buildTypes {
@@ -35,6 +35,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        // android.util.Log and friends return defaults in JVM unit tests instead of throwing.
+        unitTests.isReturnDefaultValues = true
     }
 
     buildFeatures {
@@ -63,4 +68,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

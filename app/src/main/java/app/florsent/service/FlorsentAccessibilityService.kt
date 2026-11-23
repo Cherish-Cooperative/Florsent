@@ -16,6 +16,7 @@ import app.florsent.domain.ForegroundPolicy
 import app.florsent.domain.GuidanceEvent
 import app.florsent.service.effect.CompositeVisualEffectController
 import app.florsent.service.effect.DimOverlayController
+import app.florsent.service.effect.PlatformZenRuleGateway
 import app.florsent.service.effect.ShizukuSaturationController
 import app.florsent.service.effect.VisualEffect
 import app.florsent.service.effect.VisualEffectController
@@ -75,7 +76,9 @@ class FlorsentAccessibilityService : AccessibilityService() {
             listOfNotNull(
                 DimOverlayController(this),
                 if (ZenGrayscale.isSupported) {
-                    ZenGrayscaleController(this) { container.currentSettings.value.zenGrayscaleFinish }
+                    ZenGrayscaleController(PlatformZenRuleGateway(this)) {
+                        container.currentSettings.value.zenGrayscaleFinish
+                    }
                 } else {
                     null
                 },

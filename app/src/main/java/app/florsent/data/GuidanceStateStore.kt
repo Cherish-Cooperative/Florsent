@@ -12,13 +12,19 @@ import java.io.IOException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 
-/**
- * Persists the durable part of [GuidanceState] (budgets used, mode, timers). Transient fields such
- * as the foreground app, screen state and an active preview are rebuilt at runtime.
- */
-class GuidanceStateStore(private val dataStore: DataStore<Preferences>) {
+/** Where the durable part of the engine state lives; an interface so the coordinator is testable. */
+interface GuidanceStatePersistence {
+    suspend fun load(): GuidanceState
+    suspend fun save(state: GuidanceState)
+}
 
-    suspend fun load(): GuidanceState {
+/**
+ * Persists the durable part of [GuidanceState] (budgets used, mode, timers) in DataStore. Transient
+ * fields such as the foreground app, screen state and an active preview are rebuilt at runtime.
+ */
+class GuidanceStateStore(private val dataStore: DataStore<Preferences>) : GuidanceStatePersistence {
+
+    override suspend fun load(): GuidanceState {
         val p = dataStore.data
             .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
             .first()
@@ -36,7 +42,7 @@ class GuidanceStateStore(private val dataStore: DataStore<Preferences>) {
         )
     }
 
-    suspend fun save(state: GuidanceState) {
+    override suspend fun save(state: GuidanceState) {
         dataStore.edit { p ->
             p[Keys.EPOCH_DAY] = state.epochDay
             p[Keys.DAILY_USED] = state.dailyUsedMs

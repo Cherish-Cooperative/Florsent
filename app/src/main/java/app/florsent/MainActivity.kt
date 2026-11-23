@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import app.florsent.domain.GuidanceEvent
 import app.florsent.ui.FlorsentAppUi
 import app.florsent.ui.Route
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.florsent.ui.theme.FlorsentTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +27,8 @@ class MainActivity : ComponentActivity() {
 
         val container = appContainer
         setContent {
-            FlorsentTheme {
+            val settings by container.currentSettings.collectAsStateWithLifecycle()
+            FlorsentTheme(dynamicColor = settings.dynamicColor) {
                 FlorsentAppUi(
                     container = container,
                     requestedRoute = requestedRoute,
