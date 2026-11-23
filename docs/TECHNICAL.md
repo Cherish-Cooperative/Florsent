@@ -28,6 +28,7 @@
 - [隱私與權限](#隱私與權限)
 - [編譯與測試](#編譯與測試)
 - [模擬器測試與踩坑](#模擬器測試與踩坑)
+- [實機驗證紀錄](#實機驗證紀錄)
 - [Google Play 上架](#google-play-上架)
 - [不可違反的規則](#不可違反的規則)
 
@@ -180,6 +181,8 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ### 當機與程序被殺
 
 `open.state`（tmp 檔再 rename）保存目前開著的螢幕／App 區段與最後事件時間。新程序第一次記錄時，若 `open.state` 仍是「記錄中」，`UsageRecorder.start` 會先寫一筆 `U`（從開著的區段或最後事件到現在），再寫 `B`。學習演算法把 `U` 與 `B…E` 以外的時間都視為看不見，所以死掉的程序絕不會被當成「螢幕關著，正在睡覺」。
+
+程序剛啟動時，無障礙服務要過一下才會連上，這段時間的輸入是「沒有在記錄」。如果直接照做，每次重啟都會多一對同一秒的 `E`／`B`。所以 `open.state` 留著「記錄中」時，`UsageRecording` 會先等 10 秒（`STARTUP_GRACE_MS`）：服務在這段時間連上，就只寫 `U` 與 `B`；一直沒有連上（服務被關閉、撤回同意），才用 `UsageRecorder.abandon` 寫 `U` 與 `E`。
 
 ### 作息學習（`BedtimeLearner`）
 
@@ -346,7 +349,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ## 編譯與測試
 
 ```sh
-./gradlew testDebugUnitTest      # 148 個 JVM 測試
+./gradlew testDebugUnitTest      # 151 個 JVM 測試
 ./gradlew assembleDebug
 ./gradlew assembleRelease        # 確認 R8 沒有移除 ShellService
 ```
@@ -374,8 +377,8 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `ShizukuSaturationTest`（8） | 五種狀態、按需綁定、連線後還原、Shizuku 中途停止、降級與重試 |
 | `BedtimeLearnerTest`（17） | 規律夜晚、冷啟動、鬧鐘與回訊息、真正醒來、影片睡著、夜貓與輪班、程序被殺、停止記錄、中午定案、跨時區、熬夜、加權、時段不追著學習值跑 |
 | `BedtimeGuidanceTest`（11） | 時段邊界、累計門檻、門檻選項、每晚兩次上限、點提醒後效果全部清除、情境凍結、午夜不歸零、早上結束、未設定、tick 期限 |
-| `UsageLogTest`（7）、`UsageInsightsTest`（7） | 編碼與壞行、區段記錄、程序被殺變成 `U`；跨午夜拆分、沒有資料不是 0、只比較完整的兩週、前三名 App |
-| `UsageRecordingTest`（5） | 寫入順序、新程序補 `U`、沒有同意不寫、清除後重新開始、壞行與保存期限 |
+| `UsageLogTest`（8）、`UsageInsightsTest`（7） | 編碼與壞行、區段記錄、程序被殺變成 `U`、放棄殘留區段；跨午夜拆分、沒有資料不是 0、只比較完整的兩週、前三名 App |
+| `UsageRecordingTest`（7） | 寫入順序、新程序補 `U`、重啟不寫多餘的停止與開始、服務沒來時收尾、沒有同意不寫、清除後重新開始、壞行與保存期限 |
 | `SettingsRepositoryTest`（6）、`GuidanceStateStoreTest`（3） | 真實 DataStore 檔案上的預設值、往返與持久化 |
 | `BreatheViewModelTest`（8） | 聲音延遲建立、背景暫停、提示音開關、釋放 |
 | `ContrastAuditTest`（4） | WCAG 公式、品牌深淺色全部通過 AA |
@@ -412,6 +415,25 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 - **同一個 AVD 不能同時開兩個實例。** 另建一個 AVD，或加 `-read-only`。
 - 首頁的「30 秒體驗漸進引導」在 20 秒內跑完淡化、第 12 秒浮出提醒；搭配 `dumpsys color_display` 可以完整驗證三層。
 
+## 實機驗證紀錄
+
+0.8.1 在 Pixel 10 Pro（Android 17，API 37，`CP4A.261105.040.A1`）上驗證：
+
+| 項目 | 結果 |
+|---|---|
+| 安裝與圖示 | debug 版安裝成功；應用程式資訊頁顯示展葉之 F 圖示；系統顯示「未使用任何數據」 |
+| Onboarding 與無障礙服務 | 揭露頁、同意、使用者自己在系統設定開啟服務，綁定正常 |
+| 30 秒預覽 | 0 秒開始淡化，約 12 秒浮出提醒，30 秒兩個 overlay 都移除 |
+| 呼吸蓮花 | 約 28 秒 1,682 影格，jank 0.12%，p50 6 ms、p90 10 ms、p99 16 ms |
+| 環境音 | 練習中 `MediaPlayer` started；按 Home 變 paused、交還音訊焦點；回來恢復；離開練習後釋放 |
+| Zen 灰階收尾 | 需要使用者授予零打擾存取權後再驗證 |
+| Shizuku 第三層 | 實機未安裝 Shizuku，未驗證 |
+
+實機上的注意事項：
+
+- `uiautomator dump` 在實機上同樣會暫時解除 Florsent 的無障礙服務，首頁會短暫切成「服務未開啟」的版面，按鈕位置往下移約 170 px。用 dump 的座標去點，會點到下一顆按鈕。實機請用截圖量座標。
+- 驗證時只截 Florsent 自己在前景的畫面；預覽會回到使用者的桌面，用 `dumpsys window` 觀察 overlay 就好，不要截圖。
+
 ## Google Play 上架
 
 | 項目 | 檔案 |
@@ -423,7 +445,11 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 | App 圖示（向量） | `app/src/main/res/drawable/ic_launcher_{background,foreground,monochrome}.xml` |
 | 隱私權政策 | [`PRIVACY.md`](../PRIVACY.md)（需發布成公開網址） |
 
-還需要：Play Console 的無障礙 API 聲明與示範影片、手機截圖。Shizuku 功能是使用者主動開啟的選用功能，提交審核時一併說明用途。
+商店介紹、資料安全表單、無障礙服務聲明、示範影片分鏡與素材清單都在 [PLAY_STORE.md](PLAY_STORE.md)。Shizuku 功能是使用者主動開啟的選用功能，提交審核時一併說明用途。
+
+### 舊分支歸檔
+
+遠端的 `liball`（2025-02～03，liball／@liballouo 的滾輪時間選擇與第一版圖示）與 `ncc`（2025-03，滑雪呼吸動畫實驗）沒有合併進 main。兩者都以 annotated tag `archive/liball`、`archive/ncc` 保存在本地，原分支保留不動。
 
 ## 不可違反的規則
 

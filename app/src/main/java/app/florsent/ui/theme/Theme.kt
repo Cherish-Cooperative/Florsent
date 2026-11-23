@@ -108,6 +108,8 @@ fun FlorsentTheme(
 fun ColorScheme.textPairs(): List<ContrastAudit.Pair> = listOf(
     ContrastAudit.Pair("onSurface/background", onSurface.toArgb(), background.toArgb()),
     ContrastAudit.Pair("onSurfaceVariant/background", onSurfaceVariant.toArgb(), background.toArgb()),
+    // Cards (today, invitation, insights) sit on surfaceContainerLow.
+    ContrastAudit.Pair("onSurface/surfaceContainerLow", onSurface.toArgb(), surfaceContainerLow.toArgb()),
     ContrastAudit.Pair("onSurfaceVariant/surfaceContainerLow", onSurfaceVariant.toArgb(), surfaceContainerLow.toArgb()),
     ContrastAudit.Pair("primary/background", primary.toArgb(), background.toArgb()),
     ContrastAudit.Pair("primary/surfaceContainerLow", primary.toArgb(), surfaceContainerLow.toArgb()),

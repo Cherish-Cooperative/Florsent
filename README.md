@@ -130,7 +130,14 @@ Florsent 想試試另一種方式。比起被擋住，我們更相信被溫柔�
 - [技術文件](docs/TECHNICAL.md)：架構、三層漸進灰階、效能與省電、編譯與測試。給開發者與協助開發的 AI agent。
 - [隱私權政策](PRIVACY.md)：中文與英文。
 - [參與貢獻](CONTRIBUTING.md)：回報問題、提出想法或送出程式碼。
+- [Google Play 上架資料](docs/PLAY_STORE.md)：商店介紹、資料安全表單、無障礙服務聲明。
 - 授權：[Apache License 2.0](LICENSE)
+
+## 特別感謝
+
+謝謝 **[liball（@liballouo）](https://github.com/liballouo)**。
+
+2025 年初 Florsent 還只是一個雛形的時候，liball 就一起動手：做了滾輪式的時間選擇器，一次次調整到滾輪能好好對齊，還畫了 Florsent 的第一個 App 圖示。那段時間的程式碼保存在 `archive/liball` 標籤裡。現在的 Florsent 換了新的樣子，但最早一起把它做出來的心意，一直都在。
 
 ---
 

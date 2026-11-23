@@ -68,6 +68,15 @@ class UsageLogTest {
     }
 
     @Test
+    fun `abandoning a leftover stretch ends it without a new begin`() {
+        val left = OpenSpans(running = true, appStartMs = 5_000, appPackage = "a.b", lastEventMs = 9_000)
+        val step = UsageRecorder.abandon(left, 20_000, off)
+        assertEquals(listOf(UsageRecord.Unknown(5, 15, off), UsageRecord.End(20, off)), step.records)
+        assertTrue(!step.open.running)
+        assertEquals(listOf<UsageRecord>(UsageRecord.End(20, off)), UsageRecorder.abandon(OpenSpans(), 20_000, off).records)
+    }
+
+    @Test
     fun `flickers shorter than a second are not recorded`() {
         var open = UsageRecorder.start(OpenSpans(), 0, off).open
         open = UsageRecorder.update(open, true, null, 1_000, off).open

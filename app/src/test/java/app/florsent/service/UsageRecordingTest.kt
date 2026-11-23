@@ -61,6 +61,42 @@ class UsageRecordingTest {
     }
 
     @Test
+    fun `a restart does not write a stop and start pair while the service connects`() = runTest {
+        val store = store()
+        UsageRecording(store, this) { off }.apply { submit(UsageRecording.Input(true, false, null), t0) }
+        advanceUntilIdle()
+
+        // New process: "not recording" for a moment until the service connects.
+        val second = UsageRecording(store(), this) { off }
+        second.submit(UsageRecording.Input(false, false, null), t0 + 60_000)
+        second.submit(UsageRecording.Input(true, false, null), t0 + 60_800)
+        advanceUntilIdle()
+
+        val records = store.all()
+        assertTrue("no End at all", records.none { it is UsageRecord.End })
+        assertEquals(2, records.count { it is UsageRecord.Begin })
+        assertTrue(records.contains(UsageRecord.Unknown(t0 / 1000, 60, off)))
+    }
+
+    @Test
+    fun `a restart without the service closes the old stretch after the grace period`() = runTest {
+        val store = store()
+        UsageRecording(store, this) { off }.apply { submit(UsageRecording.Input(true, false, null), t0) }
+        advanceUntilIdle()
+
+        val second = UsageRecording(store(), this) { off }
+        second.submit(UsageRecording.Input(false, false, null), t0 + 60_000)
+        advanceUntilIdle()
+
+        val records = store.all()
+        assertEquals(1, records.count { it is UsageRecord.Begin })
+        assertEquals(
+            listOf(UsageRecord.Unknown(t0 / 1000, 70, off), UsageRecord.End((t0 + 70_000) / 1000, off)),
+            records.takeLast(2),
+        )
+    }
+
+    @Test
     fun `without consent nothing is written`() = runTest {
         val store = store()
         val rec = UsageRecording(store, this) { off }

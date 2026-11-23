@@ -77,18 +77,26 @@ object UsageRecorder {
     private const val MIN_SPAN_MS = 1_000L
 
     /** Recording starts: close anything left open by a killed process as Unknown, then Begin. */
-    fun start(previous: OpenSpans, nowMs: Long, offsetSec: Int): RecorderStep {
-        val records = mutableListOf<UsageRecord>()
-        if (previous.running) {
-            // No clean End: from the earliest thing we cannot vouch for until now is unknown.
-            val from = listOfNotNull(previous.screenStartMs, previous.appStartMs, previous.lastEventMs.takeIf { it > 0 })
-                .minOrNull()
-            if (from != null && nowMs > from) {
-                records += UsageRecord.Unknown(from / 1000, (nowMs - from) / 1000, offsetSec)
-            }
-        }
-        records += UsageRecord.Begin(nowMs / 1000, offsetSec)
-        return RecorderStep(records, OpenSpans(running = true, lastEventMs = nowMs))
+    fun start(previous: OpenSpans, nowMs: Long, offsetSec: Int): RecorderStep = RecorderStep(
+        unknownSince(previous, nowMs, offsetSec) + UsageRecord.Begin(nowMs / 1000, offsetSec),
+        OpenSpans(running = true, lastEventMs = nowMs),
+    )
+
+    /**
+     * A previous process left recording "running" and this one is not going to record (service off
+     * or consent withdrawn): the gap is unknown and the stretch ends, without a fresh Begin.
+     */
+    fun abandon(previous: OpenSpans, nowMs: Long, offsetSec: Int): RecorderStep = RecorderStep(
+        unknownSince(previous, nowMs, offsetSec) + UsageRecord.End(nowMs / 1000, offsetSec),
+        OpenSpans(running = false, lastEventMs = nowMs),
+    )
+
+    /** No clean End: from the earliest thing we cannot vouch for until now is unknown. */
+    private fun unknownSince(previous: OpenSpans, nowMs: Long, offsetSec: Int): List<UsageRecord> {
+        if (!previous.running) return emptyList()
+        val from = listOfNotNull(previous.screenStartMs, previous.appStartMs, previous.lastEventMs.takeIf { it > 0 })
+            .minOrNull() ?: return emptyList()
+        return if (nowMs > from) listOf(UsageRecord.Unknown(from / 1000, (nowMs - from) / 1000, offsetSec)) else emptyList()
     }
 
     /** Recording stops cleanly: close open spans, then End. */
