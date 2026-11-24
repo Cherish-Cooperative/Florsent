@@ -105,8 +105,13 @@ class BreathingSoundscape(context: Context) : BreathingSound {
     }
 
     companion object {
-        const val AMBIENT_VOLUME = 0.45f
-        const val CUE_VOLUME = 0.35f
+        /**
+         * Masters: singing bowl -13.0 LUFS (true peak -2.6 dBFS), cue peak -15.5 dBFS. At 0.75 the
+         * bowl peaks around -5 dBFS, so it cannot clip. The cue follows it up by about 1.6 dB
+         * (0.35 → 0.42): still clear over the louder bowl without turning sharp.
+         */
+        const val AMBIENT_VOLUME = 0.75f
+        const val CUE_VOLUME = 0.42f
         const val FADE_IN_MS = 2_500L
         const val FADE_OUT_MS = 1_200L
 

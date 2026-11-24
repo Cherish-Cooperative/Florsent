@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.florsent.AppContainer
 import app.florsent.data.InstalledApp
-import app.florsent.domain.KnownSocialApps
+import app.florsent.domain.AppLabel
+import app.florsent.domain.SocialAppMatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +34,7 @@ class WatchedAppsViewModel(private val container: AppContainer) : ViewModel() {
         combine(apps, container.settings.settings) { list, settings ->
             if (list == null) return@combine WatchedAppsUiState(loading = true)
             val rows = list.map { AppRow(it.packageName, it.label, it.packageName in settings.watchedPackages) }
-            val (suggested, others) = rows.partition { it.packageName in KnownSocialApps.packages }
+            val (suggested, others) = rows.partition { SocialAppMatcher.brandOf(AppLabel(it.packageName, it.label)) != null }
             WatchedAppsUiState(loading = false, suggested = suggested, others = others)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WatchedAppsUiState())
 

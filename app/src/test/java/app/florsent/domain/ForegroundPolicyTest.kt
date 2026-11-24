@@ -48,4 +48,13 @@ class ForegroundPolicyTest {
         assertFalse(ForegroundPolicy.isHandoffEcho(yt, null, 1_000, 1_500))
         assertFalse("clock went back", ForegroundPolicy.isHandoffEcho(yt, yt, 1_000, 500))
     }
+
+    @Test
+    fun `an unlock is recognised from a window event even without USER_PRESENT`() {
+        // Android 17: SCREEN_ON arrives on the lock screen, USER_PRESENT may never arrive.
+        assertFalse("still on the lock screen", ScreenPolicy.unlockNotYetSeen(engineScreenOn = false, interactive = true, keyguardLocked = true))
+        assertTrue("first app or launcher event after unlocking", ScreenPolicy.unlockNotYetSeen(false, interactive = true, keyguardLocked = false))
+        assertFalse("already known", ScreenPolicy.unlockNotYetSeen(true, true, false))
+        assertFalse("screen off", ScreenPolicy.unlockNotYetSeen(false, interactive = false, keyguardLocked = false))
+    }
 }

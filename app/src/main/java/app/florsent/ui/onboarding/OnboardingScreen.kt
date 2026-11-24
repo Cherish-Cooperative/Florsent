@@ -54,7 +54,8 @@ import androidx.lifecycle.viewModelScope
 import app.florsent.AppContainer
 import app.florsent.R
 import app.florsent.domain.BreathingTimeline
-import app.florsent.domain.KnownSocialApps
+import app.florsent.domain.AppLabel
+import app.florsent.domain.SocialAppMatcher
 import app.florsent.data.InstalledApp
 import app.florsent.data.UsageConsent
 import app.florsent.ui.apps.AppRow
@@ -82,7 +83,7 @@ class OnboardingViewModel(private val container: AppContainer) : ViewModel() {
     init {
         viewModelScope.launch {
             installed.value = container.installedApps.launchableApps()
-                .filter { it.packageName in KnownSocialApps.packages }
+                .filter { SocialAppMatcher.brandOf(AppLabel(it.packageName, it.label)) != null }
         }
     }
 

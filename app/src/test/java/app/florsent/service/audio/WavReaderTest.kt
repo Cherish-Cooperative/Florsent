@@ -55,6 +55,17 @@ class WavReaderTest {
     }
 
     @Test
+    fun `the bundled cue is clearly audible and leaves headroom`() {
+        val res = listOf(File("src/main/res"), File("app/src/main/res")).first { it.isDirectory }
+        val clip = WavReader.read(File(res, "raw/cue_soft.wav").readBytes())!!
+        val samples = java.nio.ByteBuffer.wrap(clip.data).order(java.nio.ByteOrder.LITTLE_ENDIAN).asShortBuffer()
+        var peak = 0
+        while (samples.hasRemaining()) peak = maxOf(peak, kotlin.math.abs(samples.get().toInt()))
+        val peakDb = 20 * kotlin.math.log10(peak / 32768.0)
+        assert(peakDb in -18.0..-1.0) { "cue peak $peakDb dBFS" }
+    }
+
+    @Test
     fun `cue pitch rises for inhale and settles for exhale`() {
         val rates = app.florsent.domain.BreathPhaseKind.entries.map(BreathingSoundscape::cueRate)
         rates.forEach { assert(it in 0.5f..1f) }

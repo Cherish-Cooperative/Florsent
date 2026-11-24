@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.util.LruCache
 import androidx.core.graphics.drawable.toBitmap
+import app.florsent.domain.AppLabel
 import java.text.Collator
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
@@ -39,11 +40,8 @@ class InstalledAppsRepository(context: Context) {
             .toList()
     }
 
-    suspend fun installedPackages(candidates: Set<String>): Set<String> = withContext(Dispatchers.IO) {
-        candidates.filterTo(linkedSetOf()) { pkg ->
-            runCatching { packageManager.getApplicationInfo(pkg, 0) }.isSuccess
-        }
-    }
+    /** Launchable apps as (package, label); disabled apps have no launcher entry and are left out. */
+    suspend fun launchableLabels(): List<AppLabel> = launchableApps().map { AppLabel(it.packageName, it.label) }
 
     /** Cache-only lookup for the first frame; never touches PackageManager. */
     fun peekIcon(packageName: String, sizePx: Int): Bitmap? = iconCache.get(cacheKey(packageName, sizePx))

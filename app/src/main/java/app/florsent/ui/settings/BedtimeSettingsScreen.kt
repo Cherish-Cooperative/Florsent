@@ -1,19 +1,14 @@
 package app.florsent.ui.settings
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -38,7 +33,9 @@ import app.florsent.data.UserSettings
 import app.florsent.domain.BedtimeLearner
 import app.florsent.domain.BedtimeLearning
 import app.florsent.ui.components.BedtimePickerDialog
+import app.florsent.ui.components.EqualChipGrid
 import app.florsent.ui.components.FlorsentTopBar
+import app.florsent.ui.components.PillOption
 import app.florsent.ui.components.SoftCard
 import app.florsent.ui.components.clockText
 import kotlinx.coroutines.flow.SharingStarted
@@ -125,16 +122,12 @@ fun BedtimeSettingsScreen(state: BedtimeUiState?, vm: BedtimeViewModel, onBack: 
                     Column(Modifier.padding(20.dp)) {
                         Text(stringResource(R.string.bedtime_threshold), style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(10.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        EqualChipGrid {
                             UserSettings.BEDTIME_THRESHOLD_CHOICES.forEach { minutes ->
-                                FilterChip(
+                                PillOption(
+                                    label = stringResource(R.string.minutes_format, minutes),
                                     selected = s.bedtimeThresholdMinutes == minutes,
                                     onClick = { vm.setThreshold(minutes) },
-                                    label = { Text(stringResource(R.string.minutes_format, minutes)) },
-                                    shape = RoundedCornerShape(50),
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    ),
                                 )
                             }
                         }
