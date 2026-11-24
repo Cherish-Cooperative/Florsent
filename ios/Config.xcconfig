@@ -1,0 +1,18 @@
+// Florsent iOS: the one place for signing identity and identifiers.
+// Registered 2026-11-24 (Team V7H59QAJPL): the five App IDs below and the App Group, each with
+// Family Controls (Development). The Distribution entitlement request (6PX4NBCYWU) is pending; once
+// approved, enable it on each App ID. To use other IDs, change them here and run `xcodegen generate`.
+// Every target, entitlement and Info.plist derives from these values:
+//   app            $(FLORSENT_BUNDLE_ID)
+//   extensions     $(FLORSENT_BUNDLE_ID).monitor | .shield-config | .shield-action | .report
+//   App Group      $(FLORSENT_APP_GROUP)
+
+FLORSENT_TEAM_ID = V7H59QAJPL
+FLORSENT_BUNDLE_ID = app.florsent
+FLORSENT_APP_GROUP = group.app.florsent
+
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+
+DEVELOPMENT_TEAM = $(FLORSENT_TEAM_ID)
+IPHONEOS_DEPLOYMENT_TARGET = 17.0

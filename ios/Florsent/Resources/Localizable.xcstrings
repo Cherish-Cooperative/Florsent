@@ -1,0 +1,1466 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "breathe.ambient": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambience"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "環境音"
+          }
+        }
+      },
+      "comment": "Android: breathe_ambient_sound"
+    },
+    "breathe.chime": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chime"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提示音"
+          }
+        }
+      },
+      "comment": "Android: breathe_cue_sound"
+    },
+    "breathe.cycle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Round %1$lld of %2$lld"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %1$lld 輪，共 %2$lld 輪"
+          }
+        }
+      },
+      "comment": "Android: breathe_cycle"
+    },
+    "breathe.endEarly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End early"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提早結束"
+          }
+        }
+      },
+      "comment": "Android: breathe_end_early"
+    },
+    "breathe.rhythm.a11y": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rhythm %@ seconds"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "節奏 %@ 秒"
+          }
+        }
+      },
+      "comment": "VoiceOver: the pattern's rhythm, e.g. 4, 7, 8"
+    },
+    "breathe.secondsLeft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld second left"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld seconds left"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hant": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "還有 %lld 秒"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "breathe.start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始"
+          }
+        }
+      },
+      "comment": "Android: breathe_start"
+    },
+    "breathe.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathe"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呼吸練習"
+          }
+        }
+      },
+      "comment": "Android: breathe_title"
+    },
+    "greeting.afternoon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good afternoon"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "午安"
+          }
+        }
+      },
+      "comment": "Android: greeting_afternoon"
+    },
+    "greeting.evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good evening"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "晚上好"
+          }
+        }
+      },
+      "comment": "Android: greeting_evening"
+    },
+    "greeting.morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good morning"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "早安"
+          }
+        }
+      },
+      "comment": "Android: greeting_morning"
+    },
+    "greeting.night": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's late, time to rest"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "夜深了，早點休息"
+          }
+        }
+      },
+      "comment": "Android: greeting_night"
+    },
+    "grounding.another": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another one"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "換一句"
+          }
+        }
+      },
+      "comment": "Android: grounding_another"
+    },
+    "grounding.day.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look around and find three green things"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "看看四周，找出三樣綠色的東西"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[0]"
+    },
+    "grounding.day.10": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take a deep breath and notice what the air smells like"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "深深吸一口氣，聞聞空氣裡有什麼味道"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[9]"
+    },
+    "grounding.day.11": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find the brightest color in front of you and rest your eyes on it"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "留意眼前最亮的那個顏色，靜靜看它一會兒"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[10]"
+    },
+    "grounding.day.12": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Talk to someone nearby, or look up at the sky"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟身邊的人說說話，或抬頭看看天空"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[11]"
+    },
+    "grounding.day.2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feel the weight of your feet on the ground"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "感受雙腳踩在地上的重量"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[1]"
+    },
+    "grounding.day.3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Put the phone down, pour a glass of water and drink it slowly"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放下手機，去倒杯水，慢慢喝完"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[2]"
+    },
+    "grounding.day.4": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listen: what is the farthest sound you can hear?"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "聽聽看，現在離你最遠的聲音是什麼？"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[3]"
+    },
+    "grounding.day.5": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let your shoulders relax and sink a little"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "讓肩膀放鬆，往下沉一點點"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[4]"
+    },
+    "grounding.day.6": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look out the window at the farthest point and rest your eyes"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "看向窗外最遠的地方，讓眼睛休息一下"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[5]"
+    },
+    "grounding.day.7": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch something nearby and notice its warmth and texture"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "摸摸身邊的東西，感覺它的溫度和觸感"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[6]"
+    },
+    "grounding.day.8": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stand up and stretch, letting your back slowly lengthen"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "站起來伸個懶腰，讓背慢慢延展開"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[7]"
+    },
+    "grounding.day.9": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Think of one small thing that went well today"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "想一件今天還不錯的小事"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts[8]"
+    },
+    "grounding.label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to the present"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回到當下"
+          }
+        }
+      },
+      "comment": "Android: grounding_label"
+    },
+    "grounding.night.1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Charge your phone somewhere out of reach"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把手機放到伸手拿不到的地方充電"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts_bedtime[0]"
+    },
+    "grounding.night.2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dim the lights in your room a little"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把房間的燈調暗一點"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts_bedtime[1]"
+    },
+    "grounding.night.3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow's things can wait until tomorrow"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "明天的事，明天再想就好"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts_bedtime[2]"
+    },
+    "grounding.night.4": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathe out slowly and let your shoulders relax"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "深深吐一口氣，讓肩膀放鬆下來"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts_bedtime[3]"
+    },
+    "grounding.night.5": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take a small sip of warm water and get ready for bed"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "喝一小口溫水，準備躺下"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts_bedtime[4]"
+    },
+    "grounding.night.6": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Think of one small thing you're grateful for today"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "想一件今天值得感謝的小事"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts_bedtime[5]"
+    },
+    "grounding.night.7": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pull up the covers and let yourself get warm"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把被子拉好，讓身體暖暖的"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts_bedtime[6]"
+    },
+    "grounding.night.8": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close your eyes and listen to the quiet of the room"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "閉上眼睛，聽聽房間裡安靜的聲音"
+          }
+        }
+      },
+      "comment": "Android: grounding_prompts_bedtime[7]"
+    },
+    "grounding.return": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to life"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回到生活"
+          }
+        }
+      },
+      "comment": "Android: grounding_return"
+    },
+    "grounding.returnNight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go rest"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "去休息吧"
+          }
+        }
+      },
+      "comment": "Android: grounding_return_bedtime"
+    },
+    "home.breatheNow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathe now"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "立即呼吸練習"
+          }
+        }
+      },
+      "comment": "Android: home_breathe_now"
+    },
+    "home.grounding": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to the present"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回到當下"
+          }
+        }
+      },
+      "comment": "Android: grounding_label"
+    },
+    "home.guidance.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen Time support comes in the next version. Breathing and grounding already work"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下一版會接上「螢幕使用時間」，呼吸練習和回到當下現在就能用"
+          }
+        }
+      }
+    },
+    "home.guidance.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gentle guidance on iPhone"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPhone 上的漸進引導"
+          }
+        }
+      }
+    },
+    "home.subtitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathe for a minute, then get back to life"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "花一分鐘呼吸，然後回到生活"
+          }
+        }
+      },
+      "comment": "Android: onboarding_step_breathe"
+    },
+    "intent.breathe.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens Florsent's breathing practice"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開 Florsent 的呼吸練習"
+          }
+        }
+      }
+    },
+    "intent.breathe.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start breathing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始呼吸練習"
+          }
+        }
+      },
+      "comment": "Android: nudge_accept_description"
+    },
+    "intent.overBudget.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tells whether your watched apps are over today's budget. Use it in an automation to turn on grayscale"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回報留意的 App 今天是否超過額度，可以在自動化裡用來開啟灰階"
+          }
+        }
+      }
+    },
+    "intent.overBudget.no": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not yet, still within budget"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "還沒有，仍在額度內"
+          }
+        }
+      }
+    },
+    "intent.overBudget.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Over budget right now?"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在超過額度了嗎？"
+          }
+        }
+      }
+    },
+    "intent.overBudget.yes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes, over budget. Time for a break?"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "是，已經超過額度了，休息一下吧？"
+          }
+        }
+      }
+    },
+    "pattern.box_4444.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steadies your mind"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "穩定心情"
+          }
+        }
+      },
+      "comment": "Android: pattern_box_desc"
+    },
+    "pattern.box_4444.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Box breathing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "盒式呼吸"
+          }
+        }
+      },
+      "comment": "Android: pattern_box"
+    },
+    "pattern.duration": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld rounds · about %2$lld min %3$lld s"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld 輪・約 %2$lld 分 %3$lld 秒"
+          }
+        }
+      },
+      "comment": "Android: pattern_duration"
+    },
+    "pattern.durationEven": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld rounds · about %2$lld min"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld 輪・約 %2$lld 分鐘"
+          }
+        }
+      },
+      "comment": "Android: pattern_duration_even"
+    },
+    "pattern.equal_444.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helps you focus"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "幫助專注"
+          }
+        }
+      },
+      "comment": "Android: pattern_equal_desc"
+    },
+    "pattern.equal_444.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equal breathing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等長呼吸"
+          }
+        }
+      },
+      "comment": "Android: pattern_equal"
+    },
+    "pattern.relax_478.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helps you unwind and sleep"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "幫助放鬆入睡"
+          }
+        }
+      },
+      "comment": "Android: pattern_478_desc"
+    },
+    "pattern.relax_478.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4-7-8 relaxing breath"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4-7-8 放鬆呼吸"
+          }
+        }
+      },
+      "comment": "Android: pattern_478"
+    },
+    "pattern.resonance_55.desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slows your breathing down"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "讓呼吸慢下來"
+          }
+        }
+      },
+      "comment": "Android: pattern_resonance_desc"
+    },
+    "pattern.resonance_55.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resonance breathing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "共振呼吸"
+          }
+        }
+      },
+      "comment": "Android: pattern_resonance"
+    },
+    "phase.exhale": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exhale"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "吐氣"
+          }
+        }
+      },
+      "comment": "Android: phase_exhale"
+    },
+    "phase.holdIn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "閉氣"
+          }
+        }
+      },
+      "comment": "Android: phase_hold_in"
+    },
+    "phase.holdOut": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "停頓"
+          }
+        }
+      },
+      "comment": "Android: phase_hold_out"
+    },
+    "phase.inhale": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inhale"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "吸氣"
+          }
+        }
+      },
+      "comment": "Android: phase_inhale"
+    },
+    "settings.ambient": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathing ambience"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呼吸練習環境音"
+          }
+        }
+      },
+      "comment": "Android: settings_ambient"
+    },
+    "settings.ambientHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A warm singing-bowl drone"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "溫暖的頌缽長音"
+          }
+        }
+      },
+      "comment": "Android: settings_ambient_hint"
+    },
+    "settings.appearanceHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follows your iPhone's light and dark mode"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟著 iPhone 的淺色或深色模式"
+          }
+        }
+      }
+    },
+    "settings.chime": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chime"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提示音"
+          }
+        }
+      },
+      "comment": "Android: breathe_cue_sound"
+    },
+    "settings.chimeHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A soft chime as you switch breath"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "換氣時輕響一聲"
+          }
+        }
+      },
+      "comment": "Android: settings_cue_hint"
+    },
+    "settings.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Florsent %@ · Your data stays on this phone"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Florsent %@・資料只存在這支手機上"
+          }
+        }
+      },
+      "comment": "Android: settings_footer"
+    },
+    "settings.haptics": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breath haptics"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "換氣震動"
+          }
+        }
+      }
+    },
+    "settings.hapticsHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A soft pulse as you switch breath"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "換氣時輕輕震一下"
+          }
+        }
+      }
+    },
+    "settings.language": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language / 語言"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "語言 / Language"
+          }
+        }
+      },
+      "comment": "Android: settings_language"
+    },
+    "settings.languageHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change it in iPhone Settings"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到 iPhone 的「設定」更改"
+          }
+        }
+      }
+    },
+    "settings.screenTime": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen Time"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕使用時間"
+          }
+        }
+      }
+    },
+    "settings.screenTimeValue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next version"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下一版開放"
+          }
+        }
+      }
+    },
+    "settings.section.appearance": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appearance"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外觀"
+          }
+        }
+      },
+      "comment": "Android: settings_section_appearance"
+    },
+    "settings.section.breathing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathing & sound"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呼吸與聲音"
+          }
+        }
+      },
+      "comment": "Android: settings_row_breathing"
+    },
+    "settings.section.guidance": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gentle guidance"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "漸進引導"
+          }
+        }
+      },
+      "comment": "Android: settings_section_guidance"
+    },
+    "settings.shortcut": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcuts automation"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "捷徑自動化"
+          }
+        }
+      }
+    },
+    "settings.shortcutHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add “Over budget right now?” to an automation in Shortcuts and turn on grayscale when it answers yes"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在「捷徑」的自動化加入「現在超過額度了嗎？」，回答「是」時就開啟灰階"
+          }
+        }
+      }
+    },
+    "settings.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定"
+          }
+        }
+      },
+      "comment": "Android: settings_title"
+    },
+    "shortcut.breathe": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathe"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呼吸練習"
+          }
+        }
+      },
+      "comment": "Android: breathe_title"
+    },
+    "shortcut.overBudget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Over budget?"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "超過額度了嗎？"
+          }
+        }
+      },
+      "comment": "App Shortcut tile title"
+    }
+  },
+  "version": "1.0"
+}
