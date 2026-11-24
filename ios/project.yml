@@ -32,6 +32,9 @@ targets:
     platform: iOS
     sources:
       - path: Florsent
+        excludes: [PrivacyInfo.xcprivacy]
+      - path: Florsent/PrivacyInfo.xcprivacy # privacy manifest (App Store required-reason APIs)
+        buildPhase: resources
       - path: ScreenTimeShared
     dependencies:
       - package: FlorsentKit
@@ -96,7 +99,12 @@ targets:
   FlorsentMonitor:
     type: app-extension
     platform: iOS
-    sources: [FlorsentMonitor, ScreenTimeShared]
+    sources:
+      - path: FlorsentMonitor
+        excludes: [PrivacyInfo.xcprivacy]
+      - path: FlorsentMonitor/PrivacyInfo.xcprivacy # privacy manifest (App Store required-reason APIs)
+        buildPhase: resources
+      - path: ScreenTimeShared
     dependencies:
       - package: FlorsentKit
         product: FlorsentCore
@@ -129,7 +137,11 @@ targets:
   FlorsentShieldConfig:
     type: app-extension
     platform: iOS
-    sources: [FlorsentShieldConfig]
+    sources:
+      - path: FlorsentShieldConfig
+        excludes: [PrivacyInfo.xcprivacy]
+      - path: FlorsentShieldConfig/PrivacyInfo.xcprivacy # privacy manifest (App Store required-reason APIs)
+        buildPhase: resources
     dependencies:
       - package: FlorsentKit
         product: FlorsentCore
@@ -159,7 +171,12 @@ targets:
   FlorsentShieldAction:
     type: app-extension
     platform: iOS
-    sources: [FlorsentShieldAction, ScreenTimeShared]
+    sources:
+      - path: FlorsentShieldAction
+        excludes: [PrivacyInfo.xcprivacy]
+      - path: FlorsentShieldAction/PrivacyInfo.xcprivacy # privacy manifest (App Store required-reason APIs)
+        buildPhase: resources
+      - path: ScreenTimeShared
     dependencies:
       - package: FlorsentKit
         product: FlorsentCore
@@ -190,7 +207,11 @@ targets:
   FlorsentReport:
     type: extensionkit-extension
     platform: iOS
-    sources: [FlorsentReport]
+    sources:
+      - path: FlorsentReport
+        excludes: [PrivacyInfo.xcprivacy]
+      - path: FlorsentReport/PrivacyInfo.xcprivacy # privacy manifest (App Store required-reason APIs)
+        buildPhase: resources
     dependencies:
       - package: FlorsentKit
         product: FlorsentCore
