@@ -317,7 +317,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `res/raw/fade_ambient.ogg` | 變淡時的柔和雨聲 | 遠雨與晚風，42 秒 |
 | `res/raw/cue_soft.wav` | 提示音 | 1.6 秒，22.05 kHz 單聲道 16-bit PCM（70 KB），依階段改變播放速率 |
 
-- 兩首環境音由音景團隊以程式合成，沒有版權風險。原檔是 AAC（.m4a），但 AAC 編碼器會在開頭補約 46 ms 靜音，`MediaPlayer` 循環時不會去掉，每一圈都會斷一下。所以從去掉補位的 PCM 轉成 Opus（112 kbps VBR，Ogg 容器），轉檔後長度精準（48.0000 秒、42.0000 秒）、平均音量都是 -20.5 dB。
+- 兩首環境音由音景團隊以程式合成，沒有版權風險。原檔是 AAC（.m4a），但 AAC 編碼器會在開頭補約 46 ms 靜音，`MediaPlayer` 循環時不會去掉，每一圈都會斷一下。所以從去掉補位的 PCM 轉成 Opus（112 kbps VBR，Ogg 容器），轉檔後長度精準（48.0000 秒、42.0000 秒）。v0.10.2 依實機回饋整段加上固定增益再轉一次 Opus（128 kbps VBR），只調音量、不壓縮動態，循環接縫不變：頌缽 -13.0 LUFS、true peak -2.6 dBFS（+5.6 dB）；雨聲 -13.6 LUFS、true peak -1.3 dBFS（+5.0 dB）；提示音 `cue_soft.wav` 峰值 -15.5 dBFS（+6.5 dB）。播放倍率：頌缽 0.5、提示音 0.35、雨聲 0.6。頌缽和提示音總共都提高 6.5 dB，兩者的比例維持不變。
 - **無縫循環（`GaplessLoop`）**：檔案本身沒有縫還不夠。`MediaPlayer.isLooping` 每一圈結束都會跳回開頭，解碼器要重新預熱（Opus pre-roll 80 ms），可能聽到短暫斷音。所以頌缽與雨聲都用 `setNextMediaPlayer` 把兩個播放器接起來：下一圈事先準備好，由系統無縫接手（logcat 會看到 `info (2, 0)` = `MEDIA_INFO_STARTED_AS_NEXT`），播完的那圈釋放、再排下一圈。
 - **提示音（`CuePlayer`）**：預先解碼的 WAV 放進靜態 `AudioTrack`，每次只是重頭播放、以 `playbackRate` 改音高；指定 `PERFORMANCE_MODE_POWER_SAVING`，和頌缽走同一條大緩衝輸出，不會像 `SoundPool`（預設低延遲）那樣每響一次就喚醒另一條輸出、讓頌缽卡一下。所有呼叫在 `florsent-cue` 執行緒，不佔主執行緒。
 - **提示音只響一次（`PhaseCueGate`）**：去重在 ViewModel，以（session、輪次、階段）為鍵，只接受嚴格遞增的階段。畫面重建、同一階段被回報兩次、時鐘倒退，都不會讓提示音或震動重複。
@@ -325,9 +325,10 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - **變淡時播放**（`FadeSoundController` + `FadeSoundscape`）是視覺效果組合裡的一層，和淡化層收到同樣的淡化程度：
   - 淡化程度大於 0、開關打開、沒有在通話（`MODE_IN_CALL`／`IN_COMMUNICATION`／`RINGTONE`）才播放。
   - 音訊焦點用 `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`，系統自動把前景 App 壓低音量，不會暫停；講話內容（Podcast 等）由系統自行暫停。
-  - 15 秒淡入（音量曲線 0.4 × p²），離開時 1.5 秒淡出。淡入淡出用實際經過時間計算，不受「移除動畫」設定影響。
+  - 15 秒淡入（音量曲線 0.6 × p²，v0.10.2 前是 0.4），離開時 1.5 秒淡出。淡入淡出用實際經過時間計算，不受「移除動畫」設定影響。
   - 點提醒時呼叫 `handOffToBreathing()`，改用 3.5 秒淡出，和呼吸畫面約 1 秒的啟動、2.5 秒的環境音淡入交疊。呼吸環境音要焦點時，正在淡出的雨聲不會被截短。
-  - 焦點被拒絕或被搶走（來電、使用者打開別的音樂），這一輪淡化就不再要求焦點，下一輪才重新開始。
+  - 來電或響鈴（`MODE_IN_CALL`、`MODE_IN_COMMUNICATION`、`MODE_RINGTONE`）一律不播；播放中遇到就 1.5 秒淡出，這一輪淡化不再出聲。第一次要求焦點就被拒絕時，同樣這一輪不再嘗試。
+  - 其他 App 搶走焦點時（`FocusReclaimPolicy`）：滑 Reels、Shorts 時，每支新影片都會要一次焦點。v0.10.1 以前一被搶就整輪放棄，雨聲幾秒內就消失。現在等 1.2 秒冷卻後再用 `GAIN_TRANSIENT_MAY_DUCK` 要回來，讓影片被壓低、雨聲繼續。冷卻期間不管收到幾次焦點變化，都只排一次重新要求。拿到焦點後不到 1 秒又被搶走、或重新要求被拒絕，就算「對方在搶」：冷卻加倍（1.2、2.4、4.8、9.6 秒，上限 9.6 秒），連續 5 次以後這一輪放棄，避免和某個 App 無限互搶。一般滑動之間隔超過 1 秒，所以每次都只等 1.2 秒。焦點自己回來（`AUDIOFOCUS_GAIN`）、離開 App、點提醒交接時，排定的重新要求都會取消。只有留意的 App 正在變淡時才有聲音，所以只會從使用者正在滑的動態那裡把焦點拿回來。
 - Android 17 的背景音訊強化會把背景 App 的播放靜音、焦點要求回傳失敗。綁定中的無障礙服務不受影響：模擬器開啟完整強制（`cmd audio set-enable-hardening 1`）時，雨聲仍是 started、`muted=none`，焦點為 `GAIN_TRANSIENT_MAY_DUCK`。不需要前景服務或新權限。
 - 關閉系統動畫時，花依階段張開或收合，不做連續動畫。
 - TalkBack：階段標籤是唯一的 live region（polite），倒數與輪數合併成一句、不朗讀每一秒。
@@ -380,7 +381,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ## 編譯與測試
 
 ```sh
-./gradlew testDebugUnitTest      # 194 個 JVM 測試
+./gradlew testDebugUnitTest      # 202 個 JVM 測試
 ./gradlew assembleDebug
 ./gradlew assembleRelease        # 確認 R8 沒有移除 ShellService
 ```
@@ -415,8 +416,8 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `SettingsRepositoryTest`（7）、`GuidanceStateStoreTest`（3） | 真實 DataStore 檔案上的預設值、往返與持久化 |
 | `BreatheViewModelTest`（10） | 聲音延遲建立、背景暫停、提示音開關、同一階段只響一次、新練習重新計算、釋放 |
 | `StringResourcesParityTest`（8） | 中英文鍵值、陣列句數、佔位符、複數、無漏翻、無句尾句號、`locales_config` 與資源一致、語言代碼對應 |
-| `PhaseCueGateTest`（5）、`GaplessLoopTest`（5）、`WavReaderTest`（4） | 每階段只響一次、只往前、整段練習重複回報仍只響一次、新練習重來；循環接力、音量延續、暫停與釋放；WAV 解析、拒絕不支援格式、內建提示音規格與音高 |
-| `FadeSoundControllerTest`（10） | 淡化開始播放一次、關閉不播、中途關閉淡出、通話不播、交接延長淡出、焦點被搶不重試、拒絕不重試、釋放、音量曲線 |
+| `PhaseCueGateTest`（5）、`GaplessLoopTest`（5）、`WavReaderTest`（5） | 每階段只響一次、只往前、整段練習重複回報仍只響一次、新練習重來；循環接力、音量延續、暫停與釋放；WAV 解析、拒絕不支援格式、內建提示音規格、峰值介於 -18 到 -1 dBFS 與音高 |
+| `FadeSoundControllerTest`（17） | 淡化開始播放一次、關閉不播、中途關閉淡出、通話不播、交接延長淡出、首次拒絕不重試、釋放、音量曲線；短影音搶焦點後 1.2 秒重新要求、冷卻內多次只要求一次、對方回搶時冷卻加倍並在 5 次後放棄、重新要求被拒延後再試、來電不重試、冷卻中來電取消、離開或交接取消、焦點自己回來取消 |
 | `ContrastAuditTest`（4） | WCAG 公式、品牌深淺色全部通過 AA |
 
 單元測試開啟了 `unitTests.isReturnDefaultValues = true`，讓 `android.util.Log` 等 stub 回傳預設值。

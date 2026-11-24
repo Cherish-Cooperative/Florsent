@@ -7,7 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
@@ -18,6 +21,7 @@ import app.florsent.domain.ForegroundPolicy
 import app.florsent.domain.GuidanceContext
 import app.florsent.domain.GuidanceEvent
 import app.florsent.domain.ScreenPolicy
+import app.florsent.service.audio.DelayScheduler
 import app.florsent.service.audio.FadeSoundController
 import app.florsent.service.audio.FadeSoundscape
 import app.florsent.service.effect.CompositeVisualEffectController
@@ -50,6 +54,12 @@ class FlorsentAccessibilityService : AccessibilityService() {
     private var effects: VisualEffectController? = null
     private var nudge: NudgeOverlay? = null
     private var fadeSound: FadeSoundController? = null
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
+    private val mainScheduler = DelayScheduler { delayMs, action ->
+        val runnable = Runnable(action)
+        mainHandler.postDelayed(runnable, delayMs)
+        ({ mainHandler.removeCallbacks(runnable) })
+    }
     private var renderJob: Job? = null
     private var ignoredPackages: Set<String> = emptySet()
     private var lastForeground: String? = null
@@ -94,9 +104,15 @@ class FlorsentAccessibilityService : AccessibilityService() {
         val container = appContainer
         val audioManager = getSystemService(AudioManager::class.java)
         val fadeSound = FadeSoundController(
-            player = FadeSoundscape(this) { this.fadeSound?.onFocusLost() },
+            player = FadeSoundscape(
+                this,
+                onFocusLost = { this.fadeSound?.onFocusLost() },
+                onFocusGained = { this.fadeSound?.onFocusGained() },
+            ),
             isEnabled = { container.currentSettings.value.fadeSound },
             inCall = { audioManager?.mode in CALL_MODES },
+            scheduler = mainScheduler,
+            nowMs = SystemClock::uptimeMillis,
         )
         this.fadeSound = fadeSound
         effects = CompositeVisualEffectController(

@@ -2,16 +2,24 @@ package app.florsent.service.audio
 
 import app.florsent.service.effect.VisualEffect
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class FadeSoundControllerTest {
 
-    private class FakePlayer(var grant: Boolean = true) : FadeSoundPlayer {
+    private inner class FakePlayer(var grant: Boolean = true) : FadeSoundPlayer {
         val calls = mutableListOf<String>()
+        val reclaimedAt = mutableListOf<Long>()
+        var grantReclaim = true
         override fun start(fadeInMs: Long): Boolean {
             calls += "start($fadeInMs)"
             return grant
+        }
+        override fun reclaimFocus(): Boolean {
+            calls += "reclaim"
+            reclaimedAt += now
+            return grantReclaim
         }
         override fun stop(fadeOutMs: Long) { calls += "stop($fadeOutMs)" }
         override fun release() { calls += "release" }
@@ -20,7 +28,28 @@ class FadeSoundControllerTest {
     private var enabled = true
     private var inCall = false
     private val player = FakePlayer()
-    private val controller = FadeSoundController(player, { enabled }, { inCall })
+
+    /** A manual clock and timer queue: [advance] runs whatever falls due. */
+    private var now = 0L
+    private val timers = mutableListOf<Pair<Long, () -> Unit>>()
+    private val scheduler = DelayScheduler { delayMs, action ->
+        val timer = now + delayMs to action
+        timers += timer
+        ({ timers.remove(timer) })
+    }
+
+    private fun advance(ms: Long) {
+        val end = now + ms
+        while (true) {
+            val due = timers.filter { it.first <= end }.minByOrNull { it.first } ?: break
+            timers.remove(due)
+            now = due.first
+            due.second()
+        }
+        now = end
+    }
+
+    private val controller = FadeSoundController(player, { enabled }, { inCall }, scheduler, { now })
 
     private fun level(l: Float) = controller.render(VisualEffect(l, "com.google.android.youtube"))
 
@@ -82,16 +111,131 @@ class FadeSoundControllerTest {
     }
 
     @Test
-    fun `losing focus keeps it quiet for the rest of this fade, then the next fade plays again`() {
-        level(0.2f)
-        controller.onFocusLost() // e.g. the user started music in another app
-        level(0.4f)
-        level(0.8f)
-        assertEquals("no fighting for focus", listOf("start(15000)"), player.calls)
+    fun `a new Reel taking focus is answered by asking again after a short cooldown`() {
+        level(0.3f)
+        advance(5_000)
+        controller.onFocusLost() // the next Reel starts playing
+        advance(1_100)
+        assertEquals("still in the cooldown", listOf("start(15000)"), player.calls)
+        advance(100)
+        assertEquals("focus requested again, ducking the Reel", listOf("start(15000)", "reclaim"), player.calls)
 
-        level(0f) // fade over
-        level(0.1f) // next fade
-        assertEquals(listOf("start(15000)", "start(15000)"), player.calls)
+        // Every swipe takes focus again; each one is answered the same way, the rain never stops.
+        repeat(3) {
+            advance(6_000)
+            controller.onFocusLost()
+            advance(1_200)
+        }
+        assertEquals(listOf("start(15000)") + List(4) { "reclaim" }, player.calls)
+    }
+
+    @Test
+    fun `a burst of losses during the cooldown is answered with a single request`() {
+        level(0.3f)
+        advance(5_000)
+        repeat(10) {
+            controller.onFocusLost()
+            advance(50)
+        }
+        assertTrue(controller.isReclaimPending)
+        advance(2_000)
+        assertEquals(listOf("start(15000)", "reclaim"), player.calls)
+        assertFalse(controller.isReclaimPending)
+    }
+
+    @Test
+    fun `an app that grabs focus right back gets slower answers, then the rain gives up for this fade`() {
+        level(0.3f)
+        advance(5_000)
+        val lostAt = mutableListOf<Long>()
+        lostAt += now
+        controller.onFocusLost()
+        while (controller.isReclaimPending) {
+            assertTrue("the fight has to end", lostAt.size <= 20)
+            advance(timers.minOf { it.first } - now) // runs the request
+            advance(100) // and the other app takes focus back 100 ms later
+            lostAt += now
+            controller.onFocusLost()
+        }
+        val cooldowns = player.reclaimedAt.zip(lostAt) { reclaim, lost -> reclaim - lost }
+        assertEquals("1.2 s, then doubling, capped", listOf(1_200L, 2_400L, 4_800L, 9_600L, 9_600L), cooldowns)
+        assertEquals("gave up with the usual fade-out", "stop(1500)", player.calls.last())
+
+        // Stays quiet for the rest of the fade, plays again on the next one.
+        level(0.6f)
+        assertEquals(1, player.calls.count { it.startsWith("start") })
+        level(0f)
+        level(0.1f)
+        assertEquals(2, player.calls.count { it.startsWith("start") })
+    }
+
+    @Test
+    fun `a refused second request counts as pushback and is retried later, not at once`() {
+        level(0.3f)
+        advance(5_000)
+        player.grantReclaim = false
+        controller.onFocusLost()
+        advance(1_200)
+        assertEquals(listOf("start(15000)", "reclaim"), player.calls)
+        advance(2_399)
+        assertEquals("waits the doubled cooldown", 1, player.calls.count { it == "reclaim" })
+        player.grantReclaim = true
+        advance(1)
+        assertEquals(2, player.calls.count { it == "reclaim" })
+        assertFalse(controller.isReclaimPending)
+    }
+
+    @Test
+    fun `a call taking focus stops the rain for the rest of this fade, with no retry`() {
+        level(0.3f)
+        advance(5_000)
+        inCall = true // ringing
+        controller.onFocusLost()
+        assertFalse(controller.isReclaimPending)
+        advance(30_000)
+        inCall = false
+        level(0.5f)
+        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+    }
+
+    @Test
+    fun `a call that starts during the cooldown cancels the request`() {
+        level(0.3f)
+        advance(5_000)
+        controller.onFocusLost()
+        inCall = true
+        advance(1_200)
+        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+    }
+
+    @Test
+    fun `leaving the app or tapping the nudge cancels a pending request`() {
+        level(0.3f)
+        advance(5_000)
+        controller.onFocusLost()
+        level(0f) // left the app
+        advance(5_000)
+        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+
+        level(0.3f)
+        advance(5_000)
+        controller.onFocusLost()
+        controller.handOffToBreathing()
+        controller.onFocusLost() // the breathing screen takes focus during the hand-off
+        level(0f)
+        advance(5_000)
+        assertEquals(listOf("start(15000)", "stop(1500)", "start(15000)", "stop(3500)"), player.calls)
+    }
+
+    @Test
+    fun `focus coming back on its own cancels the pending request`() {
+        level(0.3f)
+        advance(5_000)
+        controller.onFocusLost()
+        advance(500)
+        controller.onFocusGained()
+        advance(5_000)
+        assertEquals(listOf("start(15000)"), player.calls)
     }
 
     @Test
