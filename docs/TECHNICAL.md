@@ -317,7 +317,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `res/raw/fade_ambient.ogg` | 變淡時的柔和雨聲 | 遠雨與晚風，42 秒 |
 | `res/raw/cue_soft.wav` | 提示音 | 1.6 秒，22.05 kHz 單聲道 16-bit PCM（70 KB），依階段改變播放速率 |
 
-- 兩首環境音由音景團隊以程式合成，沒有版權風險。原檔是 AAC（.m4a），但 AAC 編碼器會在開頭補約 46 ms 靜音，`MediaPlayer` 循環時不會去掉，每一圈都會斷一下。所以從去掉補位的 PCM 轉成 Opus（112 kbps VBR，Ogg 容器），轉檔後長度精準（48.0000 秒、42.0000 秒）。v0.10.2 依實機回饋整段加上固定增益再轉一次 Opus（128 kbps VBR），只調音量、不壓縮動態，循環接縫不變：頌缽 -13.0 LUFS、true peak -2.6 dBFS（+5.6 dB）；雨聲 -13.6 LUFS、true peak -1.3 dBFS（+5.0 dB）；提示音 `cue_soft.wav` 峰值 -15.5 dBFS（+6.5 dB）。播放倍率：頌缽 0.5、提示音 0.35、雨聲 0.6。頌缽和提示音總共都提高 6.5 dB，兩者的比例維持不變。
+- 兩首環境音由音景團隊以程式合成，沒有版權風險。原檔是 AAC（.m4a），但 AAC 編碼器會在開頭補約 46 ms 靜音，`MediaPlayer` 循環時不會去掉，每一圈都會斷一下。所以從去掉補位的 PCM 轉成 Opus（112 kbps VBR，Ogg 容器），轉檔後長度精準（48.0000 秒、42.0000 秒）。v0.10.2 依實機回饋整段加上固定增益再轉一次 Opus（128 kbps VBR），只調音量、不壓縮動態，循環接縫不變：頌缽 -13.0 LUFS、true peak -2.6 dBFS（+5.6 dB）；雨聲 -13.6 LUFS、true peak -1.3 dBFS（+5.0 dB）；提示音 `cue_soft.wav` 峰值 -15.5 dBFS（+6.5 dB）。播放倍率：頌缽 0.75（峰值約 -5 dBFS，不會破音）、提示音 0.42、雨聲 0.6。頌缽依實測回饋又加大約 3.5 dB，提示音跟著加約 1.6 dB，在較響的頌缽上仍清楚、不刺耳。
 - **無縫循環（`GaplessLoop`）**：檔案本身沒有縫還不夠。`MediaPlayer.isLooping` 每一圈結束都會跳回開頭，解碼器要重新預熱（Opus pre-roll 80 ms），可能聽到短暫斷音。所以頌缽與雨聲都用 `setNextMediaPlayer` 把兩個播放器接起來：下一圈事先準備好，由系統無縫接手（logcat 會看到 `info (2, 0)` = `MEDIA_INFO_STARTED_AS_NEXT`），播完的那圈釋放、再排下一圈。
 - **提示音（`CuePlayer`）**：預先解碼的 WAV 放進靜態 `AudioTrack`，每次只是重頭播放、以 `playbackRate` 改音高；指定 `PERFORMANCE_MODE_POWER_SAVING`，和頌缽走同一條大緩衝輸出，不會像 `SoundPool`（預設低延遲）那樣每響一次就喚醒另一條輸出、讓頌缽卡一下。所有呼叫在 `florsent-cue` 執行緒，不佔主執行緒。
 - **提示音只響一次（`PhaseCueGate`）**：去重在 ViewModel，以（session、輪次、階段）為鍵，只接受嚴格遞增的階段。畫面重建、同一階段被回報兩次、時鐘倒退，都不會讓提示音或震動重複。
