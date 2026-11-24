@@ -7,6 +7,11 @@ import SwiftUI
 @MainActor @Observable
 final class AppModel {
     var path: [Route] = []
+    /// On iPad (regular width) Settings is a centered form sheet with its own stack, as in
+    /// Apple's iPad apps; on iPhone it is pushed onto [path]. Set by RootView.
+    var settingsAsSheet = false
+    var settingsSheetShown = false
+    var settingsPath: [Route] = []
     let settings = AppSettings()
     let guidance: GuidanceController
     /// Breathing was opened in the bedtime window: the picker suggests 4-7-8.
@@ -34,6 +39,17 @@ final class AppModel {
     func finishBreathing(now: Date = Date()) {
         quietMinutes = guidance.breathingFinished(now: now)
         path = [.grounding]
+    }
+
+    /// Opens Settings, optionally straight on one of its sub-pages.
+    func openSettings(_ page: Route? = nil) {
+        let sub = page.map { [$0] } ?? []
+        if settingsAsSheet {
+            settingsPath = sub
+            settingsSheetShown = true
+        } else {
+            path = [.settings] + sub
+        }
     }
 
     func backToLife() {

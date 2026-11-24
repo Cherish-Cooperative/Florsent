@@ -123,12 +123,25 @@ extension View {
 
 private struct ReadableListWidth: ViewModifier {
     let maxWidth: CGFloat
+    @Environment(\.inFormSheet) private var inFormSheet
 
     func body(content: Content) -> some View {
-        GeometryReader { geo in
-            content.contentMargins(.horizontal, max((geo.size.width - maxWidth) / 2, 0), for: .scrollContent)
+        if inFormSheet {
+            // A form sheet is already a readable width: keep the list's own inset, aligned with
+            // the sheet's title, and pull the first section up under it.
+            content.listSectionSpacing(.compact)
+                .contentMargins(.top, 8, for: .scrollContent)
+        } else {
+            GeometryReader { geo in
+                content.contentMargins(.horizontal, max((geo.size.width - maxWidth) / 2, 0), for: .scrollContent)
+            }
         }
     }
+}
+
+extension EnvironmentValues {
+    /// True inside the iPad Settings form sheet.
+    @Entry var inFormSheet = false
 }
 
 /// A list row with a title, a quiet hint and an optional trailing value or chevron.

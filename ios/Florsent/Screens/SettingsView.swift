@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var palette
     @Environment(\.openURL) private var openURL
+    @Environment(\.inFormSheet) private var inFormSheet
     @State private var pickerShown = false
     @State private var picked = FamilyActivitySelection()
     @State private var grayscaleShown = false
@@ -79,7 +80,9 @@ struct SettingsView: View {
         .readableListWidth()
         .florsentBackground()
         .navigationTitle(Text("settings.title"))
-        .navigationBarTitleDisplayMode(.large)
+        // iPhone: a large title over the list. iPad sheet: a centered inline title beside Done,
+        // like the settings sheets in Apple's own iPad apps.
+        .navigationBarTitleDisplayMode(inFormSheet ? .inline : .large)
         .familyActivityPicker(isPresented: $pickerShown, selection: $picked)
         .onChange(of: pickerShown) { _, shown in
             if !shown, picked != guidance.selection { guidance.setSelection(picked) }

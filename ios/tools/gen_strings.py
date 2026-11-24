@@ -141,7 +141,8 @@ APP = {
     "insights.calm": own("Breathing", "呼吸練習"),
     "insights.breathsToday": own("Today: %lld", "今天 %lld 次"),
     "grounding.quiet": own("No reminders for the next %lld min", "接下來 %lld 分鐘不再提醒", "Mirrors Android grounding_cooldown"),
-    "settings.footer": android("settings_footer"),
+    # Android says "this phone"; iOS also runs on iPad, so the device-neutral words.
+    "settings.footer": own("Florsent %@ · Your data stays on this device", "Florsent %@・資料只存在這台裝置上"),
     # App Intents
     "intent.overBudget.title": own("Over budget right now?", "現在超過額度了嗎？"),
     "intent.overBudget.description": own(

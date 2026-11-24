@@ -44,7 +44,7 @@ struct InsightsView: View {
                     DeviceActivityReport(.insights, filter: filter)
                         .frame(height: 520)
                 } else {
-                    Button("home.guidance.setupAction") { model.path = [.settings] }
+                    Button("home.guidance.setupAction") { model.openSettings() }
                         .buttonStyle(PrimaryButtonStyle())
                 }
             }

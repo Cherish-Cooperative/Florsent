@@ -1716,17 +1716,16 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Florsent %@ · Your data stays on this phone"
+            "value": "Florsent %@ · Your data stays on this device"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "Florsent %@・資料只存在這支手機上"
+            "value": "Florsent %@・資料只存在這台裝置上"
           }
         }
-      },
-      "comment": "Android: settings_footer"
+      }
     },
     "settings.guidance.apps": {
       "extractionState": "manual",

@@ -136,6 +136,20 @@ final class GuidanceAppTests: XCTestCase {
         XCTAssertEqual(model.path, [])
     }
 
+    func testSettingsIsPushedOnIPhoneAndASheetOnIPad() async {
+        let model = AppModel(guidance: await activeController())
+        model.openSettings(.budget)
+        XCTAssertEqual(model.path, [.settings, .budget])
+        XCTAssertFalse(model.settingsSheetShown)
+
+        model.path = []
+        model.settingsAsSheet = true
+        model.openSettings()
+        XCTAssertEqual(model.path, [], "the iPad sheet leaves the home stack alone")
+        XCTAssertTrue(model.settingsSheetShown)
+        XCTAssertEqual(model.settingsPath, [])
+    }
+
     func testIntentAnswersFromTheAppGroup() {
         XCTAssertFalse(OverBudgetIntent.answer(store: store))
         store.updateGuidance { _ = $0.reach(GuidanceEvent(.bedtime, .notice), now: Date()) }

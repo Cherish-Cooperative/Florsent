@@ -5,53 +5,21 @@ struct HomeView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var palette
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                IdleBreathingFlower()
-                    .frame(width: flowerSize, height: flowerSize)
-                    .padding(.top, 8)
-
-                Text(L10n.greeting(hour: Calendar.current.component(.hour, from: Date())))
-                    .font(.title.weight(.medium))
-                    .multilineTextAlignment(.center)
-                    .accessibilityAddTraits(.isHeader)
-                    .padding(.top, 12)
-                Text("home.subtitle")
-                    .font(.body)
-                    .foregroundStyle(palette.onSurfaceVariant.color)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 6)
-
-                Button("home.breatheNow") { model.openBreathing() }
-                    .buttonStyle(PrimaryButtonStyle())
-                    .padding(.top, 28)
-
-                NavRow(title: "home.grounding", systemImage: "leaf") { model.path = [.grounding] }
-                    .padding(.top, 12)
-
-                if model.guidance.isActive {
-                    NavRow(title: "home.insights", systemImage: "chart.bar") { model.path = [.insights] }
-                        .padding(.top, 8)
-                }
-
-                if model.guidance.isActive {
-                    GuidanceCard()
-                        .padding(.top, 8)
-                } else {
-                    NavRow(title: "home.guidance.setupAction", systemImage: "hourglass") { model.path = [.settings] }
-                        .padding(.top, 8)
-                }
+        GeometryReader { geo in
+            ScrollView {
+                content
+                    // iPad: centered in the screen when it fits (both orientations) instead of floating
+                    // high; it still scrolls from the top when it does not (large text sizes).
+                    .frame(maxWidth: .infinity, minHeight: sizeClass == .regular ? geo.size.height : nil)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
-            .readableColumn()
         }
         .florsentBackground()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(value: Route.settings) {
+                Button { model.openSettings() } label: {
                     Image(systemName: "gearshape")
                 }
                 .accessibilityLabel(Text("settings.title"))
@@ -60,7 +28,53 @@ struct HomeView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var flowerSize: CGFloat { typeSize.isAccessibilitySize ? 140 : 220 }
+    private var content: some View {
+        VStack(spacing: 0) {
+            IdleBreathingFlower()
+                .frame(width: flowerSize, height: flowerSize)
+                .padding(.top, 8)
+
+            Text(L10n.greeting(hour: Calendar.current.component(.hour, from: Date())))
+                .font(.title.weight(.medium))
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.top, 12)
+            Text("home.subtitle")
+                .font(.body)
+                .foregroundStyle(palette.onSurfaceVariant.color)
+                .multilineTextAlignment(.center)
+                .padding(.top, 6)
+
+            Button("home.breatheNow") { model.openBreathing() }
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.top, 28)
+
+            NavRow(title: "home.grounding", systemImage: "leaf") { model.path = [.grounding] }
+                .padding(.top, 12)
+
+            if model.guidance.isActive {
+                NavRow(title: "home.insights", systemImage: "chart.bar") { model.path = [.insights] }
+                    .padding(.top, 8)
+            }
+
+            if model.guidance.isActive {
+                GuidanceCard()
+                    .padding(.top, 8)
+            } else {
+                NavRow(title: "home.guidance.setupAction", systemImage: "hourglass") { model.openSettings() }
+                    .padding(.top, 8)
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 24)
+        .readableColumn()
+    }
+
+    /// A little larger on iPad, so the flower holds the middle of the screen.
+    private var flowerSize: CGFloat {
+        if typeSize.isAccessibilitySize { return 140 }
+        return sizeClass == .regular ? 280 : 220
+    }
 }
 
 /// A quiet full-width row ("Back to the present", "Calm insights").
