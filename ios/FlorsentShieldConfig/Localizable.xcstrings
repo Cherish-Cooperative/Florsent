@@ -1,43 +1,42 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "shield.primary": {
+    "shield.bedtime.subtitle": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Start breathing"
+            "value": "It's getting late. A minute of slow breathing helps you settle for sleep"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "開始呼吸練習"
+            "value": "夜深了，花一分鐘慢慢呼吸，讓身體準備入睡"
           }
         }
-      },
-      "comment": "Android: nudge_accept_description"
+      }
     },
-    "shield.secondary": {
+    "shield.bedtime.title": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not now"
+            "value": "Time to wind down?"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "先不要"
+            "value": "該準備休息了嗎？"
           }
         }
       },
-      "comment": "Android: nudge_dismiss_description"
+      "comment": "Mirrors Android nudge_message_bedtime"
     },
-    "shield.subtitle": {
+    "shield.daily.subtitle": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -54,23 +53,56 @@
         }
       }
     },
-    "shield.title": {
+    "shield.daily.title": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pause for a deep breath?"
+            "value": "Time for a break"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "停下來深呼吸一下？"
+            "value": "休息一下吧"
           }
         }
-      },
-      "comment": "Android: nudge_message"
+      }
+    },
+    "shield.primary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go breathe"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "去呼吸"
+          }
+        }
+      }
+    },
+    "shield.secondary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 more minutes"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再滑 5 分鐘"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

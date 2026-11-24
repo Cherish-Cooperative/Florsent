@@ -37,4 +37,17 @@ enum L10n {
         default: string("greeting.night")
         }
     }
+
+    /// "45 min", "1 h", "1 h 30 min"
+    static func duration(minutes: Int) -> String {
+        let h = minutes / 60, m = minutes % 60
+        if h == 0 { return format("duration.minutes", m) }
+        return m == 0 ? format("duration.hours", h) : format("duration.hoursMinutes", h, m)
+    }
+
+    /// A wall-clock time in the person's locale and 12/24-hour setting ("23:00", "11:00 PM").
+    static func clock(hour: Int, minute: Int, calendar: Calendar = .current) -> String {
+        let date = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? Date()
+        return date.formatted(date: .omitted, time: .shortened)
+    }
 }

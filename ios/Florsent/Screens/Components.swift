@@ -98,3 +98,76 @@ private struct BackgroundModifier: ViewModifier {
             .toolbarBackground(palette.background.color, for: .navigationBar)
     }
 }
+
+// MARK: - Layout (iPad and landscape)
+
+enum Layout {
+    /// Single-column screens (home, picker, breathing, back to the present).
+    static let column: CGFloat = 560
+    /// Settings lists.
+    static let list: CGFloat = 680
+}
+
+extension View {
+    /// Keeps content at a comfortable width and centered on iPad, so cards and buttons are never
+    /// stretched across a 13-inch screen. No effect on iPhone widths.
+    func readableColumn(_ maxWidth: CGFloat = Layout.column) -> some View {
+        frame(maxWidth: maxWidth).frame(maxWidth: .infinity)
+    }
+
+    /// The same for a List: side margins grow so rows stay at most [maxWidth] wide.
+    func readableListWidth(_ maxWidth: CGFloat = Layout.list) -> some View {
+        modifier(ReadableListWidth(maxWidth: maxWidth))
+    }
+}
+
+private struct ReadableListWidth: ViewModifier {
+    let maxWidth: CGFloat
+    @Environment(\.inFormSheet) private var inFormSheet
+
+    func body(content: Content) -> some View {
+        if inFormSheet {
+            // A form sheet is already a readable width: keep the list's own inset, aligned with
+            // the sheet's title, and pull the first section up under it.
+            content.listSectionSpacing(.compact)
+                .contentMargins(.top, 8, for: .scrollContent)
+        } else {
+            GeometryReader { geo in
+                content.contentMargins(.horizontal, max((geo.size.width - maxWidth) / 2, 0), for: .scrollContent)
+            }
+        }
+    }
+}
+
+extension EnvironmentValues {
+    /// True inside the iPad Settings form sheet.
+    @Entry var inFormSheet = false
+}
+
+/// A list row with a title, a quiet hint and an optional trailing value or chevron.
+struct HintRow: View {
+    let title: Text
+    var hint: Text?
+    var value: Text?
+    var systemImage: String?
+    @Environment(\.palette) private var palette
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                title
+                if let hint { hint.font(.footnote).foregroundStyle(palette.onSurfaceVariant.color) }
+            }
+            Spacer(minLength: 8)
+            if let value { value.foregroundStyle(palette.onSurfaceVariant.color).multilineTextAlignment(.trailing) }
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(palette.onSurfaceVariant.color)
+                    .accessibilityHidden(true)
+            }
+        }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+    }
+}

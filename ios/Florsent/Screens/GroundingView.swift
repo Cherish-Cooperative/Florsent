@@ -48,12 +48,20 @@ struct GroundingView: View {
                     .padding(.top, 16)
 
                     Spacer(minLength: 32)
+                    if let quiet = model.quietMinutes {
+                        Text(L10n.format("grounding.quiet", quiet))
+                            .font(.footnote)
+                            .foregroundStyle(palette.onSurfaceVariant.color)
+                            .multilineTextAlignment(.center)
+                            .padding(.bottom, 12)
+                    }
                     Button(night ? "grounding.returnNight" : "grounding.return") { model.backToLife() }
                         .buttonStyle(PrimaryButtonStyle())
                         .padding(.bottom, 24)
                 }
                 .padding(.horizontal, 32)
-                .frame(maxWidth: .infinity, minHeight: geo.size.height)
+                .readableColumn()
+                .frame(minHeight: geo.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
         }

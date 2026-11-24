@@ -2,25 +2,28 @@ import DeviceActivity
 import FlorsentCore
 import Foundation
 
-/// Screen Time monitor. Runs in a separate process with a ~6 MB memory ceiling, so it links only
-/// FlorsentCore (Foundation) and keeps no state beyond a few App Group keys.
-///
-/// Phase 2 will start a daily `DeviceActivitySchedule` with one threshold event per budget from the
-/// app; this skeleton already keeps the "over budget" flag that the App Intent reads.
+/// Screen Time monitor. Runs in its own process under a ~6 MB memory ceiling, so it holds nothing:
+/// each callback runs one GuidanceState transition from the App Group and carries out its effect
+/// (a rain notification, the soft shield, lifting it, or watching again after quiet time).
 final class FlorsentMonitor: DeviceActivityMonitor {
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
-        SharedStore().setOverBudget(false) // a new day starts within budget
+        guard let a = GuidanceActivity(rawValue: activity.rawValue) else { return }
+        let store = SharedStore()
+        GuidanceEffects.perform(store.updateGuidance { $0.intervalStarted(a, now: Date()) }, store: store)
     }
 
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
-        SharedStore().setOverBudget(false)
+        guard let a = GuidanceActivity(rawValue: activity.rawValue) else { return }
+        let store = SharedStore()
+        GuidanceEffects.perform(store.updateGuidance { $0.intervalEnded(a, now: Date()) }, store: store)
     }
 
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
-        SharedStore().setOverBudget(true)
-        // Phase 2: apply the soft shield through ManagedSettingsStore here.
+        guard let e = GuidanceEvent(rawValue: event.rawValue) else { return }
+        let store = SharedStore()
+        GuidanceEffects.perform(store.updateGuidance { $0.reach(e, now: Date()) }, store: store)
     }
 }
