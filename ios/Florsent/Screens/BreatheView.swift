@@ -116,9 +116,6 @@ private struct BedtimeHint: View {
             } icon: {
                 Image(systemName: "moon.stars").foregroundStyle(palette.primary.color)
             }
-            Text("bedtime.suggest.body")
-                .font(.subheadline)
-                .foregroundStyle(palette.onSurfaceVariant.color)
             if !using478 {
                 Button("bedtime.suggest.use") { model.settings.patternId = BreathingPatterns.relax478.id }
                     .font(.subheadline.weight(.semibold))

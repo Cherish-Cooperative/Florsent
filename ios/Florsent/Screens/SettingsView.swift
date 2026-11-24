@@ -2,37 +2,69 @@ import FamilyControls
 import FlorsentKit
 import SwiftUI
 
+/// Settings home: one calm card of a few rows, as on Android. Everything that only matters once
+/// gentle guidance is on (budgets, bedtime, grayscale) appears only then, one tap deeper.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var palette
     @Environment(\.openURL) private var openURL
+    @State private var pickerShown = false
+    @State private var picked = FamilyActivitySelection()
+    @State private var grayscaleShown = false
+
+    private var guidance: GuidanceController { model.guidance }
 
     var body: some View {
-        @Bindable var settings = model.settings
         List {
-            GuidanceSection()
-
-            ShortcutGuideSection()
-
             Section {
-                toggle("settings.ambient", hint: "settings.ambientHint", isOn: $settings.ambientSound)
-                toggle("settings.chime", hint: "settings.chimeHint", isOn: $settings.cueSound)
-                toggle("settings.haptics", hint: "settings.hapticsHint", isOn: $settings.haptics)
-            } header: {
-                SectionHeader(key: "settings.section.breathing")
+                if guidance.isAuthorized {
+                    guidanceToggle
+                    Button {
+                        picked = guidance.selection
+                        pickerShown = true
+                    } label: {
+                        HintRow(title: Text("settings.guidance.apps"), value: appsValue, systemImage: "chevron.right")
+                    }
+                    .foregroundStyle(palette.onSurface.color)
+                    if guidance.settings.enabled {
+                        NavigationLink(value: Route.budget) {
+                            HintRow(title: Text("settings.row.budget"),
+                                    value: Text(verbatim: L10n.duration(minutes: guidance.settings.dailyBudgetMinutes)))
+                        }
+                        NavigationLink(value: Route.bedtime) {
+                            HintRow(title: Text("bedtime.title"), value: bedtimeValue)
+                        }
+                        Button { grayscaleShown = true } label: {
+                            HintRow(title: Text("shortcut.title"), value: Text("shortcut.optional"), systemImage: "chevron.right")
+                        }
+                        .foregroundStyle(palette.onSurface.color)
+                    }
+                } else {
+                    Button {
+                        Task {
+                            await guidance.requestAuthorization()
+                            if guidance.isAuthorized { picked = guidance.selection; pickerShown = true }
+                        }
+                    } label: {
+                        HintRow(title: Text("settings.guidance.toggle"), hint: authHint, value: Text("bedtime.offShort"),
+                                systemImage: "chevron.right")
+                    }
+                    .foregroundStyle(palette.onSurface.color)
+                }
             }
             .listRowBackground(palette.surfaceLow.color)
 
             Section {
+                NavigationLink(value: Route.sound) {
+                    HintRow(title: Text("settings.section.breathing"))
+                }
                 Button {
                     if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 } label: {
-                    HintRow(title: Text("settings.language"), hint: Text("settings.languageHint"), systemImage: "arrow.up.forward")
+                    HintRow(title: Text("settings.language"), value: Text(verbatim: Self.languageName),
+                            systemImage: "arrow.up.forward")
                 }
                 .foregroundStyle(palette.onSurface.color)
-                HintRow(title: Text("settings.section.appearance"), hint: Text("settings.appearanceHint"))
-            } header: {
-                SectionHeader(key: "settings.section.appearance")
             } footer: {
                 Text(L10n.format("settings.footer", Self.version))
                     .font(.footnote)
@@ -48,20 +80,51 @@ struct SettingsView: View {
         .florsentBackground()
         .navigationTitle(Text("settings.title"))
         .navigationBarTitleDisplayMode(.large)
+        .familyActivityPicker(isPresented: $pickerShown, selection: $picked)
+        .onChange(of: pickerShown) { _, shown in
+            if !shown, picked != guidance.selection { guidance.setSelection(picked) }
+        }
+        .sheet(isPresented: $grayscaleShown) { GrayscaleGuideView() }
     }
 
-    private func toggle(_ title: LocalizedStringKey, hint: LocalizedStringKey, isOn: Binding<Bool>) -> some View {
-        Toggle(isOn: isOn) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                Text(hint).font(.footnote).foregroundStyle(palette.onSurfaceVariant.color)
+    private var guidanceToggle: some View {
+        Toggle(isOn: Binding(get: { guidance.settings.enabled }, set: { on in
+            if on, !guidance.hasWatchedApps {
+                picked = guidance.selection // pick the apps first, then turn it on
+                pickerShown = true
+            } else {
+                Task { await guidance.setEnabled(on) }
             }
+        })) {
+            Text("settings.guidance.toggle")
         }
         .tint(palette.primary.color)
     }
 
+    private var appsValue: Text {
+        guidance.selection.isEmpty ? Text("settings.guidance.appsNone")
+            : Text(L10n.format("settings.guidance.appsCount", guidance.selection.itemCount))
+    }
+
+    private var bedtimeValue: Text {
+        let bed = guidance.settings.bedtime
+        return bed.enabled ? Text(verbatim: L10n.clock(hour: bed.hour, minute: bed.minute)) : Text("bedtime.offShort")
+    }
+
+    /// Only when the last request failed: one short line on what to do.
+    private var authHint: Text? {
+        if let hint = guidance.authorizationHint { return Text(LocalizedStringKey(hint.key)) }
+        return guidance.authorization == .denied ? Text(LocalizedStringKey(AuthorizationHint.generic.key)) : nil
+    }
+
     static var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "–"
+    }
+
+    /// The app's current language in its own words ("繁體中文", "English").
+    static var languageName: String {
+        let id = Bundle.main.preferredLocalizations.first ?? "en"
+        return Locale(identifier: id).localizedString(forIdentifier: id)?.localizedCapitalized ?? id
     }
 }
 
@@ -78,138 +141,79 @@ struct SectionHeader: View {
     }
 }
 
-// MARK: - Gentle guidance
+// MARK: - Sub-pages
 
-/// Screen Time: authorize (individual, on this device), pick the watched apps, then budgets.
-private struct GuidanceSection: View {
+/// Daily budget and quiet time after breathing.
+struct BudgetSettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var palette
-    @State private var pickerShown = false
-    @State private var picked = FamilyActivitySelection()
 
     private var guidance: GuidanceController { model.guidance }
 
     var body: some View {
-        Section {
-            if guidance.isAuthorized {
-                Button {
-                    picked = guidance.selection
-                    pickerShown = true
-                } label: {
-                    HintRow(title: Text("settings.guidance.apps"), hint: Text("settings.guidance.appsHint"),
-                            value: guidance.selection.isEmpty ? Text("settings.guidance.appsNone")
-                                : Text(L10n.format("settings.guidance.appsCount", guidance.selection.itemCount)),
-                            systemImage: "chevron.right")
+        List {
+            Section {
+                minutes("budget.daily", GuidanceSettings.dailyChoices, guidance.settings.dailyBudgetMinutes) { m in
+                    guidance.update { $0.dailyBudgetMinutes = m }
                 }
-                .foregroundStyle(palette.onSurface.color)
-
-                Toggle(isOn: Binding(get: { guidance.settings.enabled },
-                                     set: { on in Task { await guidance.setEnabled(on) } })) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("settings.guidance.toggle")
-                        Text("settings.guidance.toggleHint").font(.footnote).foregroundStyle(palette.onSurfaceVariant.color)
-                    }
+                minutes("budget.quiet", GuidanceSettings.quietChoices, guidance.settings.quietMinutes) { m in
+                    guidance.update { $0.quietMinutes = m }
                 }
-                .tint(palette.primary.color)
-                .disabled(guidance.selection.isEmpty)
-
-                minutesPicker("budget.daily", hint: "budget.dailyHint", choices: GuidanceSettings.dailyChoices,
-                              value: guidance.settings.dailyBudgetMinutes) { m in guidance.update { $0.dailyBudgetMinutes = m } }
-                minutesPicker("budget.quiet", hint: "budget.quietHint", choices: GuidanceSettings.quietChoices,
-                              value: guidance.settings.quietMinutes) { m in guidance.update { $0.quietMinutes = m } }
-
-                NavigationLink(value: Route.bedtime) {
-                    HintRow(title: Text("bedtime.title"),
-                            value: guidance.settings.bedtime.enabled
-                                ? Text(verbatim: L10n.clock(hour: guidance.settings.bedtime.hour, minute: guidance.settings.bedtime.minute))
-                                : Text("bedtime.offShort"))
-                }
-            } else {
-                Button {
-                    Task {
-                        await guidance.requestAuthorization()
-                        if guidance.isAuthorized { picked = guidance.selection; pickerShown = true }
-                    }
-                } label: {
-                    HintRow(title: Text("settings.guidance.enable"), hint: Text("settings.guidance.enableHint"),
-                            systemImage: "hourglass")
-                }
-                .foregroundStyle(palette.onSurface.color)
-                if guidance.failed || guidance.authorization == .denied {
-                    Text("settings.guidance.denied")
-                        .font(.footnote)
-                        .foregroundStyle(palette.onSurfaceVariant.color)
-                }
+            } footer: {
+                Text("budget.quietHint").font(.footnote).foregroundStyle(palette.onSurfaceVariant.color)
             }
-        } header: {
-            SectionHeader(key: "settings.section.guidance")
-        } footer: {
-            Text("settings.guidance.footer")
-                .font(.footnote)
-                .foregroundStyle(palette.onSurfaceVariant.color)
+            .listRowBackground(palette.surfaceLow.color)
         }
-        .listRowBackground(palette.surfaceLow.color)
-        .familyActivityPicker(isPresented: $pickerShown, selection: $picked)
-        .onChange(of: pickerShown) { _, shown in
-            if !shown, picked != guidance.selection { guidance.setSelection(picked) }
-        }
+        .settingsPage("settings.row.budget")
     }
 
-    private func minutesPicker(_ title: LocalizedStringKey, hint: LocalizedStringKey, choices: [Int], value: Int,
-                               onChange: @escaping (Int) -> Void) -> some View {
-        Picker(selection: Binding(get: { value }, set: onChange)) {
+    private func minutes(_ title: LocalizedStringKey, _ choices: [Int], _ value: Int,
+                         onChange: @escaping (Int) -> Void) -> some View {
+        Picker(title, selection: Binding(get: { value }, set: onChange)) {
             ForEach(choices, id: \.self) { m in Text(verbatim: L10n.duration(minutes: m)).tag(m) }
-        } label: {
+        }
+        .pickerStyle(.menu)
+        .tint(palette.primary.color)
+    }
+}
+
+/// Breathing & sound: ambience, chime, haptics.
+struct SoundSettingsView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.palette) private var palette
+
+    var body: some View {
+        @Bindable var settings = model.settings
+        List {
+            Section {
+                toggle("settings.ambient", hint: "settings.ambientHint", isOn: $settings.ambientSound)
+                toggle("settings.chime", hint: "settings.chimeHint", isOn: $settings.cueSound)
+                toggle("settings.haptics", hint: "settings.hapticsHint", isOn: $settings.haptics)
+            }
+            .listRowBackground(palette.surfaceLow.color)
+        }
+        .settingsPage("settings.section.breathing")
+    }
+
+    private func toggle(_ title: LocalizedStringKey, hint: LocalizedStringKey, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                 Text(hint).font(.footnote).foregroundStyle(palette.onSurfaceVariant.color)
             }
         }
-        .pickerStyle(.menu)
         .tint(palette.primary.color)
-        .disabled(!guidance.settings.enabled)
     }
 }
 
-// MARK: - Shortcuts grayscale
-
-/// Three steps to turn on grayscale with a Shortcuts automation while over budget. iOS gives apps no
-/// API for Color Filters, so the person's own automation does it, asking Florsent's App Intent.
-private struct ShortcutGuideSection: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.palette) private var palette
-    @Environment(\.openURL) private var openURL
-
-    static let steps: [LocalizedStringKey] = ["shortcut.step1", "shortcut.step2", "shortcut.step3"]
-
-    var body: some View {
-        Section {
-            HintRow(title: Text("intent.overBudget.title"),
-                    value: model.guidance.state.isOverBudget(at: Date()) ? Text("shortcut.statusYes") : Text("shortcut.statusNo"))
-            ForEach(Array(Self.steps.enumerated()), id: \.offset) { i, step in
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Text(verbatim: "\(i + 1)")
-                        .font(.subheadline.weight(.semibold).monospacedDigit())
-                        .foregroundStyle(palette.onPrimaryContainer.color)
-                        .frame(width: 28, height: 28)
-                        .background(Circle().fill(palette.primaryContainer.color))
-                        .accessibilityHidden(true)
-                    Text(step).font(.subheadline)
-                }
-                .padding(.vertical, 2)
-                .accessibilityElement(children: .combine)
-            }
-            Button {
-                if let url = URL(string: "shortcuts://") { openURL(url) }
-            } label: {
-                HintRow(title: Text("shortcut.open"), systemImage: "arrow.up.forward")
-            }
-            .foregroundStyle(palette.primary.color)
-        } header: {
-            SectionHeader(key: "shortcut.title")
-        } footer: {
-            Text("shortcut.footer").font(.footnote).foregroundStyle(palette.onSurfaceVariant.color)
-        }
-        .listRowBackground(palette.surfaceLow.color)
+extension View {
+    /// The shared look of a settings sub-page.
+    func settingsPage(_ title: LocalizedStringKey) -> some View {
+        listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .readableListWidth()
+            .florsentBackground()
+            .navigationTitle(Text(title))
+            .navigationBarTitleDisplayMode(.inline)
     }
 }

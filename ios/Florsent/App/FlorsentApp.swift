@@ -57,6 +57,8 @@ enum Route: Hashable {
     case grounding
     case settings
     case bedtime
+    case budget
+    case sound
     case insights
 }
 
@@ -74,6 +76,8 @@ struct RootView: View {
                     case .grounding: GroundingView()
                     case .settings: SettingsView()
                     case .bedtime: BedtimeSettingsView()
+                    case .budget: BudgetSettingsView()
+                    case .sound: SoundSettingsView()
                     case .insights: InsightsView()
                     }
                 }

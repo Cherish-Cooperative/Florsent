@@ -44,14 +44,8 @@ struct InsightsView: View {
                     DeviceActivityReport(.insights, filter: filter)
                         .frame(height: 520)
                 } else {
-                    Card {
-                        Text("insights.setup")
-                            .font(.subheadline)
-                            .foregroundStyle(palette.onSurfaceVariant.color)
-                        Button("home.guidance.setupAction") { model.path = [.settings] }
-                            .buttonStyle(PrimaryButtonStyle())
-                            .padding(.top, 8)
-                    }
+                    Button("home.guidance.setupAction") { model.path = [.settings] }
+                        .buttonStyle(PrimaryButtonStyle())
                 }
             }
             .padding(.horizontal, 24)

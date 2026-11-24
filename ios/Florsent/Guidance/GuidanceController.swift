@@ -51,6 +51,8 @@ final class GuidanceController {
     private(set) var state: GuidanceState
     private(set) var calmLog: CalmLog
     private(set) var failed = false
+    /// Why the last authorization request failed, as one short line (nil: nothing to say).
+    private(set) var authorizationHint: AuthorizationHint?
 
     @ObservationIgnored let store: SharedStore
     @ObservationIgnored private let screenTime: ScreenTimeControlling
@@ -83,8 +85,10 @@ final class GuidanceController {
         do {
             try await screenTime.requestAuthorization()
             failed = false
+            authorizationHint = nil
         } catch {
-            failed = true
+            authorizationHint = AuthorizationHint(error)
+            failed = authorizationHint != nil
         }
         authorization = screenTime.authorizationStatus
     }
@@ -142,4 +146,25 @@ final class GuidanceController {
     }
 
     func isBedtime(at now: Date = Date()) -> Bool { isActive && settings.bedtime.isWithinWindow(now) }
+}
+
+/// A one-line reason Screen Time access wasn't granted, keyed into Localizable.xcstrings.
+enum AuthorizationHint: String, Equatable {
+    case passcode, restricted, network, conflict, account, generic
+
+    /// nil when the person simply cancelled: no message then.
+    init?(_ error: Error) {
+        guard let error = error as? FamilyControlsError else { self = .generic; return }
+        switch error {
+        case .authorizationCanceled: return nil
+        case .authenticationMethodUnavailable: self = .passcode
+        case .restricted: self = .restricted
+        case .networkError: self = .network
+        case .authorizationConflict: self = .conflict
+        case .invalidAccountType: self = .account
+        default: self = .generic
+        }
+    }
+
+    var key: String { "auth.hint.\(rawValue)" }
 }

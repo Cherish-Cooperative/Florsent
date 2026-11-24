@@ -13,7 +13,12 @@ private final class FakeScreenTime: ScreenTimeControlling {
     var stopped = 0
     var notificationAsks = 0
 
-    func requestAuthorization() async throws { authorizationStatus = .approved }
+    var authorizationError: Error?
+
+    func requestAuthorization() async throws {
+        if let authorizationError { throw authorizationError }
+        authorizationStatus = .approved
+    }
     func requestNotifications() async { notificationAsks += 1 }
     func apply(_ settings: GuidanceSettings, selection: FamilyActivitySelection) throws { applied.append(settings) }
     func start(_ plan: MonitorPlan, selection: FamilyActivitySelection) throws { started.append(plan) }
@@ -183,10 +188,45 @@ final class GuidanceNotificationTests: XCTestCase {
     }
 
     func testShortcutGuideAndDurationsAreLocalized() {
-        for key in ["shortcut.step1", "shortcut.step2", "shortcut.step3", "bedtime.suggest.body", "home.guidance.setupAction"] {
+        let hints: [AuthorizationHint] = [.passcode, .restricted, .network, .conflict, .account, .generic]
+        let keys = GrayscaleGuideView.steps.indices.map { "shortcut.step\($0 + 1)" }
+            + ["shortcut.footer", "bedtime.suggest.title", "home.guidance.setupAction", "settings.row.budget"]
+            + hints.map(\.key)
+        for key in keys {
             XCTAssertNotEqual(L10n.string(key), key, key)
         }
         XCTAssertFalse(L10n.duration(minutes: 90).isEmpty)
         XCTAssertNotEqual(L10n.duration(minutes: 60), L10n.duration(minutes: 90))
+    }
+
+    func testNoPasscodeGivesAOneLineHint() async {
+        let fake = FakeScreenTime()
+        let store = SharedStore(defaults: UserDefaults(suiteName: "florsent.auth.\(UUID())")!)
+        let g = GuidanceController(store: store, screenTime: fake)
+        fake.authorizationError = FamilyControlsError.authenticationMethodUnavailable
+        await g.requestAuthorization()
+        XCTAssertFalse(g.isAuthorized)
+        XCTAssertEqual(g.authorizationHint, AuthorizationHint.passcode)
+        XCTAssertTrue(g.failed)
+
+        fake.authorizationError = FamilyControlsError.authorizationCanceled
+        await g.requestAuthorization()
+        XCTAssertNil(g.authorizationHint, "cancelling is not an error worth a message")
+
+        fake.authorizationError = nil
+        await g.requestAuthorization()
+        XCTAssertTrue(g.isAuthorized)
+        XCTAssertNil(g.authorizationHint)
+    }
+
+    func testGrayscaleGuideUsesTheExactIOS26Labels() throws {
+        let path = try XCTUnwrap(Bundle.main.path(forResource: "zh-Hant", ofType: "lproj"))
+        let zh = try XCTUnwrap(Bundle(path: path))
+        let text = GrayscaleGuideView.steps.indices
+            .map { zh.localizedString(forKey: "shortcut.step\($0 + 1)", value: nil, table: nil) }.joined()
+        for label in ["「自動化」", "「App」", "「已開啟」", "「立即執行」", "「下一步」", "「如果」", "「設定顏色濾鏡」", "「已關閉」"] {
+            XCTAssertTrue(text.contains(label), label)
+        }
+        XCTAssertFalse(text.contains("色彩濾鏡"), "iOS in Taiwan says 顏色濾鏡")
     }
 }

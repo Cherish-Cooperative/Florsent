@@ -36,8 +36,13 @@ struct HomeView: View {
                         .padding(.top, 8)
                 }
 
-                GuidanceCard()
-                    .padding(.top, 12)
+                if model.guidance.isActive {
+                    GuidanceCard()
+                        .padding(.top, 8)
+                } else {
+                    NavRow(title: "home.guidance.setupAction", systemImage: "hourglass") { model.path = [.settings] }
+                        .padding(.top, 8)
+                }
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
@@ -87,7 +92,7 @@ private struct NavRow: View {
     }
 }
 
-/// Gentle guidance at a glance: an invitation to set it up, or today's budget, bedtime and quiet time.
+/// Gentle guidance at a glance: today's budget and bedtime, and quiet time or "over budget".
 private struct GuidanceCard: View {
     @Environment(AppModel.self) private var model
     @Environment(\.palette) private var palette
@@ -100,28 +105,18 @@ private struct GuidanceCard: View {
             } icon: {
                 Image(systemName: "hourglass").foregroundStyle(palette.primary.color)
             }
-            if guidance.isActive {
-                Text(verbatim: summary(guidance))
+            Text(verbatim: summary(guidance))
+                .font(.subheadline)
+                .foregroundStyle(palette.onSurfaceVariant.color)
+            let quiet = guidance.state.quietMinutesLeft(at: Date())
+            if quiet > 0 {
+                Text(L10n.format("grounding.quiet", quiet))
                     .font(.subheadline)
-                    .foregroundStyle(palette.onSurfaceVariant.color)
-                let quiet = guidance.state.quietMinutesLeft(at: Date())
-                if quiet > 0 {
-                    Text(L10n.format("grounding.quiet", quiet))
-                        .font(.subheadline)
-                        .foregroundStyle(palette.primary.color)
-                } else if guidance.state.isOverBudget(at: Date()) {
-                    Text("home.guidance.over")
-                        .font(.subheadline)
-                        .foregroundStyle(palette.primary.color)
-                }
-            } else {
-                Text("home.guidance.body")
-                    .font(.subheadline)
-                    .foregroundStyle(palette.onSurfaceVariant.color)
-                Button("home.guidance.setupAction") { model.path = [.settings] }
-                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(palette.primary.color)
-                    .frame(minHeight: 44)
+            } else if guidance.state.isOverBudget(at: Date()) {
+                Text("home.guidance.over")
+                    .font(.subheadline)
+                    .foregroundStyle(palette.primary.color)
             }
         }
         .accessibilityElement(children: .combine)

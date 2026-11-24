@@ -17,10 +17,7 @@ struct BedtimeSettingsView: View {
         List {
             Section {
                 Toggle(isOn: Binding(get: { bed.enabled }, set: { on in guidance.update { $0.bedtime.enabled = on } })) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("bedtime.title")
-                        Text(verbatim: status).font(.footnote).foregroundStyle(palette.onSurfaceVariant.color)
-                    }
+                    Text("bedtime.title")
                 }
                 .tint(palette.primary.color)
                 .disabled(!guidance.isActive)
@@ -50,8 +47,6 @@ struct BedtimeSettingsView: View {
                     .pickerStyle(.menu)
                     .tint(palette.primary.color)
                 }
-            } header: {
-                SectionHeader(key: "bedtime.title")
             } footer: {
                 Text(guidance.isActive ? "bedtime.note" : "bedtime.needsGuidance")
                     .font(.footnote)
@@ -60,39 +55,20 @@ struct BedtimeSettingsView: View {
             .listRowBackground(palette.surfaceLow.color)
 
             Section {
-                VStack(alignment: .leading, spacing: 6) {
-                    Label {
-                        Text("bedtime.suggest.title").font(.subheadline.weight(.semibold))
-                    } icon: {
-                        Image(systemName: "moon.stars").foregroundStyle(palette.primary.color)
-                    }
-                    Text("bedtime.suggest.body")
-                        .font(.subheadline)
-                        .foregroundStyle(palette.onSurfaceVariant.color)
-                }
-                .padding(.vertical, 4)
-                .accessibilityElement(children: .combine)
                 Button {
                     model.settings.patternId = BreathingPatterns.relax478.id
                     model.openBreathing(bedtime: true)
                 } label: {
-                    HintRow(title: Text("bedtime.suggest.try"), systemImage: "chevron.right")
+                    Label {
+                        HintRow(title: Text("bedtime.suggest.try"), systemImage: "chevron.right")
+                    } icon: {
+                        Image(systemName: "moon.stars").foregroundStyle(palette.primary.color)
+                    }
                 }
                 .foregroundStyle(palette.primary.color)
             }
             .listRowBackground(palette.surfaceLow.color)
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .readableListWidth()
-        .florsentBackground()
-        .navigationTitle(Text("bedtime.title"))
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private var status: String {
-        bed.enabled && guidance.isActive
-            ? L10n.format("bedtime.current", L10n.clock(hour: bed.hour, minute: bed.minute), bed.thresholdMinutes)
-            : L10n.string("bedtime.off")
+        .settingsPage("bedtime.title")
     }
 }

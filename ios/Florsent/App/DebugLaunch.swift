@@ -4,7 +4,7 @@ import Foundation
 
 /// Debug-only launch arguments for deterministic screenshots and manual QA, e.g.
 ///   xcrun simctl launch <udid> app.florsent -FlorsentScreen session -FlorsentFreezeMs 2600
-///   -FlorsentScreen home|breathe|session|grounding|settings|bedtime|insights
+///   -FlorsentScreen home|breathe|session|grounding|settings|bedtime|budget|sound|insights
 ///   -FlorsentPattern equal_444|box_4444|relax_478|resonance_55
 ///   -FlorsentFreezeMs <ms>        session clock stands still at this elapsed time
 ///   -FlorsentGroundingIndex <n>   -FlorsentNight YES|NO (night prompts; on breathe: the 4-7-8 hint)
@@ -23,6 +23,8 @@ enum DebugLaunch {
         case "grounding": model.path = [.grounding]
         case "settings": model.path = [.settings]
         case "bedtime": model.path = [.settings, .bedtime]
+        case "budget": model.path = [.settings, .budget]
+        case "sound": model.path = [.settings, .sound]
         case "insights": model.path = [.insights]
         default: break
         }
