@@ -31,8 +31,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -75,7 +73,9 @@ import app.florsent.domain.BreathPhaseKind
 import app.florsent.domain.BreathingPattern
 import app.florsent.domain.BreathingPatterns
 import app.florsent.domain.BreathingTimeline
+import app.florsent.ui.components.ChipRow
 import app.florsent.ui.components.FlorsentTopBar
+import app.florsent.ui.components.PillChip
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -149,12 +149,9 @@ private fun PatternPicker(
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(horizontal = 24.dp, vertical = 16.dp),
             ) {
-                Row(
-                    Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-                ) {
-                    SoundChip(stringResource(R.string.breathe_ambient_sound), state.ambientSound, onAmbientChange)
-                    SoundChip(stringResource(R.string.breathe_cue_sound), state.cueSound, onCueChange)
+                ChipRow(Modifier.padding(bottom = 12.dp)) {
+                    PillChip(stringResource(R.string.breathe_ambient_sound), state.ambientSound, { onAmbientChange(!state.ambientSound) })
+                    PillChip(stringResource(R.string.breathe_cue_sound), state.cueSound, { onCueChange(!state.cueSound) })
                 }
                 Button(onClick = onStart, modifier = Modifier.fillMaxWidth().height(56.dp)) {
                     Text(stringResource(R.string.breathe_start), style = MaterialTheme.typography.titleMedium)
@@ -236,19 +233,6 @@ private fun PatternCard(pattern: BreathingPattern, selected: Boolean, onClick: (
             )
         }
     }
-}
-
-@Composable
-private fun SoundChip(label: String, selected: Boolean, onChange: (Boolean) -> Unit) {
-    FilterChip(
-        selected = selected,
-        onClick = { onChange(!selected) },
-        label = { Text(label) },
-        shape = RoundedCornerShape(50),
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-        ),
-    )
 }
 
 @Composable

@@ -359,6 +359,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
   - 洞察頁的星期標籤取 `LocalConfiguration` 的語系，而不是 `Locale.getDefault()`。
   - 英文有數量的句子用 `plurals`（「已觀察 N 晚」、TalkBack 的倒數秒數）；其餘改寫成不需要單複數的句子（`%d min`、`%d selected`）。
 - **無障礙慣例**：標題加 `heading()`；裝飾圖形不進語意樹；相關文字合併成一個節點；觸控目標至少 48dp；不要用 `outline` 當文字顏色；大字級與橫向不能被裁切。
+- **橫排的選項不能被擠壓**：一般的 `Row` 會把剩下的寬度全塞給最後一顆，大字級時「20 分鐘」會被擠成一個字一行的直條（v0.10.2 實機回報，Pixel 10 Pro 字型 1.5 倍、密度 500）。單選的幾個選項用 `EqualChipGrid`＋`PillOption`：標籤只排一行，放得下就等寬排一排，放不下改成每排一個。各自獨立的開關用 `ChipRow`＋`PillChip`（`FlowRow`，維持原本寬度、放不下換行）。實測：英文字型 1.3 倍仍是一排三個，中文 1.3 倍以上與英文 2 倍改成上下排列。
 
 ## 隱私與權限
 
@@ -381,7 +382,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 ## 編譯與測試
 
 ```sh
-./gradlew testDebugUnitTest      # 202 個 JVM 測試
+./gradlew testDebugUnitTest      # 208 個 JVM 測試
 ./gradlew assembleDebug
 ./gradlew assembleRelease        # 確認 R8 沒有移除 ShellService
 ```
@@ -418,6 +419,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `StringResourcesParityTest`（8） | 中英文鍵值、陣列句數、佔位符、複數、無漏翻、無句尾句號、`locales_config` 與資源一致、語言代碼對應 |
 | `PhaseCueGateTest`（5）、`GaplessLoopTest`（5）、`WavReaderTest`（5） | 每階段只響一次、只往前、整段練習重複回報仍只響一次、新練習重來；循環接力、音量延續、暫停與釋放；WAV 解析、拒絕不支援格式、內建提示音規格、峰值介於 -18 到 -1 dBFS 與音高 |
 | `FadeSoundControllerTest`（17） | 淡化開始播放一次、關閉不播、中途關閉淡出、通話不播、交接延長淡出、首次拒絕不重試、釋放、音量曲線；短影音搶焦點後 1.2 秒重新要求、冷卻內多次只要求一次、對方回搶時冷卻加倍並在 5 次後放棄、重新要求被拒延後再試、來電不重試、冷卻中來電取消、離開或交接取消、焦點自己回來取消 |
+| `EqualChipGridMathTest`（6） | 選項等寬格的欄數：放得下就一排，放不下改成每排一個（3 個選項不會變成 2＋1，4 個可排 2×2），每格都不窄於最寬的標籤 |
 | `ContrastAuditTest`（4） | WCAG 公式、品牌深淺色全部通過 AA |
 
 單元測試開啟了 `unitTests.isReturnDefaultValues = true`，讓 `android.util.Log` 等 stub 回傳預設值。
