@@ -1,6 +1,93 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "report.bar.a11y": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@，%2$@"
+          }
+        }
+      }
+    },
+    "report.hours": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 小時"
+          }
+        }
+      }
+    },
+    "report.hoursMinutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld h %2$lld min"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld 小時 %2$lld 分鐘"
+          }
+        }
+      }
+    },
+    "report.lastSeven": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 7 days"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "近 7 天"
+          }
+        }
+      },
+      "comment": "Mirrors Android insights_last_seven"
+    },
+    "report.less": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ less scrolling than last week"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這週比上週少滑了 %@"
+          }
+        }
+      },
+      "comment": "Mirrors Android insight_less"
+    },
     "report.minutes": {
       "extractionState": "manual",
       "localizations": {
@@ -19,23 +106,110 @@
       },
       "comment": "Android: minutes_format"
     },
+    "report.more": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A little more time on these apps this week"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這週在這些 App 上多花了一些時間"
+          }
+        }
+      }
+    },
+    "report.noRecord": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No record"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有紀錄"
+          }
+        }
+      }
+    },
+    "report.notEnough": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check back in a few days"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再記錄幾天，這裡就會有內容"
+          }
+        }
+      },
+      "comment": "Mirrors Android insight_not_enough"
+    },
+    "report.similar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About the same as last week"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這兩週的使用時間差不多"
+          }
+        }
+      },
+      "comment": "Mirrors Android insight_similar"
+    },
     "report.today": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Today on social apps"
+            "value": "Today on watched apps"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "今天在社群 App 上"
+            "value": "今天在留意的 App 上"
+          }
+        }
+      }
+    },
+    "report.topApps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Most used watched apps"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "常用的留意 App"
           }
         }
       },
-      "comment": "Android: today_label"
+      "comment": "Mirrors Android insights_top_apps"
     }
   },
   "version": "1.0"

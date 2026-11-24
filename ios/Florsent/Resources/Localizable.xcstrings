@@ -1,6 +1,210 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "bedtime.current": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From %1$@ each night, a gentle reminder after %2$lld min of scrolling"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每晚 %1$@ 起，累計滑 %2$lld 分鐘會提醒你休息"
+          }
+        }
+      }
+    },
+    "bedtime.needsGuidance": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on gentle guidance in Settings first"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請先在設定開啟溫柔引導"
+          }
+        }
+      }
+    },
+    "bedtime.note": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At most two reminders a night, until 5 AM"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每晚最多提醒兩次，到清晨 5 點為止"
+          }
+        }
+      }
+    },
+    "bedtime.off": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bedtime guidance is off"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "睡前引導未開啟"
+          }
+        }
+      }
+    },
+    "bedtime.offShort": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未開啟"
+          }
+        }
+      }
+    },
+    "bedtime.suggest.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In for 4 seconds, hold for 7, out for 8. The long exhale helps your body slow down"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "吸氣 4 秒、停 7 秒、吐氣 8 秒，長長的吐氣能讓身體慢下來"
+          }
+        }
+      }
+    },
+    "bedtime.suggest.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before sleep, try 4-7-8"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "睡前試試 4-7-8 呼吸"
+          }
+        }
+      }
+    },
+    "bedtime.suggest.try": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try 4-7-8 now"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在試試 4-7-8"
+          }
+        }
+      }
+    },
+    "bedtime.suggest.use": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use 4-7-8"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改用 4-7-8"
+          }
+        }
+      }
+    },
+    "bedtime.threshold": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrolling before a reminder"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提醒前可以滑多久"
+          }
+        }
+      }
+    },
+    "bedtime.time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bedtime"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "想睡的時間"
+          }
+        }
+      }
+    },
+    "bedtime.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bedtime"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "睡前引導"
+          }
+        }
+      }
+    },
     "breathe.ambient": {
       "extractionState": "manual",
       "localizations": {
@@ -161,6 +365,125 @@
         }
       },
       "comment": "Android: breathe_title"
+    },
+    "budget.daily": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily budget"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每日額度"
+          }
+        }
+      }
+    },
+    "budget.dailyHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your total for the day"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一天累計的上限"
+          }
+        }
+      }
+    },
+    "budget.quiet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiet time"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安靜時間"
+          }
+        }
+      }
+    },
+    "budget.quietHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reminders for this long after breathing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "練習後多久不再提醒"
+          }
+        }
+      }
+    },
+    "duration.hours": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 小時"
+          }
+        }
+      }
+    },
+    "duration.hoursMinutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld h %2$lld min"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld 小時 %2$lld 分鐘"
+          }
+        }
+      }
+    },
+    "duration.minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 分鐘"
+          }
+        }
+      }
     },
     "greeting.afternoon": {
       "extractionState": "manual",
@@ -630,6 +953,24 @@
       },
       "comment": "Android: grounding_prompts_bedtime[7]"
     },
+    "grounding.quiet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reminders for the next %lld min"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接下來 %lld 分鐘不再提醒"
+          }
+        }
+      },
+      "comment": "Mirrors Android grounding_cooldown"
+    },
     "grounding.return": {
       "extractionState": "manual",
       "localizations": {
@@ -702,19 +1043,87 @@
       },
       "comment": "Android: grounding_label"
     },
+    "home.guidance.bedtime": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "bedtime %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "睡前 %@"
+          }
+        }
+      }
+    },
     "home.guidance.body": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Screen Time support comes in the next version. Breathing and grounding already work"
+            "value": "Pick the apps you'd like to use less. Past your budget, Florsent reminds you with distant rain, then gently asks for a break"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "下一版會接上「螢幕使用時間」，呼吸練習和回到當下現在就能用"
+            "value": "選好想少滑一點的 App，超過額度時 Florsent 會先用遠方的雨聲提醒，再溫柔地請你休息"
+          }
+        }
+      }
+    },
+    "home.guidance.daily": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily budget %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每日額度 %@"
+          }
+        }
+      }
+    },
+    "home.guidance.over": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Over today's budget. A breath might help"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今天已經超過額度，呼吸一下吧"
+          }
+        }
+      }
+    },
+    "home.guidance.setupAction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up gentle guidance"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定溫柔引導"
           }
         }
       }
@@ -725,13 +1134,30 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gentle guidance on iPhone"
+            "value": "Gentle guidance"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "iPhone 上的漸進引導"
+            "value": "溫柔引導"
+          }
+        }
+      }
+    },
+    "home.insights": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calm insights"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平靜洞察"
           }
         }
       }
@@ -753,6 +1179,109 @@
         }
       },
       "comment": "Android: onboarding_step_breathe"
+    },
+    "insights.breathsToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today: %lld"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今天 %lld 次"
+          }
+        }
+      }
+    },
+    "insights.breathsWeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld breathing session this week"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld breathing sessions this week"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hant": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "這週完成 %lld 次呼吸練習"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "insights.calm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呼吸練習"
+          }
+        }
+      }
+    },
+    "insights.setup": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on gentle guidance to see time on your watched apps here"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟溫柔引導後，這裡會顯示留意的 App 用了多久"
+          }
+        }
+      }
+    },
+    "insights.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calm insights"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平靜洞察"
+          }
+        }
+      }
     },
     "intent.breathe.description": {
       "extractionState": "manual",
@@ -1216,6 +1745,194 @@
       },
       "comment": "Android: settings_footer"
     },
+    "settings.guidance.apps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watched apps"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "留意的 App"
+          }
+        }
+      }
+    },
+    "settings.guidance.appsCount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hant": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "已選 %lld 項"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "settings.guidance.appsHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apps, categories and sites to use less"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "想少用一點的 App、類別和網站"
+          }
+        }
+      }
+    },
+    "settings.guidance.appsNone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None yet"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "還沒選"
+          }
+        }
+      }
+    },
+    "settings.guidance.denied": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen Time access wasn't granted. Tap above to try again"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有取得「螢幕使用時間」權限，可以點上面再試一次"
+          }
+        }
+      }
+    },
+    "settings.guidance.enable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on gentle guidance"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟溫柔引導"
+          }
+        }
+      }
+    },
+    "settings.guidance.enableHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses Screen Time. Which apps you use stays on this device"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "會用到「螢幕使用時間」，你用了哪些 App 只留在這台裝置"
+          }
+        }
+      }
+    },
+    "settings.guidance.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At your budget, a notification with distant rain asks if you'd like a break. Five minutes later a soft screen offers breathing or 5 more minutes. No passcode, no lecture"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "到了額度，會先收到附遠方雨聲的通知，問你要不要休息。再過 5 分鐘會出現柔和的畫面，可以去呼吸，也可以再滑 5 分鐘，不用密碼，也不說教"
+          }
+        }
+      }
+    },
+    "settings.guidance.toggle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gentle guidance"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "溫柔引導"
+          }
+        }
+      }
+    },
+    "settings.guidance.toggleHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rain first, then a soft pause screen"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "先用雨聲提醒，再出現柔和的休息畫面"
+          }
+        }
+      }
+    },
     "settings.haptics": {
       "extractionState": "manual",
       "localizations": {
@@ -1285,40 +2002,6 @@
         }
       }
     },
-    "settings.screenTime": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Screen Time"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "螢幕使用時間"
-          }
-        }
-      }
-    },
-    "settings.screenTimeValue": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Next version"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "下一版開放"
-          }
-        }
-      }
-    },
     "settings.section.appearance": {
       "extractionState": "manual",
       "localizations": {
@@ -1373,40 +2056,6 @@
       },
       "comment": "Android: settings_section_guidance"
     },
-    "settings.shortcut": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shortcuts automation"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "捷徑自動化"
-          }
-        }
-      }
-    },
-    "settings.shortcutHint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add “Over budget right now?” to an automation in Shortcuts and turn on grayscale when it answers yes"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在「捷徑」的自動化加入「現在超過額度了嗎？」，回答「是」時就開啟灰階"
-          }
-        }
-      }
-    },
     "settings.title": {
       "extractionState": "manual",
       "localizations": {
@@ -1443,6 +2092,40 @@
       },
       "comment": "Android: breathe_title"
     },
+    "shortcut.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS doesn't let apps turn on grayscale, so your own automation does it. Florsent only answers whether you're over budget"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS 不讓 App 直接開啟灰階，所以交給你自己的自動化。Florsent 只負責回答現在是否超過額度"
+          }
+        }
+      }
+    },
+    "shortcut.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Shortcuts"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開捷徑"
+          }
+        }
+      }
+    },
     "shortcut.overBudget": {
       "extractionState": "manual",
       "localizations": {
@@ -1460,6 +2143,108 @@
         }
       },
       "comment": "App Shortcut tile title"
+    },
+    "shortcut.statusNo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "否"
+          }
+        }
+      }
+    },
+    "shortcut.statusYes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "是"
+          }
+        }
+      }
+    },
+    "shortcut.step1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the Shortcuts app, open Automation and add an App automation: choose your watched apps, “Is Opened”, “Run Immediately”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開「捷徑」App，在「自動化」新增「App」自動化，選好留意的 App，設成「已打開」並「立即執行」"
+          }
+        }
+      }
+    },
+    "shortcut.step2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the action “Over budget right now?” from Florsent, then an “If” for when the result is true"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加入 Florsent 的「現在超過額度了嗎？」動作，再加一個「如果」，條件設成結果為「是」"
+          }
+        }
+      }
+    },
+    "shortcut.step3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inside the If, add “Set Color Filters” and turn it on. Choose Grayscale first in Settings › Accessibility › Display & Text Size › Color Filters"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在「如果」裡加入「設定色彩濾鏡」並開啟。灰階要先在「設定 › 輔助使用 › 顯示與文字大小 › 色彩濾鏡」選好"
+          }
+        }
+      }
+    },
+    "shortcut.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grayscale with Shortcuts"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用捷徑自動開啟灰階"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -34,11 +34,16 @@ APP = {
     "home.breatheNow": android("home_breathe_now"),
     "home.subtitle": android("onboarding_step_breathe"),
     "home.grounding": android("grounding_label"),
-    "home.guidance.title": own("Gentle guidance on iPhone", "iPhone 上的漸進引導"),
+    "home.guidance.title": own("Gentle guidance", "溫柔引導"),
     "home.guidance.body": own(
-        "Screen Time support comes in the next version. Breathing and grounding already work",
-        "下一版會接上「螢幕使用時間」，呼吸練習和回到當下現在就能用",
+        "Pick the apps you'd like to use less. Past your budget, Florsent reminds you with distant rain, then gently asks for a break",
+        "選好想少滑一點的 App，超過額度時 Florsent 會先用遠方的雨聲提醒，再溫柔地請你休息",
     ),
+    "home.guidance.setupAction": own("Set up gentle guidance", "設定溫柔引導"),
+    "home.guidance.daily": own("Daily budget %@", "每日額度 %@"),
+    "home.guidance.bedtime": own("bedtime %@", "睡前 %@"),
+    "home.guidance.over": own("Over today's budget. A breath might help", "今天已經超過額度，呼吸一下吧"),
+    "home.insights": own("Calm insights", "平靜洞察"),
     "greeting.morning": android("greeting_morning"),
     "greeting.afternoon": android("greeting_afternoon"),
     "greeting.evening": android("greeting_evening"),
@@ -84,13 +89,83 @@ APP = {
     "settings.language": android("settings_language"),
     "settings.languageHint": own("Change it in iPhone Settings", "到 iPhone 的「設定」更改"),
     "settings.section.guidance": android("settings_section_guidance"),
-    "settings.screenTime": own("Screen Time", "螢幕使用時間"),
-    "settings.screenTimeValue": own("Next version", "下一版開放"),
-    "settings.shortcut": own("Shortcuts automation", "捷徑自動化"),
-    "settings.shortcutHint": own(
-        "Add “Over budget right now?” to an automation in Shortcuts and turn on grayscale when it answers yes",
-        "在「捷徑」的自動化加入「現在超過額度了嗎？」，回答「是」時就開啟灰階",
+    "settings.guidance.enable": own("Turn on gentle guidance", "開啟溫柔引導"),
+    "settings.guidance.enableHint": own(
+        "Uses Screen Time. Which apps you use stays on this device",
+        "會用到「螢幕使用時間」，你用了哪些 App 只留在這台裝置",
     ),
+    "settings.guidance.denied": own(
+        "Screen Time access wasn't granted. Tap above to try again",
+        "沒有取得「螢幕使用時間」權限，可以點上面再試一次",
+    ),
+    "settings.guidance.apps": own("Watched apps", "留意的 App"),
+    "settings.guidance.appsHint": own("Apps, categories and sites to use less", "想少用一點的 App、類別和網站"),
+    "settings.guidance.appsNone": own("None yet", "還沒選"),
+    "settings.guidance.toggle": own("Gentle guidance", "溫柔引導"),
+    "settings.guidance.toggleHint": own(
+        "Rain first, then a soft pause screen",
+        "先用雨聲提醒，再出現柔和的休息畫面",
+    ),
+    "settings.guidance.footer": own(
+        "At your budget, a notification with distant rain asks if you'd like a break. Five minutes later a soft screen offers breathing or 5 more minutes. No passcode, no lecture",
+        "到了額度，會先收到附遠方雨聲的通知，問你要不要休息。再過 5 分鐘會出現柔和的畫面，可以去呼吸，也可以再滑 5 分鐘，不用密碼，也不說教",
+    ),
+    "budget.daily": own("Daily budget", "每日額度"),
+    "budget.dailyHint": own("Your total for the day", "一天累計的上限"),
+    "budget.quiet": own("Quiet time", "安靜時間"),
+    "budget.quietHint": own("No reminders for this long after breathing", "練習後多久不再提醒"),
+    "duration.minutes": own("%lld min", "%lld 分鐘"),
+    "duration.hours": own("%lld h", "%lld 小時"),
+    "duration.hoursMinutes": own("%1$lld h %2$lld min", "%1$lld 小時 %2$lld 分鐘"),
+    # Bedtime (copy mirrors Android's bedtime_* strings)
+    "bedtime.title": own("Bedtime", "睡前引導"),
+    "bedtime.offShort": own("Off", "未開啟"),
+    "bedtime.off": own("Bedtime guidance is off", "睡前引導未開啟"),
+    "bedtime.current": own(
+        "From %1$@ each night, a gentle reminder after %2$lld min of scrolling",
+        "每晚 %1$@ 起，累計滑 %2$lld 分鐘會提醒你休息",
+    ),
+    "bedtime.time": own("Bedtime", "想睡的時間"),
+    "bedtime.threshold": own("Scrolling before a reminder", "提醒前可以滑多久"),
+    "bedtime.note": own("At most two reminders a night, until 5 AM", "每晚最多提醒兩次，到清晨 5 點為止"),
+    "bedtime.needsGuidance": own("Turn on gentle guidance in Settings first", "請先在設定開啟溫柔引導"),
+    "bedtime.suggest.title": own("Before sleep, try 4-7-8", "睡前試試 4-7-8 呼吸"),
+    "bedtime.suggest.body": own(
+        "In for 4 seconds, hold for 7, out for 8. The long exhale helps your body slow down",
+        "吸氣 4 秒、停 7 秒、吐氣 8 秒，長長的吐氣能讓身體慢下來",
+    ),
+    "bedtime.suggest.use": own("Use 4-7-8", "改用 4-7-8"),
+    "bedtime.suggest.try": own("Try 4-7-8 now", "現在試試 4-7-8"),
+    # Shortcuts grayscale guide
+    "shortcut.title": own("Grayscale with Shortcuts", "用捷徑自動開啟灰階"),
+    "shortcut.step1": own(
+        "In the Shortcuts app, open Automation and add an App automation: choose your watched apps, “Is Opened”, “Run Immediately”",
+        "打開「捷徑」App，在「自動化」新增「App」自動化，選好留意的 App，設成「已打開」並「立即執行」",
+    ),
+    "shortcut.step2": own(
+        "Add the action “Over budget right now?” from Florsent, then an “If” for when the result is true",
+        "加入 Florsent 的「現在超過額度了嗎？」動作，再加一個「如果」，條件設成結果為「是」",
+    ),
+    "shortcut.step3": own(
+        "Inside the If, add “Set Color Filters” and turn it on. Choose Grayscale first in Settings › Accessibility › Display & Text Size › Color Filters",
+        "在「如果」裡加入「設定色彩濾鏡」並開啟。灰階要先在「設定 › 輔助使用 › 顯示與文字大小 › 色彩濾鏡」選好",
+    ),
+    "shortcut.open": own("Open Shortcuts", "打開捷徑"),
+    "shortcut.statusYes": own("Yes", "是"),
+    "shortcut.statusNo": own("No", "否"),
+    "shortcut.footer": own(
+        "iOS doesn't let apps turn on grayscale, so your own automation does it. Florsent only answers whether you're over budget",
+        "iOS 不讓 App 直接開啟灰階，所以交給你自己的自動化。Florsent 只負責回答現在是否超過額度",
+    ),
+    # Insights
+    "insights.title": own("Calm insights", "平靜洞察"),
+    "insights.calm": own("Breathing", "呼吸練習"),
+    "insights.breathsToday": own("Today: %lld", "今天 %lld 次"),
+    "insights.setup": own(
+        "Turn on gentle guidance to see time on your watched apps here",
+        "開啟溫柔引導後，這裡會顯示留意的 App 用了多久",
+    ),
+    "grounding.quiet": own("No reminders for the next %lld min", "接下來 %lld 分鐘不再提醒", "Mirrors Android grounding_cooldown"),
     "settings.footer": android("settings_footer"),
     # App Intents
     "intent.overBudget.title": own("Over budget right now?", "現在超過額度了嗎？"),
@@ -112,6 +187,14 @@ APP_PLURALS = {
         "en": {"one": "%lld second left", "other": "%lld seconds left"},
         "zh-Hant": {"other": "還有 %lld 秒"},
     },
+    "settings.guidance.appsCount": {
+        "en": {"one": "%lld selected", "other": "%lld selected"},
+        "zh-Hant": {"other": "已選 %lld 項"},
+    },
+    "insights.breathsWeek": {
+        "en": {"one": "%lld breathing session this week", "other": "%lld breathing sessions this week"},
+        "zh-Hant": {"other": "這週完成 %lld 次呼吸練習"},
+    },
 }
 
 APP_GROUNDING = {}
@@ -124,23 +207,43 @@ for lang in LANGS:
 APP.update(APP_GROUNDING)
 
 SHIELD_CONFIG = {
-    "shield.title": android("nudge_message"),
-    "shield.subtitle": own(
+    "shield.daily.title": own("Time for a break", "休息一下吧"),
+    "shield.daily.subtitle": own(
         "You've been scrolling for a while. A minute of breathing can help",
         "已經滑了一陣子，花一分鐘呼吸一下吧",
     ),
-    "shield.primary": android("nudge_accept_description"),
-    "shield.secondary": android("nudge_dismiss_description"),
+    "shield.bedtime.title": own("Time to wind down?", "該準備休息了嗎？", "Mirrors Android nudge_message_bedtime"),
+    "shield.bedtime.subtitle": own(
+        "It's getting late. A minute of slow breathing helps you settle for sleep",
+        "夜深了，花一分鐘慢慢呼吸，讓身體準備入睡",
+    ),
+    "shield.primary": own("Go breathe", "去呼吸"),
+    "shield.secondary": own("5 more minutes", "再滑 5 分鐘"),
 }
 
-SHIELD_ACTION = {
-    "notification.title": android("nudge_message"),
-    "notification.body": own("Tap to start breathing", "輕觸開始呼吸練習"),
+# Notifications posted by FlorsentMonitor and FlorsentShieldAction (table "ScreenTime", compiled
+# into the app and both extensions from ios/ScreenTimeShared).
+SCREEN_TIME = {
+    "notice.daily.title": own("How about a short break?", "要不要休息一下？"),
+    "notice.bedtime.title": own("Time to wind down?", "該準備休息了嗎？", "Mirrors Android nudge_message_bedtime"),
+    "notice.body": own("Tap to start breathing", "輕觸開始呼吸練習"),
+    "invite.title": own("Ready when you are", "準備好就開始"),
+    "invite.body": own("Tap to open breathing. One minute is enough", "輕觸打開呼吸練習，一分鐘就好"),
 }
 
 REPORT = {
-    "report.today": android("today_label"),
+    "report.today": own("Today on watched apps", "今天在留意的 App 上"),
     "report.minutes": android("minutes_format"),
+    "report.hours": own("%lld h", "%lld 小時"),
+    "report.hoursMinutes": own("%1$lld h %2$lld min", "%1$lld 小時 %2$lld 分鐘"),
+    "report.lastSeven": own("Last 7 days", "近 7 天", "Mirrors Android insights_last_seven"),
+    "report.topApps": own("Most used watched apps", "常用的留意 App", "Mirrors Android insights_top_apps"),
+    "report.less": own("%@ less scrolling than last week", "這週比上週少滑了 %@", "Mirrors Android insight_less"),
+    "report.more": own("A little more time on these apps this week", "這週在這些 App 上多花了一些時間"),
+    "report.similar": own("About the same as last week", "這兩週的使用時間差不多", "Mirrors Android insight_similar"),
+    "report.notEnough": own("Check back in a few days", "再記錄幾天，這裡就會有內容", "Mirrors Android insight_not_enough"),
+    "report.noRecord": own("No record", "沒有紀錄"),
+    "report.bar.a11y": own("%1$@, %2$@", "%1$@，%2$@"),
 }
 
 # App Shortcuts phrases: keys are the English phrases in code; must contain ${applicationName}.
@@ -184,5 +287,5 @@ def write(path: str, data: dict) -> None:
 write("Florsent/Resources/Localizable.xcstrings", catalog(APP, APP_PLURALS))
 write("Florsent/Resources/AppShortcuts.xcstrings", catalog(SHORTCUTS))
 write("FlorsentShieldConfig/Localizable.xcstrings", catalog(SHIELD_CONFIG))
-write("FlorsentShieldAction/Localizable.xcstrings", catalog(SHIELD_ACTION))
+write("ScreenTimeShared/ScreenTime.xcstrings", catalog(SCREEN_TIME))
 write("FlorsentReport/Localizable.xcstrings", catalog(REPORT))

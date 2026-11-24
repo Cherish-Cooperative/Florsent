@@ -68,6 +68,7 @@ private struct PatternPicker: View {
                 IdleBreathingFlower()
                     .frame(width: 140, height: 140)
                     .padding(.bottom, 8)
+                if model.bedtimeSuggestion { BedtimeHint() }
                 ForEach(BreathingPatterns.all) { pattern in
                     PatternCard(pattern: pattern, selected: pattern.id == settings.patternId) {
                         settings.patternId = pattern.id
@@ -76,6 +77,7 @@ private struct PatternPicker: View {
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 16)
+            .readableColumn()
         }
         .scrollBounceBehavior(.basedOnSize)
         .safeAreaInset(edge: .bottom) {
@@ -91,12 +93,45 @@ private struct PatternPicker: View {
             .padding(.horizontal, 24)
             .padding(.top, 12)
             .padding(.bottom, 8)
+            .readableColumn()
             .background(palette.background.color.opacity(0.96).ignoresSafeArea())
         }
         .florsentBackground()
         .navigationTitle(Text("breathe.title"))
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: settings.cueSound, initial: true) { _, on in if on { model.sound.warmUp() } }
+    }
+}
+
+/// In the bedtime window: a gentle suggestion of 4-7-8, never a silent switch.
+private struct BedtimeHint: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.palette) private var palette
+
+    var body: some View {
+        let using478 = model.settings.patternId == BreathingPatterns.relax478.id
+        VStack(alignment: .leading, spacing: 6) {
+            Label {
+                Text("bedtime.suggest.title").font(.subheadline.weight(.semibold))
+            } icon: {
+                Image(systemName: "moon.stars").foregroundStyle(palette.primary.color)
+            }
+            Text("bedtime.suggest.body")
+                .font(.subheadline)
+                .foregroundStyle(palette.onSurfaceVariant.color)
+            if !using478 {
+                Button("bedtime.suggest.use") { model.settings.patternId = BreathingPatterns.relax478.id }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(palette.primary.color)
+                    .frame(minHeight: 44)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(palette.secondaryContainer.color))
+        .accessibilityElement(children: .combine)
+        .padding(.bottom, 4)
     }
 }
 

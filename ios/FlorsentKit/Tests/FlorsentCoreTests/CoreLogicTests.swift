@@ -51,10 +51,11 @@ final class SharedStoreTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         let store = SharedStore(defaults: defaults)
-        XCTAssertFalse(store.budget.isOverBudget)
+        XCTAssertFalse(store.isOverBudget())
         let now = Date(timeIntervalSince1970: 1_000_000)
-        store.setOverBudget(true, now: now)
-        XCTAssertEqual(store.budget, BudgetState(isOverBudget: true, updatedAt: now))
+        store.updateGuidance { _ = $0.reach(GuidanceEvent(.daily, .notice), now: now) }
+        XCTAssertTrue(store.isOverBudget(now: now))
+        XCTAssertEqual(store.guidanceState.over, [.daily])
 
         store.requestBreathing(now: now)
         XCTAssertTrue(store.takeBreathingRequest(now: now.addingTimeInterval(60)))

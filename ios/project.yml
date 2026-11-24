@@ -15,7 +15,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
-    TARGETED_DEVICE_FAMILY: "1"
+    TARGETED_DEVICE_FAMILY: "1,2" # iPhone and iPad
     SUPPORTS_MACCATALYST: NO
     CODE_SIGN_STYLE: Automatic
     LOCALIZATION_PREFERS_STRING_CATALOGS: YES
@@ -32,9 +32,13 @@ targets:
     platform: iOS
     sources:
       - path: Florsent
+      - path: ScreenTimeShared
     dependencies:
       - package: FlorsentKit
         product: FlorsentKit
+      - sdk: FamilyControls.framework
+      - sdk: DeviceActivity.framework
+      - sdk: ManagedSettings.framework
       - target: FlorsentMonitor
       - target: FlorsentShieldConfig
       - target: FlorsentShieldAction
@@ -57,6 +61,12 @@ targets:
         UILaunchScreen:
           UIColorName: LaunchBackground
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # iPad: every orientation and any window size (layouts keep a readable column width).
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
     settings:
@@ -86,11 +96,13 @@ targets:
   FlorsentMonitor:
     type: app-extension
     platform: iOS
-    sources: [FlorsentMonitor]
+    sources: [FlorsentMonitor, ScreenTimeShared]
     dependencies:
       - package: FlorsentKit
         product: FlorsentCore
       - sdk: DeviceActivity.framework
+      - sdk: FamilyControls.framework
+      - sdk: ManagedSettings.framework
     entitlements:
       path: FlorsentMonitor/FlorsentMonitor.entitlements
       properties:
@@ -119,6 +131,8 @@ targets:
     platform: iOS
     sources: [FlorsentShieldConfig]
     dependencies:
+      - package: FlorsentKit
+        product: FlorsentCore
       - sdk: ManagedSettings.framework
       - sdk: ManagedSettingsUI.framework
     entitlements:
@@ -145,11 +159,13 @@ targets:
   FlorsentShieldAction:
     type: app-extension
     platform: iOS
-    sources: [FlorsentShieldAction]
+    sources: [FlorsentShieldAction, ScreenTimeShared]
     dependencies:
       - package: FlorsentKit
         product: FlorsentCore
       - sdk: ManagedSettings.framework
+      - sdk: DeviceActivity.framework
+      - sdk: FamilyControls.framework
     entitlements:
       path: FlorsentShieldAction/FlorsentShieldAction.entitlements
       properties:
@@ -176,6 +192,8 @@ targets:
     platform: iOS
     sources: [FlorsentReport]
     dependencies:
+      - package: FlorsentKit
+        product: FlorsentCore
       - sdk: DeviceActivity.framework
     entitlements:
       path: FlorsentReport/FlorsentReport.entitlements

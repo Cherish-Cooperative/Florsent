@@ -1,9 +1,11 @@
 import AppIntents
+import Foundation
 import FlorsentCore
 
 /// "Florsent: over budget right now?" Returns a Bool for Shortcuts automations, e.g. "when I open
-/// Instagram, if Florsent is over budget, turn on Color Filters (grayscale)". FlorsentMonitor keeps
-/// the answer current in the App Group (Phase 2); until then it answers false.
+/// a watched app, if Florsent is over budget, turn on Color Filters (grayscale)". FlorsentMonitor
+/// keeps the answer current in the App Group: yes once a daily or bedtime budget is reached, no
+/// during quiet time after breathing and once the day (or night) starts over.
 struct OverBudgetIntent: AppIntent {
     static let title: LocalizedStringResource = "intent.overBudget.title"
     static let description = IntentDescription("intent.overBudget.description")
@@ -11,9 +13,16 @@ struct OverBudgetIntent: AppIntent {
     static let isDiscoverable = true
 
     func perform() async throws -> some IntentResult & ReturnsValue<Bool> & ProvidesDialog {
-        let over = SharedStore().budget.isOverBudget
-        let dialog: LocalizedStringResource = over ? "intent.overBudget.yes" : "intent.overBudget.no"
-        return .result(value: over, dialog: IntentDialog(dialog))
+        let over = Self.answer()
+        return .result(value: over, dialog: IntentDialog(Self.dialog(over)))
+    }
+
+    static func answer(store: SharedStore = SharedStore(), now: Date = Date()) -> Bool {
+        store.isOverBudget(now: now)
+    }
+
+    static func dialog(_ over: Bool) -> LocalizedStringResource {
+        over ? "intent.overBudget.yes" : "intent.overBudget.no"
     }
 }
 

@@ -11,6 +11,8 @@ final class LocalizationTests: XCTestCase {
 
     override func setUpWithError() throws {
         let goldenURL = iosRoot.deletingLastPathComponent().appendingPathComponent("shared/test-fixtures/breathing_golden.json")
+        // The fixtures live in the repo on the Mac: reachable from the simulator, not from a device.
+        try XCTSkipUnless(FileManager.default.fileExists(atPath: goldenURL.path), "repo fixtures not reachable on a device")
         golden = try JSONSerialization.jsonObject(with: Data(contentsOf: goldenURL)) as? [String: Any]
         let catalogURL = iosRoot.appendingPathComponent("Florsent/Resources/Localizable.xcstrings")
         let json = try JSONSerialization.jsonObject(with: Data(contentsOf: catalogURL)) as? [String: Any]

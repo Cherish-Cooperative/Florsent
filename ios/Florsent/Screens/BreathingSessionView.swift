@@ -27,7 +27,8 @@ struct BreathingSessionView: View {
                         .padding(.bottom, 16)
                 }
                 .padding(.horizontal, 24)
-                .frame(maxWidth: .infinity, minHeight: geo.size.height)
+                .readableColumn()
+                .frame(minHeight: geo.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
         }
@@ -89,7 +90,7 @@ struct BreathingSessionView: View {
 
     private func flowerSize(_ size: CGSize) -> CGFloat {
         // Fits the flower to the space (landscape, small phones, large text); scrolls as a last resort.
-        max(min(size.height * 0.38, 300, size.width - 48), 120)
+        max(min(size.height * 0.38, 300, min(size.width, Layout.column) - 48), 120)
     }
 }
 

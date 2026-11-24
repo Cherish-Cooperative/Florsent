@@ -1,0 +1,92 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "invite.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to open breathing. One minute is enough"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輕觸打開呼吸練習，一分鐘就好"
+          }
+        }
+      }
+    },
+    "invite.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready when you are"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "準備好就開始"
+          }
+        }
+      }
+    },
+    "notice.bedtime.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time to wind down?"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該準備休息了嗎？"
+          }
+        }
+      },
+      "comment": "Mirrors Android nudge_message_bedtime"
+    },
+    "notice.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start breathing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輕觸開始呼吸練習"
+          }
+        }
+      }
+    },
+    "notice.daily.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How about a short break?"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要不要休息一下？"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
