@@ -8,7 +8,7 @@
 
 ## 繁體中文
 
-Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體使用時間的 Android App。本政策說明本 App 會處理哪些資料、為什麼需要、以及資料如何保存。
+Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體使用時間的 App，有 Android 版與 iOS／iPadOS 版。本政策說明本 App 會處理哪些資料、為什麼需要、以及資料如何保存。下方各節說明 Android 版；iOS／iPadOS 版的做法另見〈[iOS／iPadOS 版](#iosipados-版)〉一節。
 
 ### 一句話摘要
 
@@ -93,6 +93,16 @@ Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體�
 - 本 App 已關閉 Android 的自動備份與裝置間轉移，資料不會被備份到雲端，也不會被轉移到新手機。
 - 你可以隨時刪除全部資料：在系統設定中清除本 App 的儲存空間，或直接解除安裝本 App。
 
+### iOS／iPadOS 版
+
+iPhone 與 iPad 上的 Florsent 透過 Apple 的「螢幕使用時間」API（Family Controls、Managed Settings、Device Activity）運作，不使用上面描述的 Android 無障礙服務、Shizuku 或零打擾權限。
+
+- **只拿到 Apple 的不透明代碼。** 你在 Apple 的系統選擇器裡挑要留意的 App、類別或網站，本 App 收到的是 Apple 加密過的代碼（token），看不到 App 名稱、網址或瀏覽紀錄。授權與否由你在系統的「螢幕使用時間」提示中決定，可以隨時在「設定 > 螢幕使用時間」收回。
+- **偏好只存在這台裝置。** 你的選擇（上述代碼）、額度、睡前時間、聲音與呼吸偏好，只保存在本 App 與其延伸功能共用的 App Group（`group.app.florsent`）裡，不會同步到 iCloud，也不會傳到任何伺服器。解除安裝本 App 時會一併刪除。
+- **洞察在 Apple 的沙盒裡產生。** 使用時間的圖表由 Apple 的 DeviceActivityReport 延伸功能繪製。這個延伸功能被系統隔離，不能寫出資料、不能連網，畫出來的內容只顯示在你的螢幕上，本 App 本身讀不到這些使用資料。
+- **沒有網路連線、分析工具或帳號。** iOS 版不建立任何網路連線，不含廣告或分析 SDK，也不需要註冊或登入。
+- 本 App 附有 Apple 要求的隱私清單（`PrivacyInfo.xcprivacy`），聲明不追蹤、不蒐集資料，只為了在裝置上保存偏好而使用 `UserDefaults`。
+
 ### 資料分享
 
 本 App 不與任何第三方分享資料。由於本 App 沒有網路權限，資料在技術上也無法從本 App 傳送出去。
@@ -113,7 +123,7 @@ Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體�
 
 ## English
 
-Florsent ("the App") is an Android app that helps people spend less time on social media. This policy explains what data the App handles, why, and how it is stored.
+Florsent ("the App") helps people spend less time on social media, on Android and on iOS / iPadOS. This policy explains what data the App handles, why, and how it is stored. The sections below describe the Android app; see [iOS / iPadOS](#ios--ipados) for how the iPhone and iPad app works.
 
 ### In short
 
@@ -197,6 +207,16 @@ The App does not request internet, location, camera, microphone, contacts, stora
 - All data is kept in the App's private storage, which other apps cannot read.
 - Android Auto Backup and device-to-device transfer are turned off, so the data is never backed up to the cloud or moved to a new phone.
 - You can delete everything at any time by clearing the App's storage in system settings or by uninstalling the App.
+
+### iOS / iPadOS
+
+On iPhone and iPad, Florsent works through Apple's Screen Time APIs (Family Controls, Managed Settings and Device Activity). It does not use the Android accessibility service, Shizuku or Do Not Disturb access described above.
+
+- **Opaque Apple tokens only.** You choose the apps, categories or websites to watch in Apple's own system picker, and the App receives encrypted tokens from Apple. It never sees app names, web addresses or your browsing history. You grant access in the system Screen Time prompt and can revoke it at any time under Settings > Screen Time.
+- **Preferences stay on this device.** Your selection (those tokens), budgets, bedtime, sound and breathing preferences are stored only in the App Group shared by the App and its extensions (`group.app.florsent`). They are not synced to iCloud or sent to any server, and they are deleted when you uninstall the App.
+- **Insights are drawn inside Apple's sandbox.** Usage charts are rendered by Apple's DeviceActivityReport extension, which the system isolates so it cannot write data out or reach the network. What it draws is shown only on your screen; the App itself cannot read that usage data.
+- **No network connections, analytics or accounts.** The iOS app makes no network connections, contains no advertising or analytics SDKs, and needs no sign-up or sign-in.
+- The App ships the privacy manifest Apple requires (`PrivacyInfo.xcprivacy`), declaring no tracking, no data collection, and `UserDefaults` used only to keep preferences on the device.
 
 ### Sharing
 
