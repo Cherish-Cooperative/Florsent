@@ -14,7 +14,10 @@ Phase 2: gentle guidance with Screen Time.
    into breathing; "5 more minutes" lifts the shield and re-arms a 5-minute threshold.
 4. Finishing a breath starts quiet time (default 20 min): the shield lifts, thresholds are held,
    and a follow-up watches again once quiet time ends if still over budget.
-5. `FlorsentReport` draws calm insights (today, last 7 days, week over week, top apps). The
+5. Optional: "Back to life" can turn the screen off. iOS gives apps no API for that, so Settings ›
+   Turn off the screen after breathing guides the person to make a one-action "Lock Screen"
+   shortcut named `Florsent Lock`; the app then opens `shortcuts://run-shortcut?name=Florsent%20Lock`.
+6. `FlorsentReport` draws calm insights (today, last 7 days, week over week, top apps). The
    "Over budget right now?" App Intent reads the live state for a grayscale Shortcuts automation.
 
 All decisions live in `FlorsentCore/Guidance.swift` (plain values, tested on macOS); the Screen

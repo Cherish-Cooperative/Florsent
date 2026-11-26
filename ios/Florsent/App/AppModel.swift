@@ -52,9 +52,11 @@ final class AppModel {
         }
     }
 
+    /// "Back to life": home, and with the screen-off shortcut set up, the screen goes off too.
     func backToLife() {
         quietMinutes = nil
         path = []
+        if settings.screenOffShortcut { ScreenOffShortcut.run() }
     }
 
     /// The app came to the front: pick up the extensions' state, and a breathing request from the
@@ -81,6 +83,9 @@ final class AppSettings {
     var ambientSound: Bool { didSet { defaults.set(ambientSound, forKey: SharedKey.ambientSound) } }
     var cueSound: Bool { didSet { defaults.set(cueSound, forKey: SharedKey.cueSound) } }
     var haptics: Bool { didSet { defaults.set(haptics, forKey: SharedKey.haptics) } }
+    /// "Back to life" runs the person's own Lock Screen shortcut (see ScreenOffGuideView).
+    var screenOffShortcut: Bool { didSet { defaults.set(screenOffShortcut, forKey: Self.screenOffKey) } }
+    private static let screenOffKey = "screenOffShortcut"
 
     init(defaults: UserDefaults = AppGroup.defaults) {
         self.defaults = defaults
@@ -88,6 +93,7 @@ final class AppSettings {
         ambientSound = defaults.bool(forKey: SharedKey.ambientSound)   // off by default, as on Android
         cueSound = defaults.bool(forKey: SharedKey.cueSound)           // off by default, as on Android
         haptics = defaults.object(forKey: SharedKey.haptics) as? Bool ?? true
+        screenOffShortcut = defaults.bool(forKey: Self.screenOffKey) // needs the shortcut first
     }
 
     var pattern: BreathingPattern { BreathingPatterns.byId(patternId) }

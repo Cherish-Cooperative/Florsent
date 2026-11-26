@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var pickerShown = false
     @State private var picked = FamilyActivitySelection()
     @State private var grayscaleShown = false
+    @State private var screenOffShown = false
 
     private var guidance: GuidanceController { model.guidance }
 
@@ -59,6 +60,12 @@ struct SettingsView: View {
                 NavigationLink(value: Route.sound) {
                     HintRow(title: Text("settings.section.breathing"))
                 }
+                Button { screenOffShown = true } label: {
+                    HintRow(title: Text("screenOff.title"),
+                            value: model.settings.screenOffShortcut ? Text("screenOff.on") : Text("shortcut.optional"),
+                            systemImage: "chevron.right")
+                }
+                .foregroundStyle(palette.onSurface.color)
                 Button {
                     if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 } label: {
@@ -88,6 +95,7 @@ struct SettingsView: View {
             if !shown, picked != guidance.selection { guidance.setSelection(picked) }
         }
         .sheet(isPresented: $grayscaleShown) { GrayscaleGuideView() }
+        .sheet(isPresented: $screenOffShown) { ScreenOffGuideView() }
     }
 
     private var guidanceToggle: some View {

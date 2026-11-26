@@ -1638,6 +1638,125 @@
       },
       "comment": "Android: phase_inhale"
     },
+    "screenOff.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS doesn’t let apps lock the screen, so Florsent asks your shortcut to do it. Shortcuts opens for a moment first"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS 不讓 App 直接鎖定螢幕，所以由你的捷徑來關。執行時會先短暫打開「捷徑」"
+          }
+        }
+      }
+    },
+    "screenOff.on": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟"
+          }
+        }
+      }
+    },
+    "screenOff.step1": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Shortcuts, tap + to make a new shortcut. Search “Lock Screen” and add it"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開「捷徑」，點「＋」新增捷徑，搜尋「鎖定螢幕」並加入"
+          }
+        }
+      }
+    },
+    "screenOff.step2": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the name at the top and rename the shortcut “Florsent Lock”, then Done"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "點上方的捷徑名稱，改成「Florsent Lock」，再點「完成」"
+          }
+        }
+      }
+    },
+    "screenOff.step3": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Come back here and turn on the switch below"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回到這裡，打開下面的開關"
+          }
+        }
+      }
+    },
+    "screenOff.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off the screen after breathing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "呼吸完關掉螢幕"
+          }
+        }
+      }
+    },
+    "screenOff.toggle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off the screen after “Back to life”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按「回到生活」後關掉螢幕"
+          }
+        }
+      }
+    },
     "settings.ambient": {
       "extractionState": "manual",
       "localizations": {
