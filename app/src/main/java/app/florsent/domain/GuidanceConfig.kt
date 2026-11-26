@@ -19,6 +19,11 @@ data class GuidanceConfig(
     val dailyGraceMs: Long = 2 * MINUTE_MS,
     /** Over-budget usage needed to go from no effect to full effect. */
     val fadeDurationMs: Long = 3 * MINUTE_MS,
+    /**
+     * Each time a watched app comes back to the front, the guidance builds up from nothing to its
+     * accumulated level over this long instead of jumping straight back. The nudge waits for it.
+     */
+    val entryRampMs: Long = 8_000L,
     /** Fade progress (0..1) at which the "take a breath?" nudge slides in. */
     val nudgeAtProgress: Float = 0.5f,
     /** How long a dismissed nudge stays hidden. */

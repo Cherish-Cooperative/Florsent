@@ -122,6 +122,27 @@ APP = {
         "再新增一個「已關閉」的 App 自動化：加入「設定顏色濾鏡」，把「開啟」改成「關閉」",
     ),
     "shortcut.open": own("Open Shortcuts", "打開捷徑"),
+    # Screen off after "Back to life" through a Lock Screen shortcut (zh_TW action label from the
+    # iOS 26.5 runtime: 鎖定螢幕). The shortcut name is fixed: ScreenOffShortcut.name.
+    "screenOff.title": own("Turn off the screen after breathing", "呼吸完關掉螢幕"),
+    "screenOff.on": own("On", "開啟"),
+    "screenOff.toggle": own("Turn off the screen after “Back to life”", "按「回到生活」後關掉螢幕"),
+    "screenOff.step1": own(
+        "In Shortcuts, tap + to make a new shortcut. Search “Lock Screen” and add it",
+        "打開「捷徑」，點「＋」新增捷徑，搜尋「鎖定螢幕」並加入",
+    ),
+    "screenOff.step2": own(
+        "Tap the name at the top and rename the shortcut “Florsent Lock”, then Done",
+        "點上方的捷徑名稱，改成「Florsent Lock」，再點「完成」",
+    ),
+    "screenOff.step3": own(
+        "Come back here and turn on the switch below",
+        "回到這裡，打開下面的開關",
+    ),
+    "screenOff.footer": own(
+        "iOS doesn’t let apps lock the screen, so Florsent asks your shortcut to do it. Shortcuts opens for a moment first",
+        "iOS 不讓 App 直接鎖定螢幕，所以由你的捷徑來關。執行時會先短暫打開「捷徑」",
+    ),
     "shortcut.done": own("Done", "完成"),
     "shortcut.statusYes": own("Yes", "是"),
     "shortcut.statusNo": own("No", "否"),

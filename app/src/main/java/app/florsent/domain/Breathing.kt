@@ -3,6 +3,7 @@ package app.florsent.domain
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.sin
 
 enum class BreathPhaseKind {
     Inhale, HoldIn, Exhale, HoldOut;
@@ -95,9 +96,9 @@ object BreathingTimeline {
             if (t < phase.durationMs) {
                 val p = t.toFloat() / phase.durationMs
                 return when (phase.kind) {
-                    BreathPhaseKind.Inhale -> easeInOutSine(p)
+                    BreathPhaseKind.Inhale -> breathEase(p)
                     BreathPhaseKind.HoldIn -> 1f
-                    BreathPhaseKind.Exhale -> 1f - easeInOutSine(p)
+                    BreathPhaseKind.Exhale -> 1f - breathEase(p)
                     BreathPhaseKind.HoldOut -> 0f
                 }
             }
@@ -151,6 +152,16 @@ object BreathingTimeline {
     fun idleExpansion(elapsedMs: Long): Float {
         val phase = (elapsedMs % IDLE_PERIOD_MS).toFloat() / IDLE_PERIOD_MS
         return 0.4f - 0.15f * cos(2f * PI.toFloat() * phase)
+    }
+
+    /**
+     * The flower's curve within one inhale or exhale: it moves from the first frame and settles
+     * softly at the end, like the air itself. A pure ease-in-out started at zero speed, so the
+     * flower seemed to answer half a beat after the word changed.
+     */
+    fun breathEase(t: Float): Float {
+        val x = t.coerceIn(0f, 1f)
+        return 0.65f * sin(PI.toFloat() / 2f * x) + 0.35f * easeInOutSine(x)
     }
 
     fun easeInOutSine(t: Float): Float {

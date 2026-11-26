@@ -3,7 +3,6 @@ package app.florsent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,10 +11,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.florsent.data.AppLocales
 import app.florsent.domain.GuidanceEvent
+import app.florsent.service.FlorsentAccessibilityService
 import app.florsent.ui.FlorsentAppUi
 import app.florsent.ui.Route
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.florsent.ui.theme.FlorsentTheme
+import app.florsent.util.SystemSettings
 
 class MainActivity : ComponentActivity() {
 
@@ -45,15 +46,16 @@ class MainActivity : ComponentActivity() {
                     requestedRoute = requestedRoute,
                     onRouteConsumed = { requestedRoute = null },
                     onStartPreview = { moveTaskToBack(true) },
-                    onOpenAccessibilitySettings = {
-                        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                    },
-                    onGoToLauncher = {
+                    onOpenAccessibilitySettings = { SystemSettings.openAccessibility(this) },
+                    onLeavePhone = {
+                        // Back to the home screen, then the screen goes off: after unlocking, the
+                        // phone opens where life left off, not on Florsent.
                         startActivity(
                             Intent(Intent.ACTION_MAIN)
                                 .addCategory(Intent.CATEGORY_HOME)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                         )
+                        FlorsentAccessibilityService.lockScreen()
                     },
                 )
             }

@@ -67,7 +67,7 @@ app.florsent
 ├── service/
 │   ├── FlorsentAccessibilityService  只監聽 TYPE_WINDOW_STATE_CHANGED；承載 overlay 視窗
 │   ├── GuidanceCoordinator  全域狀態、tick 排程、持久化節流
-│   ├── NudgeOverlay        浮出提醒（plain View）
+│   ├── NudgeOverlay        浮出提醒（plain View；圓點像呼吸燈明暗，可上下拖動並記住高度，鍵盤出現時移到上方）
 │   ├── effect/             VisualEffectController 與三層實作、SaturationSession
 │   ├── shizuku/            ShizukuSaturation、PlatformShizukuClient、ShellService（AIDL）
 │   └── audio/              BreathingSound／BreathingSoundscape
@@ -109,6 +109,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `dailyBudgetMs` | 60 分鐘 | 一天累計上限（可調 15～240） |
 | `dailyGraceMs` | 2 分鐘 | 每日額度用完後，每段使用仍有的緩衝 |
 | `fadeDurationMs` | 3 分鐘 | 超過額度後，從無到最強的時間 |
+| `entryRampMs` | 8 秒 | 每次重新打開留意的 App，從乾淨的畫面慢慢加濃回累積的程度；提醒等加濃完才出現 |
 | `nudgeAtProgress` | 0.5 | 淡化進度到一半時浮出提醒 |
 | `nudgeSnoozeMs` | 2 分鐘 | 按「✕」延後多久 |
 | `cooldownMs` | 20 分鐘 | 安靜時間（可調 5～60） |
@@ -132,6 +133,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - **跨日**：日期只往前跑；往回超過一天才視為真正的時鐘重設。時區每次重新讀取。
 - **時鐘保護**：安靜時間、延後提醒的到期時間都有上限；未來的時間戳記（時鐘被調回去）會被丟掉或視為過期。
 - **新的一段使用**：開始計時時，若距離上次使用超過 `sessionGapMs`，清除本段累計。
+- **重新打開時從零加濃**：離開 App 時畫面淡化層 2 秒消失、雨聲 2 秒淡出。`sessionGapMs` 內再打開，累計的淡化程度還在，但以前會一打開就直接跳回原本的濃度。現在記下這一段開始計時的時間（`countingSinceMs`，不存檔），效果乘上 8 秒的 smoothstep，從零慢慢加濃回去，加濃期間每秒 tick；提醒等加濃完才浮出。兩個留意的 App 之間切換不算重新打開。雨聲本來就每次從零淡入 15 秒。
 - **螢幕「使用中」的判斷**：只有解鎖後才計時。`SCREEN_ON` 會在鎖定畫面時就送來，不能當作解鎖；`ACTION_USER_PRESENT` 在 Android 17 帶有「延後到 App 活躍才送」的策略，而無障礙服務的程序可能停在快取狀態（實機 `curProcState=16`），結果解鎖廣播永遠送不到，第一次關螢幕之後就再也不計時（v0.10.1 修正的 P0）。現在每個視窗事件都會檢查：引擎仍認為螢幕鎖著、但裝置已亮且已解鎖時（`ScreenPolicy.unlockNotYetSeen`），立即回報螢幕使用中。解鎖後一定有桌面或 App 的視窗事件，所以不依賴任何廣播。`USER_PRESENT` 仍保留，在舊版系統上更早觸發。
 - **留意哪些 App（`SocialAppMatcher`）**：首次啟動只從「可啟動」的 App 裡挑，依官方套件或名稱中的品牌字（YouTube、Instagram、Threads…）判斷，排除 YouTube Music／Studio／Kids 等非動態 App。已停用的官方 App 仍算「已安裝」，以前會被勾選，而實際在用的修改版用戶端（例如 `app.morphe.android.youtube`「YouTube Morphe」）卻沒被留意。既有使用者在 v0.10.1 執行一次修復（`repairWatchedOnce`，旗標 `watched_variants_repaired_v1`）：若某品牌留意的 App 都無法啟動，補上同品牌可啟動的 App；只做一次，之後手動取消不會被加回。
 - **點提醒後的延遲事件**：點提醒開啟呼吸畫面後 2 秒內，剛離開的 App 送來的視窗事件一律忽略（`ForegroundPolicy.isHandoffEcho`）。否則像 YouTube 這類 App 收尾時的事件會被當成「回到 App」，取消呼吸，讓淡化和提醒蓋在呼吸畫面上。
@@ -209,14 +211,14 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `anchorMinuteOfDay` | 使用者決定 | 想放下手機的時間；中午以前的時間屬於前一晚 |
 | `leadMinutes` | 30 | 時段從 anchor 前 30 分鐘開始 |
 | `thresholdMs` | 15 分鐘 | 時段內累計使用多久開始淡化（可選 10／15／20） |
-| `secondThresholdMs` | 7 分鐘 | 第一次之後，再用多久會第二次淡化 |
+| `secondThresholdMs` | 7 分鐘 | 第一次之後，每次睡前休息結束再用多久會再淡化 |
 | `cooldownMs` | 30 分鐘 | 睡前的安靜時間 |
-| `maxNudgesPerNight` | 2 | 超過後只淡化，不顯示提醒 |
 
 - 時段：`[anchor − 30 分, max(anchor + 2 小時, 隔天 05:00))`。計數在換時段時歸零，不在午夜歸零。
 - 時段內的累計與 session／每日額度並行，三者取最先超過的那個。
+- 每次淡化都會出現提醒，沒有每晚次數上限。v0.10 以前一晚第三次起只淡化、不提醒，實際用起來畫面已經很濃卻沒有地方可以點進呼吸，像是壞掉，所以拿掉了。
 - 淡化開始時凍結情境（`GuidanceContext`）：白天開始的淡化進入時段後仍是白天的文字，反之亦然。
-- 睡前情境下：提醒文字「該準備休息了嗎？」，點下去固定用 4-7-8 呼吸，結束時是睡前版的 grounding 與「去休息吧」按鈕（直接回桌面）。
+- 睡前情境下：提醒文字「該準備休息了嗎？」，點下去固定用 4-7-8 呼吸，結束時是睡前版的 grounding 與「去休息吧」按鈕（回桌面並關掉螢幕）。
 - 首頁在時段開始前 3 小時內顯示「今晚 23:10 起會溫和提醒你休息」。
 
 ## 使用洞察與設定架構
@@ -237,7 +239,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 留意的 App | 勾選要計時的 App |
 | 使用額度 | 單次、每日、安靜時間 |
 | 睡前引導 | 時段、可以滑多久、關閉 |
-| 呼吸與聲音 | 呼吸練習環境音、變淡時播放柔和雨聲、提示音、完成後回桌面 |
+| 呼吸與聲音 | 呼吸練習環境音、變淡時播放柔和雨聲、提示音、完成後回桌面並關掉螢幕 |
 | 進階 | 外觀、無障礙服務、黑白收尾、Shizuku、使用紀錄與清除 |
 
 沒有「智慧自動引導」總開關，也沒有自動調整的每日額度（會形成自我收緊的迴圈）。預設值合理，學到東西時只邀請一次。
@@ -257,6 +259,16 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - `TYPE_ACCESSIBILITY_OVERLAY`、全螢幕、`FLAG_NOT_TOUCHABLE`，覆蓋狀態列與導覽列。這是受信任的視窗，透明度再高也不會擋住觸控（`TYPE_APPLICATION_OVERLAY` 超過 0.8 會被擋）。
 - 顏色 `#858585`，最高透明度 0.6。混入中間灰會同時降低對比與飽和度。
 - 每次 `render` 用一秒的線性 `ViewPropertyAnimator` 銜接，所以以螢幕刷新率連續變化；`hasOverlappingRendering() = false`，避免全螢幕離屏圖層。強度回到 0 時移除視窗。
+
+### 提醒膠囊（`NudgeOverlay`）
+
+- 圓點像呼吸燈，約 4 秒變亮、4 秒變暗。膠囊可以上下拖（不能左右），高度記在 SharedPreferences，存的是離底部的距離。
+- 陰影不用 `elevation`：圓點每一幀重畫膠囊時，系統即時算的陰影會閃。改由外層 `DragFrame.dispatchDraw` 畫幾層低透明度的圓角矩形，每一幀都一樣。進出場動畫時外層跟著 `invalidate()`。
+- 鍵盤出現時移到上方：鍵盤開啟會送出鍵盤 App 自己的 `TYPE_WINDOW_STATE_CHANGED`（class `SoftInputWindow`），前景判斷本來就忽略它，這時讓膠囊在 0.36 秒內滑到螢幕上方約 20% 的位置，不擋輸入框和按鍵。鍵盤關閉不會送任何事件，膠囊自己的視窗也收不到鍵盤 insets（模擬器實測），所以膠囊留在上方直到這次提醒消失，下次出現回到使用者記住的高度。只有鍵盤本身，不會讓提醒消失。
+
+### 回到生活：關掉螢幕
+
+- 「完成後關掉螢幕」（預設開，沿用原本「回到桌面」的設定鍵）：先回桌面，再用無障礙服務的 `GLOBAL_ACTION_LOCK_SCREEN`（Android 9+）關掉螢幕，等同按一下電源鍵。解鎖後看到的是桌面，不是 Florsent。睡前的「去休息吧」一律關螢幕。服務沒開或 Android 8 時只回桌面。這是無障礙服務唯一的系統動作，說明、服務描述與 PRIVACY.md 都寫明了，只在使用者按下按鈕時發生。
 
 ### 第二層：Zen 灰階收尾（Android 15+）
 
@@ -303,8 +315,8 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 共振呼吸 `resonance_55` | 5.5・5.5 | 7 | 1:17 |
 
 - `BreathingTimeline` 是純函式：`expansionAt()`（逐幀、零配置，用 index 迴圈）、`displayAt()`（每秒變一次）、`movingMsAt()`、`sessionProgress()`、`idleExpansion()`。展開程度用 ease-in-out sine，在階段交界連續。
-- **閉氣時整個畫面停住**：花瓣的旋轉與微晃、進度環都用 `movingMsAt()`（扣掉所有閉氣與停頓時間的經過時間）驅動，展開程度在閉氣時本來就固定，所以閉氣期間花朵與進度環的像素完全不變，只有倒數數字在走。使用者跟著畫面一起停。
-- `BreathingFlower`：兩層各 6 片花瓣、光暈、中心微光、進度環。路徑、漸層、筆觸都在 `drawWithCache` 建好；動畫數值只在 draw lambda 裡讀取，所以每一幀只重畫、不重組。
+- **閉氣時花瓣照樣慢慢轉，但不縮放**：花瓣的旋轉和微晃用實際經過時間驅動，閉氣時也繼續轉（以前整個畫面停住，看起來像當掉）。開合只跟展開程度走，閉氣時展開程度固定，所以花不會變大變小。進度環仍用 `movingMsAt()`（扣掉閉氣與停頓的時間），閉氣時停住。
+- `BreathingFlower`：三層花瓣（8、8、5 片）、光暈、花心微光、進度環。花會像真的花一樣開合：每片花瓣是從上方看的平面花瓣，張開時從較短、較窄、略為旋轉的花苞平放到全長；三層從呼吸一開始就一起動，外層領先、內層跟上（展開程度的 0.75、1.15、1.6 次方），所以吸氣時由外往內綻放、吐氣時由內往外收回，沒有「等門檻」的空檔。展開曲線用 `breathEase`（0.65 × easeOutSine + 0.35 × easeInOutSine）：每段吸氣、吐氣第一幀就開始動，結尾再柔柔停住。以前用純 easeInOutSine 加各層門檻，吐氣開始後約三分之一外層花瓣才開始縮，看起來慢半拍。直立的花瓣顏色深一點，像翻過來的花瓣背面。收到最小時是全長的 0.58，以前縮到三分之一時會擠成一團八角形，看不出花瓣。吸氣、吐氣的文字縮成小字說明，花放大到畫面高度的 46%，讓動畫本身帶節奏。路徑、漸層、筆觸都在 `drawWithCache` 建好；動畫數值只在 draw lambda 裡讀取，所以每一幀只重畫、不重組。
 - `rememberFrameClock`：以 `withFrameNanos` 累積時間；`rememberSaveable`，旋轉螢幕後接續；超過 250 ms 的間隔（App 在背景）只算一個標準幀，所以會暫停而不是跳過；閒置的花限制在約 30 fps。
 - 換階段時輕微震動（API 34+ `SEGMENT_TICK`，否則 `CLOCK_TICK`）；提示音只在設定開啟時播放，並在選擇頁預先載入。
 - 環境音在 App 進入背景時暫停並釋放音訊焦點；音效引擎延遲到真的需要時才建立。
@@ -325,10 +337,11 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - **變淡時播放**（`FadeSoundController` + `FadeSoundscape`）是視覺效果組合裡的一層，和淡化層收到同樣的淡化程度：
   - 淡化程度大於 0、開關打開、沒有在通話（`MODE_IN_CALL`／`IN_COMMUNICATION`／`RINGTONE`）才播放。
   - 音訊焦點用 `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`，系統自動把前景 App 壓低音量，不會暫停；講話內容（Podcast 等）由系統自行暫停。
-  - 15 秒淡入（音量曲線 0.6 × p²，v0.10.2 前是 0.4），離開時 1.5 秒淡出。淡入淡出用實際經過時間計算，不受「移除動畫」設定影響。
+  - 15 秒淡入（音量曲線 0.6 × p²，v0.10.2 前是 0.4），離開時 2 秒淡出，和畫面淡化層的 2 秒消失同步。淡入淡出用實際經過時間計算，不受「移除動畫」設定影響。
   - 點提醒時呼叫 `handOffToBreathing()`，改用 3.5 秒淡出，和呼吸畫面約 1 秒的啟動、2.5 秒的環境音淡入交疊。呼吸環境音要焦點時，正在淡出的雨聲不會被截短。
-  - 來電或響鈴（`MODE_IN_CALL`、`MODE_IN_COMMUNICATION`、`MODE_RINGTONE`）一律不播；播放中遇到就 1.5 秒淡出，這一輪淡化不再出聲。第一次要求焦點就被拒絕時，同樣這一輪不再嘗試。
-  - 其他 App 搶走焦點時（`FocusReclaimPolicy`）：滑 Reels、Shorts 時，每支新影片都會要一次焦點。v0.10.1 以前一被搶就整輪放棄，雨聲幾秒內就消失。現在等 1.2 秒冷卻後再用 `GAIN_TRANSIENT_MAY_DUCK` 要回來，讓影片被壓低、雨聲繼續。冷卻期間不管收到幾次焦點變化，都只排一次重新要求。拿到焦點後不到 1 秒又被搶走、或重新要求被拒絕，就算「對方在搶」：冷卻加倍（1.2、2.4、4.8、9.6 秒，上限 9.6 秒），連續 5 次以後這一輪放棄，避免和某個 App 無限互搶。一般滑動之間隔超過 1 秒，所以每次都只等 1.2 秒。焦點自己回來（`AUDIOFOCUS_GAIN`）、離開 App、點提醒交接時，排定的重新要求都會取消。只有留意的 App 正在變淡時才有聲音，所以只會從使用者正在滑的動態那裡把焦點拿回來。
+  - 來電或響鈴（`MODE_IN_CALL`、`MODE_IN_COMMUNICATION`、`MODE_RINGTONE`）一律不播；播放中遇到就 2 秒淡出，這一輪淡化不再出聲。第一次要求焦點就被拒絕時，同樣這一輪不再嘗試。
+  - **雨聲音量固定**：Android 12 起，App 失去焦點時，系統會把它的媒體播放器在 2 秒內淡出並保持靜音，而且等淡出結束才送出失去焦點的通知。所以以前每滑到一支新 Reel，雨聲就被系統吃掉好幾秒，影片全音量播放，等雨聲要回焦點才又冒出來。系統唯一不淡出、也不自動壓低的內容類型是講話（`CONTENT_TYPE_SPEECH`，也是 `FadeManagerConfiguration` 的預設例外），所以雨聲標成講話、用途仍是媒體（跟著媒體音量）。淡入完成後雨聲一直維持同一個音量；通知音等「可壓低」的焦點變化直接忽略，讓它疊在雨聲上播。
+  - 其他 App 搶走焦點時（`FocusReclaimPolicy`）：滑 Reels、Shorts 時，每支新影片都會要一次焦點。因為雨聲不再被淡出，失去焦點的通知會立刻送到；等 0.25 秒冷卻後用 `GAIN_TRANSIENT_MAY_DUCK` 要回來，影片只全音量一下就又被壓低到固定的 ducking 音量。冷卻期間不管收到幾次焦點變化，都只排一次重新要求。拿到焦點後不到 1 秒又被搶走、或重新要求被拒絕，就算「對方在搶」：冷卻加倍（0.25、0.5、1、2、4 秒，上限 4 秒），連續 5 次以後這一輪不再要焦點，但雨聲照常播放（只是不再壓低對方），避免和某個 App 無限互搶。焦點自己回來（`AUDIOFOCUS_GAIN`）、離開 App、點提醒交接時，排定的重新要求都會取消。只有留意的 App 正在變淡時才有聲音，所以只會從使用者正在滑的動態那裡把焦點拿回來。
 - Android 17 的背景音訊強化會把背景 App 的播放靜音、焦點要求回傳失敗。綁定中的無障礙服務不受影響：模擬器開啟完整強制（`cmd audio set-enable-hardening 1`）時，雨聲仍是 started、`muted=none`，焦點為 `GAIN_TRANSIENT_MAY_DUCK`。不需要前景服務或新權限。
 - 關閉系統動畫時，花依階段張開或收合，不做連續動畫。
 - TalkBack：階段標籤是唯一的 live region（polite），倒數與輪數合併成一句、不朗讀每一秒。
@@ -376,6 +389,11 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - **沒有網路權限**。新增依賴後務必檢查合併後的 manifest。
 - `allowBackup="false"`，`backup_rules.xml` 與 `data_extraction_rules.xml` 排除所有資料網域：不雲端備份、不裝置間轉移。
 - 無障礙服務：`canRetrieveWindowContent=false`、`isAccessibilityTool=false`。開啟前在 Onboarding 第三頁（或首頁對話框）顯示 Play 要求的 prominent disclosure。
+- **開啟系統設定頁（`SystemSettings`）**：各家手機的設定頁不一樣，所以每個連結都有備案（打不開就退回設定首頁），畫面上的說明也依廠牌調整。
+  - 無障礙：Android 沒有公開的方法直接開到某個服務的開關頁。`android.settings.ACCESSIBILITY_DETAILS_SETTINGS` 需要 `OPEN_ACCESSIBILITY_DETAILS_SETTINGS`，保護等級是 signature|installer（Pixel 實測），只有系統和商店能用。所以改開無障礙清單，並帶 AOSP 設定搜尋用的 `:settings:fragment_args_key`（服務的 component 名稱），Pixel 等 AOSP 系的設定會捲到「Florsent 漸進引導」並閃一下。
+  - 三星 One UI 把下載的無障礙服務放在「協助工具 › 已安裝的應用程式」（部分機型叫「已安裝的服務」），沒有公開 intent 可以直達，所以 `Build.MANUFACTURER == samsung` 時顯示三星的步驟。各家都附「在設定搜尋欄輸入 Florsent」當最後的辦法。
+  - 受限制的設定：Android 13 起，從 APK 檔安裝（`packageSource` 為 LOCAL_FILE 或 DOWNLOADED_FILE）的 App，無障礙開關會變灰。只有這種安裝來源才顯示「App 資訊 › ⋮ › 允許受限制的設定」的說明和按鈕；Play、Galaxy Store、adb 安裝不受影響。
+  - 零打擾存取：開 `ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS`，說明附上找不到清單時要搜尋的字（三星是「勿擾」，其他是「零打擾」）。
 - 使用紀錄（`files/usage/`）需要使用者同意、保存 30 天，可在「設定 > 進階」關閉或清除；沒有權限變動，也不離開手機。
 - 任何權限或資料處理的變動，都要同步更新 [PRIVACY.md](../PRIVACY.md)。
 
@@ -402,7 +420,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 測試 | 涵蓋 |
 |---|---|
 | `GuidanceEngineTest`（27） | 額度、淡化、提醒、呼吸、安靜時間、預覽、跨日、時鐘保護、tick 排程 |
-| `BreathingTimelineTest`（12） | 四種呼吸法、展開連續性、倒數、結束、閉氣時停住 |
+| `BreathingTimelineTest`（12） | 四種呼吸法、展開連續性、倒數、結束、閉氣時進度環停住 |
 | `ForegroundPolicyTest`（5） | 系統介面、輸入法、自己的 overlay、點提醒後的延遲事件、沒有 USER_PRESENT 也能辨認解鎖 |
 | `ScreenUnlockRegressionTest`（1） | 重現 Android 17 實機：鎖過一次後不再計時，以及視窗事件回報解鎖後恢復 |
 | `SocialAppMatcherTest`（5） | 停用的官方 App 不勾選、依名稱找到修改版、既有清單修復只補使用者選過的品牌、排除非動態 App |
@@ -411,14 +429,14 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | `ZenGrayscaleControllerTest`（7） | 第一次同步、遲滯、存取權、失敗不重試 |
 | `ShizukuSaturationTest`（8） | 五種狀態、按需綁定、連線後還原、Shizuku 中途停止、降級與重試 |
 | `BedtimeLearnerTest`（17） | 規律夜晚、冷啟動、鬧鐘與回訊息、真正醒來、影片睡著、夜貓與輪班、程序被殺、停止記錄、中午定案、跨時區、熬夜、加權、時段不追著學習值跑 |
-| `BedtimeGuidanceTest`（11） | 時段邊界、累計門檻、門檻選項、每晚兩次上限、點提醒後效果全部清除、情境凍結、午夜不歸零、早上結束、未設定、tick 期限 |
+| `BedtimeGuidanceTest`（11） | 時段邊界、累計門檻、門檻選項、第三次淡化照樣有提醒、點提醒後效果全部清除、情境凍結、午夜不歸零、早上結束、未設定、tick 期限 |
 | `UsageLogTest`（8）、`UsageInsightsTest`（7） | 編碼與壞行、區段記錄、程序被殺變成 `U`、放棄殘留區段；跨午夜拆分、沒有資料不是 0、只比較完整的兩週、前三名 App |
 | `UsageRecordingTest`（7） | 寫入順序、新程序補 `U`、重啟不寫多餘的停止與開始、服務沒來時收尾、沒有同意不寫、清除後重新開始、壞行與保存期限 |
 | `SettingsRepositoryTest`（7）、`GuidanceStateStoreTest`（3） | 真實 DataStore 檔案上的預設值、往返與持久化 |
 | `BreatheViewModelTest`（10） | 聲音延遲建立、背景暫停、提示音開關、同一階段只響一次、新練習重新計算、釋放 |
 | `StringResourcesParityTest`（8） | 中英文鍵值、陣列句數、佔位符、複數、無漏翻、無句尾句號、`locales_config` 與資源一致、語言代碼對應 |
 | `PhaseCueGateTest`（5）、`GaplessLoopTest`（5）、`WavReaderTest`（5） | 每階段只響一次、只往前、整段練習重複回報仍只響一次、新練習重來；循環接力、音量延續、暫停與釋放；WAV 解析、拒絕不支援格式、內建提示音規格、峰值介於 -18 到 -1 dBFS 與音高 |
-| `FadeSoundControllerTest`（17） | 淡化開始播放一次、關閉不播、中途關閉淡出、通話不播、交接延長淡出、首次拒絕不重試、釋放、音量曲線；短影音搶焦點後 1.2 秒重新要求、冷卻內多次只要求一次、對方回搶時冷卻加倍並在 5 次後放棄、重新要求被拒延後再試、來電不重試、冷卻中來電取消、離開或交接取消、焦點自己回來取消 |
+| `FadeSoundControllerTest`（17） | 淡化開始播放一次、關閉不播、中途關閉淡出、通話不播、交接延長淡出、首次拒絕不重試、釋放、音量曲線；短影音搶焦點後 0.25 秒重新要求、冷卻內多次只要求一次、對方回搶時冷卻加倍並在 5 次後不再要求但照常播放、重新要求被拒延後再試、來電不重試、冷卻中來電取消、離開或交接取消、焦點自己回來取消 |
 | `EqualChipGridMathTest`（6） | 選項等寬格的欄數：放得下就一排，放不下改成每排一個（3 個選項不會變成 2＋1，4 個可排 2×2），每格都不窄於最寬的標籤 |
 | `ContrastAuditTest`（4） | WCAG 公式、品牌深淺色全部通過 AA |
 
@@ -473,7 +491,7 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 | 頌缽＋提示音（v0.10.0） | 等長呼吸完整 72 秒：提示音 18 次、重複 0 次、間隔 4.0 秒；第 48 秒 `MEDIA_INFO_STARTED_AS_NEXT` 無縫接手；兩條播放軌同在大緩衝輸出（HAL frame 1920），欠載全程 0 |
 | 背景雨聲（Android 17） | 預覽全程 `started`、`muted=none`、焦點 `GAIN_TRANSIENT_MAY_DUCK`，無 AudioHardening 紀錄；系統記錄 ducking 了正在播的影片 App；淡出 1.5 秒；點提醒後與呼吸環境音重疊約 3.2 秒 |
 | 計時（v0.10.1 前） | 鎖過一次螢幕後完全不計時：`SCREEN_ON`／`SCREEN_OFF` 有送達，44 次 `USER_PRESENT` 一次都沒送到 Florsent；YouTube 實際用的是 `app.morphe.android.youtube`，官方 YouTube 已停用 |
-| 閉氣時停住 | 盒式呼吸：吸氣後閉氣 5 張、吐氣後停頓 6 張連續截圖的花朵與進度環像素完全相同 |
+| 閉氣時停住（v0.10.2；之後改成花瓣照轉、只有開合與進度環停住） | 盒式呼吸：吸氣後閉氣 5 張、吐氣後停頓 6 張連續截圖的花朵與進度環像素完全相同 |
 | 環境音 | 練習中 `MediaPlayer` started；按 Home 變 paused、交還音訊焦點；回來恢復；離開練習後釋放 |
 | Zen 灰階收尾 | 需要使用者授予零打擾存取權後再驗證 |
 | Shizuku 第三層 | 實機未安裝 Shizuku，未驗證 |
@@ -481,7 +499,7 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 實機上的注意事項：
 
 - `uiautomator dump` 在實機上同樣會暫時解除 Florsent 的無障礙服務，首頁會短暫切成「服務未開啟」的版面，按鈕位置往下移約 170 px。用 dump 的座標去點，會點到下一顆按鈕。實機請用截圖量座標。
-- 驗證時只截 Florsent 自己在前景的畫面；預覽會回到使用者的桌面，用 `dumpsys window` 觀察 overlay 就好，不要截圖。
+- 驗證時只截 Florsent 自己在前景的畫面；預覽會回到使用者的桌面，用 `dumpsys window` 觀察 overlay 就好，不要截圖。`topResumedActivity` 是 Florsent 也不保證畫面上就是 Florsent（應用程式抽屜可能蓋在上面），實機上不要用截圖找按鈕座標，改在自己的模擬器上做。
 
 ## Google Play 上架
 

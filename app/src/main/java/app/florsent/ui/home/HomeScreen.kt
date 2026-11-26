@@ -52,6 +52,8 @@ import app.florsent.ui.components.CardShape
 import app.florsent.ui.components.clockText
 import app.florsent.ui.components.NavigationRow
 import app.florsent.ui.components.SoftCard
+import app.florsent.ui.components.RestrictedSettingsHint
+import app.florsent.ui.components.accessibilitySteps
 import app.florsent.ui.theme.FlorsentTheme
 
 @Composable
@@ -167,7 +169,12 @@ fun HomeScreen(
         AlertDialog(
             onDismissRequest = { showDisclosure = false },
             title = { Text(stringResource(R.string.disclosure_title)) },
-            text = { Text(stringResource(R.string.disclosure_body)) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text(stringResource(R.string.disclosure_body) + "\n\n" + accessibilitySteps())
+                    RestrictedSettingsHint(Modifier.padding(top = 12.dp))
+                }
+            },
             confirmButton = {
                 TextButton(onClick = {
                     showDisclosure = false

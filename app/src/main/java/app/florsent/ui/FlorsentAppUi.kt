@@ -29,7 +29,7 @@ import app.florsent.AppContainer
 import app.florsent.data.UserSettings
 import app.florsent.domain.GuidanceEvent
 import app.florsent.service.audio.BreathingSoundscape
-import app.florsent.service.effect.ZenGrayscale
+import app.florsent.util.SystemSettings
 import app.florsent.ui.apps.LocalIconPeek
 import app.florsent.ui.apps.WatchedAppsScreen
 import app.florsent.ui.apps.WatchedAppsViewModel
@@ -80,7 +80,7 @@ fun FlorsentAppUi(
     onRouteConsumed: () -> Unit,
     onStartPreview: () -> Unit,
     onOpenAccessibilitySettings: () -> Unit,
-    onGoToLauncher: () -> Unit,
+    onLeavePhone: () -> Unit,
 ) {
     var route by rememberSaveable { mutableStateOf(Route.Home) }
     val guidance = container.guidance
@@ -122,11 +122,11 @@ fun FlorsentAppUi(
             route = Route.Grounding
         }
     }
-    val returnToLife = { goToLauncher: Boolean ->
+    val returnToLife = { leavePhone: Boolean ->
         guidance.dispatch(GuidanceEvent.BreathingCompleted(guidance.now()))
         route = Route.Home
-        // "去休息吧" always leaves the phone; daytime follows the user's setting.
-        if (goToLauncher || bedtimeSession) onGoToLauncher()
+        // "去休息吧" always turns the screen off; daytime follows the user's setting.
+        if (leavePhone || bedtimeSession) onLeavePhone()
         bedtimeSession = false
     }
 
@@ -254,7 +254,7 @@ fun FlorsentAppUi(
                             vm = vm,
                             onBack = back,
                             onOpenAccessibilitySettings = onOpenAccessibilitySettings,
-                            onOpenZenAccessSettings = { context.startActivity(ZenGrayscale.accessSettingsIntent()) },
+                            onOpenZenAccessSettings = { SystemSettings.openZenAccess(context) },
                         )
                         else -> SettingsHomeScreen(
                             state = state,

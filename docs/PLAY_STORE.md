@@ -1,6 +1,6 @@
 # Florsent Google Play 上架資料包
 
-這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.10.2（versionCode 14）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
+這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.11.0（versionCode 15）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
 
 - 套件名稱：`app.florsent`（上架後不能再改）
 - 介面語言：繁體中文、英文（跟隨系統，或在 App 內「設定 > 進階 > 語言 / Language」切換；Android 13 以上也可在系統的「App 語言」設定）
@@ -51,7 +51,7 @@ Florsent 不封鎖任何 App，只在你滑太久的時候，溫柔地提醒你�
 練習結束後，Florsent 留給你一句簡單的話，例如「放下手機，去倒杯水，慢慢喝完」。按下「回到生活」，畫面恢復原樣，接下來一段時間不再提醒你。
 
 ■ 睡前，慢慢放下手機
-Florsent 會先觀察一週，看你晚上通常幾點放下手機。看得出規律時，問你一次要不要在那之前提醒你。答應之後時間就固定下來。睡前的提醒會換成「該準備休息了嗎？」，並帶你做 4-7-8 放鬆呼吸。一個晚上最多提醒兩次。作息不規律，也可以自己選時間，或者不用。
+Florsent 會先觀察一週，看你晚上通常幾點放下手機。看得出規律時，問你一次要不要在那之前提醒你。答應之後時間就固定下來。睡前的提醒會換成「該準備休息了嗎？」，並帶你做 4-7-8 放鬆呼吸。呼吸完會安靜 30 分鐘。作息不規律，也可以自己選時間，或者不用。
 
 ■ 看看最近的自己
 今天、近 7 天、最常用的 App，還有一兩句話說說你最近的樣子，例如「這週比上週少滑了 1 小時」。沒有評分，也沒有排名。
@@ -106,7 +106,7 @@ Tap the prompt to start breathing right away. A lotus opens as you breathe in an
 Afterwards Florsent leaves you with one simple suggestion, such as "Put the phone down, pour a glass of water and drink it slowly." Tap "Back to life" and the screen returns to normal, with a quiet period before any further reminder.
 
 ■ Winding down at night
-For the first week Florsent observes when you usually put the phone down at night. Once a pattern is clear, it asks once whether you would like a reminder before that time; if you agree, the time stays fixed. Bedtime reminders ask "Time to wind down?" and lead into 4-7-8 breathing, at most twice a night. Irregular schedule? Pick your own time, or skip it.
+For the first week Florsent observes when you usually put the phone down at night. Once a pattern is clear, it asks once whether you would like a reminder before that time; if you agree, the time stays fixed. Bedtime reminders ask "Time to wind down?" and lead into 4-7-8 breathing, followed by 30 quiet minutes. Irregular schedule? Pick your own time, or skip it.
 
 ■ A look at your recent days
 Today, the last seven days and your most used apps, with a sentence or two about how things are going, such as "1 h less scrolling than last week." No scores, no rankings.
@@ -289,6 +289,32 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 截圖拍攝提醒：用模擬器拍時，可以照 [TECHNICAL.md](TECHNICAL.md) 的方式放入假資料，讓洞察頁和睡前邀請卡有內容。不要用真實使用者的手機截圖。
 
 ## 版本說明
+
+### 0.11.0（zh-TW）
+
+封閉測試人員已經裝了 0.10.2，所以這裡只寫 0.10.2 之後的改動。
+
+```
+・雨聲音量固定，滑 Reels 時不會一下消失、一下冒出來
+・離開 App 時畫面和雨聲一起慢慢淡出；再打開時從乾淨的畫面慢慢變濃
+・按「回到生活」後會關掉螢幕，可以在設定中關閉
+・睡前每次變淡，都能點進深呼吸
+・提醒的圓點像呼吸燈一樣明暗；打字時提醒會移到上方，也可以上下拖動
+・呼吸的花會跟著吸氣吐氣開合，文字變小了
+・三星等手機開啟無障礙服務的說明更清楚
+```
+
+### 0.11.0（en-US）
+
+```
+• The rain stays at one steady volume while you swipe through Reels
+• Leaving an app fades the screen and rain out gently; coming back, the fade builds up slowly
+• “Back to life” now turns the screen off (you can turn this off in Settings)
+• Every bedtime fade now offers a breathing break
+• The reminder's dot glows like a breathing light, and it moves up while you type
+• The breathing flower opens and closes with each breath, with quieter text
+• Clearer setup steps on Samsung and other phones
+```
 
 ### 0.10.2（zh-TW）
 

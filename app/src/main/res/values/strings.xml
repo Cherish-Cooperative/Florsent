@@ -38,7 +38,7 @@
 
     <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
     <string name="disclosure_title">Accessibility service</string>
-    <string name="disclosure_body">Florsent uses an accessibility service to know which app you\'re using, so it can count time, fade the screen and show reminders. It also keeps 30 days of usage sessions and screen-on times on this phone to learn your rhythm, and you can clear them anytime\n\nIt never reads screen content or anything you type. Your data stays on this phone\n\nNext, turn on “Florsent Gentle Guidance” in the system accessibility settings</string>
+    <string name="disclosure_body">Florsent uses an accessibility service to know which app you\'re using, so it can count time, fade the screen, show reminders and turn the screen off when you tap “Back to life”. It also keeps 30 days of usage sessions and screen-on times on this phone to learn your rhythm, and you can clear them anytime\n\nIt never reads screen content or anything you type. Your data stays on this phone</string>
     <string name="disclosure_accept">Agree and open settings</string>
     <string name="disclosure_decline">Not now</string>
 
@@ -58,7 +58,7 @@
     <string name="settings_fade_sound">Soft rain while fading</string>
     <string name="settings_fade_sound_hint">Other audio gets quieter, never paused</string>
     <string name="settings_cue_hint">A soft chime as you switch breath</string>
-    <string name="settings_return_home">Go to home screen when done</string>
+    <string name="settings_return_home">Turn off the screen after breathing</string>
     <string name="settings_service">Accessibility service</string>
     <string name="settings_service_on">On</string>
     <string name="settings_service_off">Off, tap to open settings</string>
@@ -129,13 +129,16 @@
     <string name="onboarding_does_title">What Florsent does</string>
     <string name="onboarding_does_1">Reads only the name of the app in front</string>
     <string name="onboarding_does_2">Counts time in the apps you watch</string>
-    <string name="onboarding_does_3">Shows the fade and the breathing reminder</string>
+    <string name="onboarding_does_3">Shows the fade and the breathing reminder, and turns the screen off when you tap “Back to life”</string>
     <string name="onboarding_does_4">Keeps 30 days of usage sessions and screen-on times on this phone to learn your rhythm. Clear them anytime</string>
     <string name="onboarding_doesnt_title">What Florsent never does</string>
     <string name="onboarding_doesnt_1">Read text or content on your screen</string>
     <string name="onboarding_doesnt_2">Record anything you type</string>
     <string name="onboarding_doesnt_3">Upload anything. It all stays on this phone</string>
-    <string name="onboarding_enable_hint">Next, turn on “Florsent Gentle Guidance” in the system accessibility settings</string>
+    <string name="enable_steps_samsung">Next, in Accessibility tap “Installed apps” (“Installed services” on some models), choose “Florsent Gentle Guidance” and turn it on. Can\'t find it? Search for Florsent in Settings</string>
+    <string name="enable_steps_generic">Next, find “Florsent Gentle Guidance” in the accessibility settings (usually under “Downloaded apps”), tap it and turn it on. Can\'t find it? Search for Florsent in Settings</string>
+    <string name="enable_restricted_hint">If the switch is grayed out or says “Restricted setting”: open App info, tap ⋮ in the top corner, choose “Allow restricted settings”, then come back and turn it on</string>
+    <string name="enable_open_app_info">Open App info</string>
     <string name="onboarding_service_ready">It\'s on. You\'re all set</string>
     <string name="onboarding_begin">Get started</string>
     <string name="onboarding_next">Next</string>
@@ -149,7 +152,9 @@
     <string name="settings_zen_grayscale_hint">Notifications and calls aren\'t affected. Needs Do Not Disturb access</string>
     <string name="settings_zen_grayscale_lost">Do Not Disturb access was turned off, so the screen only fades</string>
     <string name="zen_access_title">Do Not Disturb access needed</string>
-    <string name="zen_access_body">Florsent only creates a mode called “Florsent gradual grayscale”, which turns the screen grayscale at full fade. It never changes notifications or your other modes\n\nNext, allow Florsent access in system settings</string>
+    <string name="zen_access_body">Florsent only creates a mode called “Florsent gradual grayscale”, which turns the screen grayscale at full fade. It never changes notifications or your other modes</string>
+    <string name="zen_access_steps_samsung">Next, find Florsent in the list and allow it. If a different page opens, search Settings for “Do not disturb”</string>
+    <string name="zen_access_steps_generic">Next, find Florsent in the list and allow it. If a different page opens, search Settings for “Do Not Disturb” or “Modes”</string>
     <string name="zen_access_confirm">Open settings</string>
     <string name="zen_access_cancel">Cancel</string>
     <string name="zen_rule_name">Florsent gradual grayscale</string>
@@ -240,7 +245,7 @@
     <string name="bedtime_status_no_record">Usage isn\'t recorded, but you can pick a time yourself</string>
     <string name="bedtime_current">From %1$s each night, a gentle reminder after %2$d min of scrolling</string>
     <string name="bedtime_current_off">Bedtime guidance is off</string>
-    <string name="bedtime_note">At most two reminders a night</string>
+    <string name="bedtime_note">After breathing, 30 quiet minutes; 7 more minutes of scrolling brings the next reminder</string>
     <string name="bedtime_choose_time">Choose a bedtime</string>
     <string name="bedtime_change_time">Change time</string>
     <string name="bedtime_use_learned">Use your recent rhythm (%s)</string>
@@ -267,5 +272,5 @@
 
     <!-- Accessibility service -->
     <string name="accessibility_service_label">Florsent Gentle Guidance</string>
-    <string name="accessibility_service_description">Only used to know which app you\'re using, so Florsent can count time, fade the screen and show reminders, and keep 30 days of usage sessions and screen-on times on this phone to learn your rhythm. It never reads screen content or what you type, and your data never leaves this phone</string>
+    <string name="accessibility_service_description">Only used to know which app you\'re using, so Florsent can count time, fade the screen, show reminders, turn the screen off when you tap “Back to life”, and keep 30 days of usage sessions and screen-on times on this phone to learn your rhythm. It never reads screen content or what you type, and your data never leaves this phone</string>
 </resources>

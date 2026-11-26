@@ -151,6 +151,7 @@ class GuidanceCoordinator(
         foregroundPackage = null,
         screenOn = true,
         lastTickAtMs = null,
+        countingSinceMs = null,
         previewStartedAtMs = null,
         breathingFromPreview = false,
     )

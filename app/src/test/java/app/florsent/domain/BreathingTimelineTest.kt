@@ -41,11 +41,18 @@ class BreathingTimelineTest {
     @Test
     fun `expansion opens on inhale, stays during hold and closes on exhale`() {
         assertEquals(0f, BreathingTimeline.expansionAt(equal, 0), 0.0001f)
-        assertEquals(0.5f, BreathingTimeline.expansionAt(equal, 2_000), 0.0001f)
+        assertTrue("past halfway by mid-inhale", BreathingTimeline.expansionAt(equal, 2_000) > 0.55f)
         assertEquals(1f, BreathingTimeline.expansionAt(equal, 4_000), 0.0001f)
         assertEquals(1f, BreathingTimeline.expansionAt(equal, 7_999), 0.0001f)
-        assertEquals(0.5f, BreathingTimeline.expansionAt(equal, 10_000), 0.0001f)
+        assertTrue("past halfway closed by mid-exhale", BreathingTimeline.expansionAt(equal, 10_000) < 0.45f)
         assertEquals("next cycle starts closed", 0f, BreathingTimeline.expansionAt(equal, 12_000), 0.0001f)
+    }
+
+    @Test
+    fun `the flower answers the moment a phase begins`() {
+        // 0.4 s into a 4 s inhale or exhale it has already moved a tenth of the way.
+        assertTrue(BreathingTimeline.expansionAt(equal, 400) > 0.09f)
+        assertTrue(BreathingTimeline.expansionAt(equal, 8_400) < 0.91f)
     }
 
     @Test

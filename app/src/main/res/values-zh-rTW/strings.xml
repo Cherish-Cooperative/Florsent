@@ -34,7 +34,7 @@
 
     <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
     <string name="disclosure_title">使用無障礙服務</string>
-    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除\n\n不讀取畫面內容和你輸入的文字，資料只存在這支手機上\n\n接著請在系統的無障礙設定中開啟「Florsent 漸進引導」</string>
+    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化和提醒、在你按下「回到生活」時關掉螢幕，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除\n\n不讀取畫面內容和你輸入的文字，資料只存在這支手機上</string>
     <string name="disclosure_accept">同意，前往設定</string>
     <string name="disclosure_decline">暫時不要</string>
 
@@ -54,7 +54,7 @@
     <string name="settings_fade_sound">變淡時播放柔和雨聲</string>
     <string name="settings_fade_sound_hint">其他聲音會暫時變小，不會被暫停</string>
     <string name="settings_cue_hint">換氣時輕響一聲</string>
-    <string name="settings_return_home">完成後回到手機桌面</string>
+    <string name="settings_return_home">呼吸完關掉螢幕</string>
     <string name="settings_service">無障礙服務</string>
     <string name="settings_service_on">已開啟</string>
     <string name="settings_service_off">未開啟，輕觸前往設定</string>
@@ -124,13 +124,16 @@
     <string name="onboarding_does_title">Florsent 會做的事</string>
     <string name="onboarding_does_1">只讀取目前在前景的 App 名稱</string>
     <string name="onboarding_does_2">計算留意的 App 用了多久</string>
-    <string name="onboarding_does_3">在畫面上顯示淡化效果和呼吸提醒</string>
+    <string name="onboarding_does_3">在畫面上顯示淡化效果和呼吸提醒，按下「回到生活」時幫你關掉螢幕</string>
     <string name="onboarding_does_4">在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除</string>
     <string name="onboarding_doesnt_title">Florsent 不會做的事</string>
     <string name="onboarding_doesnt_1">不讀取畫面上的文字和內容</string>
     <string name="onboarding_doesnt_2">不記錄你輸入的任何東西</string>
     <string name="onboarding_doesnt_3">不上傳任何資料，只存在這支手機上</string>
-    <string name="onboarding_enable_hint">接著在系統的無障礙設定中開啟「Florsent 漸進引導」</string>
+    <string name="enable_steps_samsung">接著在「協助工具」裡點「已安裝的應用程式」（有些機型叫「已安裝的服務」），選「Florsent 漸進引導」並開啟。找不到的話，在設定上方的搜尋欄輸入 Florsent</string>
+    <string name="enable_steps_generic">接著在無障礙設定裡找到「Florsent 漸進引導」（通常在「已下載的應用程式」底下），點進去開啟。找不到的話，在設定上方的搜尋欄輸入 Florsent</string>
+    <string name="enable_restricted_hint">如果開關是灰色的，或出現「受限制的設定」：先到 App 資訊，點右上角的 ⋮ 選「允許受限制的設定」，再回來開啟</string>
+    <string name="enable_open_app_info">開啟 App 資訊</string>
     <string name="onboarding_service_ready">已經開啟，一切就緒</string>
     <string name="onboarding_begin">開始</string>
     <string name="onboarding_next">下一步</string>
@@ -144,7 +147,9 @@
     <string name="settings_zen_grayscale_hint">不影響通知和鈴聲，需要零打擾存取權</string>
     <string name="settings_zen_grayscale_lost">零打擾存取權已關閉，目前只會變淡</string>
     <string name="zen_access_title">需要「零打擾」存取權</string>
-    <string name="zen_access_body">Florsent 只會建立「Florsent 漸進灰階」模式，淡到底時把畫面切成黑白，不更動通知或其他模式\n\n接著請在系統設定中允許 Florsent 存取</string>
+    <string name="zen_access_body">Florsent 只會建立「Florsent 漸進灰階」模式，淡到底時把畫面切成黑白，不更動通知或其他模式</string>
+    <string name="zen_access_steps_samsung">接著在清單裡找到 Florsent 並允許。打開的不是清單的話，在設定上方的搜尋欄輸入「勿擾」找找看</string>
+    <string name="zen_access_steps_generic">接著在清單裡找到 Florsent 並允許。打開的不是清單的話，在設定上方的搜尋欄輸入「零打擾」找找看</string>
     <string name="zen_access_confirm">前往設定</string>
     <string name="zen_access_cancel">取消</string>
     <string name="zen_rule_name">Florsent 漸進灰階</string>
@@ -234,7 +239,7 @@
     <string name="bedtime_status_no_record">沒有記錄使用時段，可以自己選時間</string>
     <string name="bedtime_current">每晚 %1$s 起，累計滑 %2$d 分鐘會提醒你休息</string>
     <string name="bedtime_current_off">睡前引導未開啟</string>
-    <string name="bedtime_note">每晚最多提醒兩次</string>
+    <string name="bedtime_note">呼吸完會安靜 30 分鐘，之後再滑 7 分鐘就會再提醒</string>
     <string name="bedtime_choose_time">選擇想睡的時間</string>
     <string name="bedtime_change_time">更改時間</string>
     <string name="bedtime_use_learned">改用最近的作息（%s）</string>
@@ -261,5 +266,5 @@
 
     <!-- Accessibility service -->
     <string name="accessibility_service_label">Florsent 漸進引導</string>
-    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計時、顯示淡化和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息。不讀取畫面內容或你輸入的文字，資料不會離開這支手機</string>
+    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計時、顯示淡化和提醒、在你按下「回到生活」時關掉螢幕，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息。不讀取畫面內容或你輸入的文字，資料不會離開這支手機</string>
 </resources>

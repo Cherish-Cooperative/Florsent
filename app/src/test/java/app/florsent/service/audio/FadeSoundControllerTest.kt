@@ -54,13 +54,13 @@ class FadeSoundControllerTest {
     private fun level(l: Float) = controller.render(VisualEffect(l, "com.google.android.youtube"))
 
     @Test
-    fun `starts once when the fade begins, rising over 15 seconds, and fades out in 1_5 seconds`() {
+    fun `starts once when the fade begins, rising over 15 seconds, and fades out in 2 seconds`() {
         level(0f)
         level(0.01f)
         level(0.2f)
         level(0.9f)
         level(0f)
-        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+        assertEquals(listOf("start(15000)", "stop(2000)"), player.calls)
     }
 
     @Test
@@ -71,7 +71,7 @@ class FadeSoundControllerTest {
         // A later, ordinary exit uses the short fade again.
         level(0.4f)
         level(0f)
-        assertEquals(listOf("start(15000)", "stop(3500)", "start(15000)", "stop(1500)"), player.calls)
+        assertEquals(listOf("start(15000)", "stop(3500)", "start(15000)", "stop(2000)"), player.calls)
     }
 
     @Test
@@ -79,7 +79,7 @@ class FadeSoundControllerTest {
         controller.handOffToBreathing()
         level(0.3f)
         level(0f)
-        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+        assertEquals(listOf("start(15000)", "stop(2000)"), player.calls)
     }
 
     @Test
@@ -94,7 +94,7 @@ class FadeSoundControllerTest {
         level(0.3f)
         enabled = false
         level(0.3f)
-        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+        assertEquals(listOf("start(15000)", "stop(2000)"), player.calls)
     }
 
     @Test
@@ -107,24 +107,24 @@ class FadeSoundControllerTest {
         level(0.5f)
         inCall = true
         level(0.6f)
-        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+        assertEquals(listOf("start(15000)", "stop(2000)"), player.calls)
     }
 
     @Test
-    fun `a new Reel taking focus is answered by asking again after a short cooldown`() {
+    fun `a new Reel taking focus is answered by asking again within a quarter second`() {
         level(0.3f)
         advance(5_000)
         controller.onFocusLost() // the next Reel starts playing
-        advance(1_100)
+        advance(200)
         assertEquals("still in the cooldown", listOf("start(15000)"), player.calls)
-        advance(100)
+        advance(50)
         assertEquals("focus requested again, ducking the Reel", listOf("start(15000)", "reclaim"), player.calls)
 
         // Every swipe takes focus again; each one is answered the same way, the rain never stops.
         repeat(3) {
             advance(6_000)
             controller.onFocusLost()
-            advance(1_200)
+            advance(250)
         }
         assertEquals(listOf("start(15000)") + List(4) { "reclaim" }, player.calls)
     }
@@ -135,16 +135,16 @@ class FadeSoundControllerTest {
         advance(5_000)
         repeat(10) {
             controller.onFocusLost()
-            advance(50)
+            advance(20)
         }
         assertTrue(controller.isReclaimPending)
-        advance(2_000)
+        advance(50)
         assertEquals(listOf("start(15000)", "reclaim"), player.calls)
         assertFalse(controller.isReclaimPending)
     }
 
     @Test
-    fun `an app that grabs focus right back gets slower answers, then the rain gives up for this fade`() {
+    fun `an app that grabs focus right back gets slower answers, then the rain stops asking but plays on`() {
         level(0.3f)
         advance(5_000)
         val lostAt = mutableListOf<Long>()
@@ -158,15 +158,23 @@ class FadeSoundControllerTest {
             controller.onFocusLost()
         }
         val cooldowns = player.reclaimedAt.zip(lostAt) { reclaim, lost -> reclaim - lost }
-        assertEquals("1.2 s, then doubling, capped", listOf(1_200L, 2_400L, 4_800L, 9_600L, 9_600L), cooldowns)
-        assertEquals("gave up with the usual fade-out", "stop(1500)", player.calls.last())
+        assertEquals("0.25 s, then doubling, capped", listOf(250L, 500L, 1_000L, 2_000L, 4_000L), cooldowns)
+        assertFalse("the rain keeps its level", player.calls.any { it.startsWith("stop") })
 
-        // Stays quiet for the rest of the fade, plays again on the next one.
+        // No more requests for the rest of the fade, however many losses arrive.
+        controller.onFocusLost()
+        advance(30_000)
+        assertEquals(5, player.calls.count { it == "reclaim" })
         level(0.6f)
         assertEquals(1, player.calls.count { it.startsWith("start") })
+
+        // The next fade asks again.
         level(0f)
         level(0.1f)
-        assertEquals(2, player.calls.count { it.startsWith("start") })
+        advance(5_000)
+        controller.onFocusLost()
+        advance(250)
+        assertEquals(6, player.calls.count { it == "reclaim" })
     }
 
     @Test
@@ -175,9 +183,9 @@ class FadeSoundControllerTest {
         advance(5_000)
         player.grantReclaim = false
         controller.onFocusLost()
-        advance(1_200)
+        advance(250)
         assertEquals(listOf("start(15000)", "reclaim"), player.calls)
-        advance(2_399)
+        advance(499)
         assertEquals("waits the doubled cooldown", 1, player.calls.count { it == "reclaim" })
         player.grantReclaim = true
         advance(1)
@@ -195,7 +203,7 @@ class FadeSoundControllerTest {
         advance(30_000)
         inCall = false
         level(0.5f)
-        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+        assertEquals(listOf("start(15000)", "stop(2000)"), player.calls)
     }
 
     @Test
@@ -204,8 +212,8 @@ class FadeSoundControllerTest {
         advance(5_000)
         controller.onFocusLost()
         inCall = true
-        advance(1_200)
-        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+        advance(250)
+        assertEquals(listOf("start(15000)", "stop(2000)"), player.calls)
     }
 
     @Test
@@ -215,7 +223,7 @@ class FadeSoundControllerTest {
         controller.onFocusLost()
         level(0f) // left the app
         advance(5_000)
-        assertEquals(listOf("start(15000)", "stop(1500)"), player.calls)
+        assertEquals(listOf("start(15000)", "stop(2000)"), player.calls)
 
         level(0.3f)
         advance(5_000)
@@ -224,7 +232,7 @@ class FadeSoundControllerTest {
         controller.onFocusLost() // the breathing screen takes focus during the hand-off
         level(0f)
         advance(5_000)
-        assertEquals(listOf("start(15000)", "stop(1500)", "start(15000)", "stop(3500)"), player.calls)
+        assertEquals(listOf("start(15000)", "stop(2000)", "start(15000)", "stop(3500)"), player.calls)
     }
 
     @Test
@@ -232,7 +240,7 @@ class FadeSoundControllerTest {
         level(0.3f)
         advance(5_000)
         controller.onFocusLost()
-        advance(500)
+        advance(100)
         controller.onFocusGained()
         advance(5_000)
         assertEquals(listOf("start(15000)"), player.calls)

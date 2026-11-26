@@ -311,8 +311,9 @@ private fun BreathingSession(
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.safeDrawing),
     ) {
-        // Fits the flower to the space (landscape, small phones, large fonts); scrolls as a last resort.
-        val flowerSize = (maxHeight * 0.38f).coerceAtMost(300.dp)
+        // The flower carries the rhythm, so it gets most of the space; the words stay quiet beneath it.
+        // Fits small phones, landscape and large fonts; scrolls as a last resort.
+        val flowerSize = (maxHeight * 0.46f).coerceAtMost(340.dp)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -332,14 +333,15 @@ private fun BreathingSession(
                         BreathingTimeline.expansionAt(pattern, clock.longValue)
                     }
                 },
-                // Petal drift runs on breathing time only, so the flower is completely still while holding.
-                timeSeconds = { if (reducedMotion) 0f else BreathingTimeline.movingMsAt(pattern, clock.longValue) / 1000f },
+                // The petals keep turning through holds (a still screen read as frozen); only opening
+                // and closing follow the breath, and the progress ring still pauses while holding.
+                timeSeconds = { if (reducedMotion) 0f else clock.longValue / 1000f },
                 progress = { BreathingTimeline.sessionProgress(pattern, clock.longValue) },
                 modifier = Modifier.size(flowerSize),
             )
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(28.dp))
             PhaseLabel(display.kind)
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             SessionCounters(display, pattern.cycles)
             Spacer(Modifier.weight(1f))
             TextButton(
@@ -366,13 +368,13 @@ private fun SessionCounters(display: BreathDisplay, cycles: Int) {
     ) {
         Text(
             if (display.finished) "" else "${display.secondsLeft}",
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         Text(
             stringResource(R.string.breathe_cycle, display.cycleIndex + 1, cycles),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
@@ -393,9 +395,11 @@ private fun PhaseLabel(kind: BreathPhaseKind) {
             label = "phase",
             modifier = Modifier.clearAndSetSemantics {},
         ) { phase ->
+            // A quiet caption: the flower already shows the breath, the word only confirms it.
             Text(
                 stringResource(phaseLabel(phase)),
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
         }
