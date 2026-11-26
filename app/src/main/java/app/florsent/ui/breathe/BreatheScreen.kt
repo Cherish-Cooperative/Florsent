@@ -333,8 +333,9 @@ private fun BreathingSession(
                         BreathingTimeline.expansionAt(pattern, clock.longValue)
                     }
                 },
-                // Petal drift runs on breathing time only, so the flower is completely still while holding.
-                timeSeconds = { if (reducedMotion) 0f else BreathingTimeline.movingMsAt(pattern, clock.longValue) / 1000f },
+                // The petals keep turning through holds (a still screen read as frozen); only opening
+                // and closing follow the breath, and the progress ring still pauses while holding.
+                timeSeconds = { if (reducedMotion) 0f else clock.longValue / 1000f },
                 progress = { BreathingTimeline.sessionProgress(pattern, clock.longValue) },
                 modifier = Modifier.size(flowerSize),
             )

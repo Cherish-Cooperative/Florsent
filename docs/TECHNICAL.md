@@ -305,8 +305,8 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 共振呼吸 `resonance_55` | 5.5・5.5 | 7 | 1:17 |
 
 - `BreathingTimeline` 是純函式：`expansionAt()`（逐幀、零配置，用 index 迴圈）、`displayAt()`（每秒變一次）、`movingMsAt()`、`sessionProgress()`、`idleExpansion()`。展開程度用 ease-in-out sine，在階段交界連續。
-- **閉氣時整個畫面停住**：花瓣的旋轉與微晃、進度環都用 `movingMsAt()`（扣掉所有閉氣與停頓時間的經過時間）驅動，展開程度在閉氣時本來就固定，所以閉氣期間花朵與進度環的像素完全不變，只有倒數數字在走。使用者跟著畫面一起停。
-- `BreathingFlower`：三層花瓣（8、8、5 片）、光暈、花心微光、進度環。花會像真的花一樣開合：每片花瓣是從上方看的平面花瓣，張開時從直立（短、窄、略為旋轉的花苞）倒向平放，看到的長度照 sin(傾角) 變化；三層依序開始，吸氣時由外往內綻放，吐氣時由內往外收回。直立的花瓣顏色深一點，像翻過來的花瓣背面。吸氣、吐氣的文字縮成小字說明，花放大到畫面高度的 46%，讓動畫本身帶節奏。路徑、漸層、筆觸都在 `drawWithCache` 建好；動畫數值只在 draw lambda 裡讀取，所以每一幀只重畫、不重組。
+- **閉氣時花瓣照樣慢慢轉，但不縮放**：花瓣的旋轉和微晃用實際經過時間驅動，閉氣時也繼續轉（以前整個畫面停住，看起來像當掉）。開合只跟展開程度走，閉氣時展開程度固定，所以花不會變大變小。進度環仍用 `movingMsAt()`（扣掉閉氣與停頓的時間），閉氣時停住。
+- `BreathingFlower`：三層花瓣（8、8、5 片）、光暈、花心微光、進度環。花會像真的花一樣開合：每片花瓣是從上方看的平面花瓣，張開時從較短、較窄、略為旋轉的花苞平放到全長；三層從呼吸一開始就一起動，外層領先、內層跟上（展開程度的 0.75、1.15、1.6 次方），所以吸氣時由外往內綻放、吐氣時由內往外收回，沒有「等門檻」的空檔。展開曲線用 `breathEase`（0.65 × easeOutSine + 0.35 × easeInOutSine）：每段吸氣、吐氣第一幀就開始動，結尾再柔柔停住。以前用純 easeInOutSine 加各層門檻，吐氣開始後約三分之一外層花瓣才開始縮，看起來慢半拍。直立的花瓣顏色深一點，像翻過來的花瓣背面。收到最小時是全長的 0.58，以前縮到三分之一時會擠成一團八角形，看不出花瓣。吸氣、吐氣的文字縮成小字說明，花放大到畫面高度的 46%，讓動畫本身帶節奏。路徑、漸層、筆觸都在 `drawWithCache` 建好；動畫數值只在 draw lambda 裡讀取，所以每一幀只重畫、不重組。
 - `rememberFrameClock`：以 `withFrameNanos` 累積時間；`rememberSaveable`，旋轉螢幕後接續；超過 250 ms 的間隔（App 在背景）只算一個標準幀，所以會暫停而不是跳過；閒置的花限制在約 30 fps。
 - 換階段時輕微震動（API 34+ `SEGMENT_TICK`，否則 `CLOCK_TICK`）；提示音只在設定開啟時播放，並在選擇頁預先載入。
 - 環境音在 App 進入背景時暫停並釋放音訊焦點；音效引擎延遲到真的需要時才建立。
@@ -410,7 +410,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 測試 | 涵蓋 |
 |---|---|
 | `GuidanceEngineTest`（27） | 額度、淡化、提醒、呼吸、安靜時間、預覽、跨日、時鐘保護、tick 排程 |
-| `BreathingTimelineTest`（12） | 四種呼吸法、展開連續性、倒數、結束、閉氣時停住 |
+| `BreathingTimelineTest`（12） | 四種呼吸法、展開連續性、倒數、結束、閉氣時進度環停住 |
 | `ForegroundPolicyTest`（5） | 系統介面、輸入法、自己的 overlay、點提醒後的延遲事件、沒有 USER_PRESENT 也能辨認解鎖 |
 | `ScreenUnlockRegressionTest`（1） | 重現 Android 17 實機：鎖過一次後不再計時，以及視窗事件回報解鎖後恢復 |
 | `SocialAppMatcherTest`（5） | 停用的官方 App 不勾選、依名稱找到修改版、既有清單修復只補使用者選過的品牌、排除非動態 App |
@@ -481,7 +481,7 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 | 頌缽＋提示音（v0.10.0） | 等長呼吸完整 72 秒：提示音 18 次、重複 0 次、間隔 4.0 秒；第 48 秒 `MEDIA_INFO_STARTED_AS_NEXT` 無縫接手；兩條播放軌同在大緩衝輸出（HAL frame 1920），欠載全程 0 |
 | 背景雨聲（Android 17） | 預覽全程 `started`、`muted=none`、焦點 `GAIN_TRANSIENT_MAY_DUCK`，無 AudioHardening 紀錄；系統記錄 ducking 了正在播的影片 App；淡出 1.5 秒；點提醒後與呼吸環境音重疊約 3.2 秒 |
 | 計時（v0.10.1 前） | 鎖過一次螢幕後完全不計時：`SCREEN_ON`／`SCREEN_OFF` 有送達，44 次 `USER_PRESENT` 一次都沒送到 Florsent；YouTube 實際用的是 `app.morphe.android.youtube`，官方 YouTube 已停用 |
-| 閉氣時停住 | 盒式呼吸：吸氣後閉氣 5 張、吐氣後停頓 6 張連續截圖的花朵與進度環像素完全相同 |
+| 閉氣時停住（v0.10.2；之後改成花瓣照轉、只有開合與進度環停住） | 盒式呼吸：吸氣後閉氣 5 張、吐氣後停頓 6 張連續截圖的花朵與進度環像素完全相同 |
 | 環境音 | 練習中 `MediaPlayer` started；按 Home 變 paused、交還音訊焦點；回來恢復；離開練習後釋放 |
 | Zen 灰階收尾 | 需要使用者授予零打擾存取權後再驗證 |
 | Shizuku 第三層 | 實機未安裝 Shizuku，未驗證 |
