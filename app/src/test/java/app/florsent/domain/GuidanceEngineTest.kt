@@ -111,6 +111,8 @@ class GuidanceEngineTest {
         h.advance(2 * MIN)
         h.open(social)
         assertEquals("under the 3 min gap: progress kept", over, h.state.overBudgetMs)
+        assertEquals("but the screen starts clear", 0f, h.effect.level, 0f)
+        h.advance(8_000)
         assertTrue(h.effect.level > 0f)
 
         h.open(other)
@@ -180,7 +182,46 @@ class GuidanceEngineTest {
         h.open(social)
 
         assertEquals(GuidanceMode.Tracking, h.state.mode)
-        assertEquals(level, h.effect.level, 0.0001f)
+        assertEquals("builds up again from a clear screen", 0f, h.effect.level, 0f)
+        h.advance(8_000)
+        assertTrue("back where it was (plus the 8 s of use)", h.effect.level >= level)
+    }
+
+    @Test
+    fun `reopening a watched app builds the fade up from nothing over eight seconds, then the nudge`() {
+        val h = Harness()
+        h.open(social)
+        h.advance(11 * MIN + 30_000) // well past the nudge point
+        val before = h.effect
+        assertTrue(before.showNudge)
+
+        h.open(other)
+        h.advance(20_000)
+        assertEquals(GuidanceEffect.None, h.effect)
+
+        h.open(social)
+        val levels = (0..8).map { second ->
+            if (second > 0) h.advance(1_000)
+            h.effect
+        }
+        assertEquals("clear at first", 0f, levels.first().level, 0f)
+        levels.zipWithNext { a, b -> assertTrue("only rises", b.level > a.level) }
+        assertTrue("no jump: under a third after two seconds", levels[2].level < before.level / 3f)
+        assertTrue("at least the old level after eight", levels[8].level >= before.level)
+        assertFalse("the nudge waits for the build-up", levels[7].showNudge)
+        assertTrue(levels[8].showNudge)
+        assertEquals("ticks every second while building up", 1_000L, h.engine.nextTickDelayMs(h.state, h.config, h.now))
+    }
+
+    @Test
+    fun `switching between two watched apps does not restart the build-up`() {
+        val second = "com.facebook.katana"
+        val h = Harness(cfg = config.copy(watchedPackages = setOf(social, second)))
+        h.open(social)
+        h.advance(11 * MIN)
+        val level = h.effect.level
+        h.open(second)
+        assertTrue(h.effect.level >= level)
     }
 
     @Test

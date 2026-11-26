@@ -64,6 +64,8 @@ import app.florsent.ui.breathe.BreathingFlower
 import app.florsent.ui.breathe.rememberFrameClock
 import app.florsent.ui.breathe.rememberReducedMotion
 import app.florsent.ui.components.SoftCard
+import app.florsent.ui.components.RestrictedSettingsHint
+import app.florsent.ui.components.accessibilitySteps
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -315,10 +317,11 @@ private fun DisclosurePage(serviceRunning: Boolean) {
         )
         Spacer(Modifier.height(20.dp))
         Text(
-            stringResource(if (serviceRunning) R.string.onboarding_service_ready else R.string.onboarding_enable_hint),
+            if (serviceRunning) stringResource(R.string.onboarding_service_ready) else accessibilitySteps(),
             style = MaterialTheme.typography.bodyMedium,
             color = if (serviceRunning) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        if (!serviceRunning) RestrictedSettingsHint(Modifier.padding(top = 12.dp))
         Spacer(Modifier.height(16.dp))
     }
 }

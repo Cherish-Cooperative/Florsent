@@ -22,9 +22,8 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlin.math.PI
 import kotlin.math.sin
-
-private const val PETALS = 6
 
 @Immutable
 private data class FlowerColors(
@@ -66,8 +65,45 @@ private fun ColorScheme.flowerColors(): FlowerColors {
     }
 }
 
+/** One ring of petals; rings open from the outside in and close from the inside out. */
+private class PetalRing(
+    val count: Int,
+    /** Petal length and width as fractions of the flower radius, fully open. */
+    val length: Float,
+    val width: Float,
+    /** Expansion at which this ring starts to open; inner rings follow the outer ones. */
+    val opensAt: Float,
+    /** Angle offset so the rings interleave. */
+    val offsetDeg: Float,
+    /** Bud twist (degrees, signed) when closed, so a closed ring spirals like a bud. */
+    val budTwistDeg: Float,
+    /** How narrow a closed petal looks (it curls inward), 1 = no change. */
+    val budWidth: Float,
+    val driftFactor: Float,
+    val wobblePhase: Float,
+)
+
+private val RINGS = arrayOf(
+    PetalRing(count = 8, length = 0.84f, width = 0.34f, opensAt = 0.00f, offsetDeg = 0f, budTwistDeg = 26f, budWidth = 0.62f, driftFactor = 1f, wobblePhase = 0f),
+    PetalRing(count = 8, length = 0.64f, width = 0.28f, opensAt = 0.14f, offsetDeg = 22.5f, budTwistDeg = -32f, budWidth = 0.58f, driftFactor = -0.6f, wobblePhase = 1f),
+    PetalRing(count = 5, length = 0.42f, width = 0.22f, opensAt = 0.30f, offsetDeg = 36f, budTwistDeg = 40f, budWidth = 0.55f, driftFactor = 0.4f, wobblePhase = 2f),
+)
+
+/** Width of the expansion range over which one ring goes from closed to open. */
+private const val RING_SPAN = 0.70f
+
+/** Tilt of a petal away from upright, in radians: closed petals stand up, open ones lie flat. */
+private const val BUD_TILT = 0.30f
+private const val OPEN_TILT = (PI / 2).toFloat()
+
 /**
- * Organic two-ring flower with a glow, drawn entirely in the draw phase.
+ * A flower that opens and closes with the breath, drawn entirely in the draw phase.
+ *
+ * Each petal is a flat teardrop seen from above. Opening tilts it from upright (a short, narrow,
+ * slightly twisted sliver: the bud) down to flat (its full length), so the projected length follows
+ * sin(tilt). Rings start one after another, outer first, so breathing in unfurls the flower from the
+ * outside in, and breathing out folds it back from the inside out, the way a real bloom moves. The
+ * underside of a standing petal is a shade deeper, which reads as a petal turning towards the light.
  *
  * Performance contract: [expansion], [timeSeconds] and [progress] are lambdas read only inside
  * `onDrawBehind`, so a changing animation clock invalidates drawing but never recomposition. Paths,
@@ -92,8 +128,7 @@ fun BreathingFlower(
         modifier.drawWithCache {
             val r = size.minDimension / 2f
             val c = Offset(size.width / 2f, size.height / 2f)
-            val outerPetal = petalPath(c, length = r * 0.80f, width = r * 0.36f)
-            val innerPetal = petalPath(c, length = r * 0.54f, width = r * 0.25f)
+            val petals = Array(RINGS.size) { k -> petalPath(c, length = r * RINGS[k].length, width = r * RINGS[k].width) }
             val halo = Brush.radialGradient(
                 0f to colors.halo.copy(alpha = 0.26f),
                 0.5f to colors.halo.copy(alpha = 0.10f),
@@ -101,11 +136,16 @@ fun BreathingFlower(
                 center = c,
                 radius = r,
             )
-            val outerBrush = Brush.radialGradient(
-                0f to colors.outerCenter, 1f to colors.outerEdge, center = c, radius = r * 0.82f,
+            // Face of the petal (open) and its underside (standing up): one brush per ring each.
+            val faces = arrayOf(
+                Brush.radialGradient(0f to colors.outerCenter, 1f to colors.outerEdge, center = c, radius = r * 0.86f),
+                Brush.radialGradient(0f to colors.innerCenter, 1f to colors.outerCenter, center = c, radius = r * 0.66f),
+                Brush.radialGradient(0f to colors.innerCenter, 1f to colors.innerEdge, center = c, radius = r * 0.44f),
             )
-            val innerBrush = Brush.radialGradient(
-                0f to colors.innerCenter, 1f to colors.innerEdge, center = c, radius = r * 0.56f,
+            val undersides = arrayOf(
+                Brush.radialGradient(0f to colors.innerCenter, 1f to colors.outerCenter, center = c, radius = r * 0.5f),
+                Brush.radialGradient(0f to colors.innerCenter, 1f to colors.innerCenter, center = c, radius = r * 0.4f),
+                Brush.radialGradient(0f to colors.innerCenter, 1f to colors.innerCenter, center = c, radius = r * 0.3f),
             )
             val coreBrush = Brush.radialGradient(
                 0f to colors.core, 0.6f to colors.core.copy(alpha = colors.core.alpha * 0.4f),
@@ -120,7 +160,7 @@ fun BreathingFlower(
                 val e = expansion().coerceIn(0f, 1f)
                 val t = timeSeconds()
 
-                scale(0.68f + 0.32f * e, c) { drawCircle(halo, radius = r, center = c) }
+                scale(0.60f + 0.40f * e, c) { drawCircle(halo, radius = r, center = c) }
 
                 val p = progress()
                 if (p >= 0f) {
@@ -133,33 +173,40 @@ fun BreathingFlower(
                     }
                 }
 
-                val drift = t * 3.5f
-                val outerLength = 0.52f + 0.48f * e
-                val outerWidth = 0.78f + 0.27f * e
-                for (i in 0 until PETALS) {
-                    val wobble = sin(t * 0.7f + i * 1.7f)
-                    val angle = i * (360f / PETALS) + drift + wobble * 2.5f
-                    withTransform({
-                        rotate(angle, c)
-                        scale(outerWidth * (1f + 0.05f * wobble), outerLength, c)
-                    }) { drawPath(outerPetal, outerBrush) }
+                val drift = t * 2.5f
+                for (k in RINGS.indices) {
+                    val ring = RINGS[k]
+                    val open = ringOpenness(e, ring.opensAt)
+                    val tilt = BUD_TILT + (OPEN_TILT - BUD_TILT) * open
+                    val lengthScale = sin(tilt)
+                    val widthScale = ring.budWidth + (1f - ring.budWidth) * open
+                    val twist = ring.budTwistDeg * (1f - open)
+                    val step = 360f / ring.count
+                    for (i in 0 until ring.count) {
+                        val wobble = sin(t * 0.8f + i * 1.9f + ring.wobblePhase)
+                        val angle = ring.offsetDeg + i * step + drift * ring.driftFactor + twist + wobble * 2f
+                        withTransform({
+                            rotate(angle, c)
+                            scale(widthScale * (1f + 0.04f * wobble), lengthScale, c)
+                        }) {
+                            drawPath(petals[k], undersides[k], alpha = 0.85f * (1f - open))
+                            drawPath(petals[k], faces[k], alpha = 0.35f + 0.65f * open)
+                        }
+                    }
                 }
 
-                val innerLength = 0.60f + 0.40f * e
-                val innerWidth = 0.84f + 0.20f * e
-                for (i in 0 until PETALS) {
-                    val wobble = sin(t * 0.9f + i * 2.3f + 1f)
-                    val angle = i * (360f / PETALS) + 180f / PETALS - drift * 0.6f + wobble * 2f
-                    withTransform({
-                        rotate(angle, c)
-                        scale(innerWidth * (1f + 0.06f * wobble), innerLength, c)
-                    }) { drawPath(innerPetal, innerBrush) }
-                }
-
-                scale(0.85f + 0.30f * e, c) { drawCircle(coreBrush, radius = r * 0.24f, center = c) }
+                // The heart of the flower shows as the inner petals part.
+                val heart = ringOpenness(e, RINGS.last().opensAt)
+                scale(0.55f + 0.55f * heart, c) { drawCircle(coreBrush, radius = r * 0.24f, center = c) }
             }
         },
     )
+}
+
+/** 0..1 openness of a ring that starts opening at [opensAt]; eased so each ring settles softly. */
+private fun ringOpenness(expansion: Float, opensAt: Float): Float {
+    val x = ((expansion - opensAt) / RING_SPAN).coerceIn(0f, 1f)
+    return x * x * (3f - 2f * x)
 }
 
 /** Teardrop petal from the center pointing up; transforms place and size it. */

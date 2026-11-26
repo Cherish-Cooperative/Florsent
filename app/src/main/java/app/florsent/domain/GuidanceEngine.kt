@@ -57,8 +57,11 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
             is PreviewStopped -> s.copy(previewStartedAtMs = null)
         }
 
-        if (!wasCounting && s.isCounting(config)) {
-            s = s.resetSessionIfStale(now, config).copy(lastWatchedAtMs = now)
+        val counting = s.isCounting(config)
+        if (!wasCounting && counting) {
+            s = s.resetSessionIfStale(now, config).copy(lastWatchedAtMs = now, countingSinceMs = now)
+        } else if (!counting && s.countingSinceMs != null) {
+            s = s.copy(countingSinceMs = null)
         }
         return s
     }
@@ -79,10 +82,10 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
             return GuidanceEffect.None
         }
         val progress = fadeProgress(state, config)
+        val entry = entryRamp(state, config, nowMs)
         return GuidanceEffect(
-            level = Easing.smoothstep(progress),
-            showNudge = progress >= config.nudgeAtProgress && nowMs >= state.nudgeSnoozedUntilMs &&
-                !state.nudgeSuppressed,
+            level = Easing.smoothstep(progress) * entry,
+            showNudge = entry >= 1f && progress >= config.nudgeAtProgress && nowMs >= state.nudgeSnoozedUntilMs,
             targetPackage = state.foregroundPackage,
             isPreview = false,
             context = state.context,
@@ -131,7 +134,7 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
                     } ?: Long.MAX_VALUE
                     minOf(toSession, toDaily, toBedtime)
                 }
-                fadeProgress(state, config) < 1f -> return FAST_TICK_MS
+                fadeProgress(state, config) < 1f || entryRamp(state, config, nowMs) < 1f -> return FAST_TICK_MS
                 nowMs < state.nudgeSnoozedUntilMs -> state.nudgeSnoozedUntilMs - nowMs
                 else -> config.maxTickIntervalMs
             }
@@ -144,6 +147,17 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
         GuidanceMode.Breathing -> !state.breathingFromPreview
         GuidanceMode.Tracking -> state.overBudgetMs > 0
         GuidanceMode.Cooldown -> false
+    }
+
+    /**
+     * 0..1 build-up since the watched app came back to the front. Leaving the app clears the screen,
+     * so coming back starts from a clear screen too and the accumulated level returns over
+     * [GuidanceConfig.entryRampMs] rather than appearing at once. 1 when the time is unknown.
+     */
+    fun entryRamp(state: GuidanceState, config: GuidanceConfig, nowMs: Long): Float {
+        val since = state.countingSinceMs ?: return 1f
+        if (config.entryRampMs <= 0) return 1f
+        return Easing.smoothstep((nowMs - since).toFloat() / config.entryRampMs)
     }
 
     fun dailyUsedMs(state: GuidanceState, nowMs: Long): Long =
@@ -207,16 +221,15 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
         return if (overBudgetMs <= 0 && overPortion > 0) next.startFade(inWindow, bedtime) else next
     }
 
-    /** Freezes the context of a fade that just began and applies the nightly nudge limit. */
+    /**
+     * Freezes the context of a fade that just began. Every fade, however many tonight, offers the
+     * nudge: a screen that keeps fading with no way into breathing felt broken to testers.
+     */
     private fun GuidanceState.startFade(inWindow: Boolean, bedtime: BedtimeConfig?): GuidanceState =
         if (inWindow && bedtime != null) {
-            copy(
-                context = GuidanceContext.Bedtime,
-                nudgeSuppressed = bedtimeFades >= bedtime.maxNudgesPerNight,
-                bedtimeFades = bedtimeFades + 1,
-            )
+            copy(context = GuidanceContext.Bedtime, bedtimeFades = bedtimeFades + 1)
         } else {
-            copy(context = GuidanceContext.Day, nudgeSuppressed = false)
+            copy(context = GuidanceContext.Day)
         }
 
     private fun GuidanceState.bedtimeThreshold(bedtime: BedtimeConfig): Long =
@@ -269,7 +282,7 @@ class GuidanceEngine(private val zone: () -> ZoneId = ZoneId::systemDefault) {
     }
 
     private fun GuidanceState.clearSession() =
-        copy(sessionUsedMs = 0, overBudgetMs = 0, nudgeSnoozedUntilMs = 0, nudgeSuppressed = false)
+        copy(sessionUsedMs = 0, overBudgetMs = 0, nudgeSnoozedUntilMs = 0)
 
     private fun GuidanceState.toTracking(now: Long) =
         copy(mode = GuidanceMode.Tracking, modeSinceMs = now, breathingFromPreview = false)

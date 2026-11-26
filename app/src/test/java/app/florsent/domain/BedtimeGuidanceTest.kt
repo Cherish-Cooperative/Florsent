@@ -7,7 +7,6 @@ import app.florsent.domain.GuidanceEvent.Tick
 import java.time.LocalDate
 import java.time.ZoneOffset
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -93,7 +92,7 @@ class BedtimeGuidanceTest {
     }
 
     @Test
-    fun `two nudges per night at most, then only the fade`() {
+    fun `every bedtime fade offers the nudge, the third one too`() {
         val h = Harness(23, 10)
         h.open(social)
         h.advance(16 * MIN)
@@ -117,11 +116,12 @@ class BedtimeGuidanceTest {
         h.send { BreathingCompleted(it) }
         h.advance(30 * MIN)
 
-        // Third: it still dims, but the nudge stays away.
+        // Third: a deep fade always comes with a way into breathing.
         h.open(social)
         h.advance(7 * MIN + 2 * MIN)
         assertTrue(h.effect.level > 0.5f)
-        assertFalse(h.effect.showNudge)
+        assertTrue(h.effect.showNudge)
+        assertEquals(GuidanceContext.Bedtime, h.effect.context)
     }
 
     @Test

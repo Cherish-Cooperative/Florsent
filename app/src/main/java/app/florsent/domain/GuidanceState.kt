@@ -37,10 +37,10 @@ data class GuidanceState(
     val bedtimeWindowStartMs: Long? = null,
     /** Watched-app use inside tonight's window since the last bedtime quiet time. */
     val bedtimeUsedMs: Long = 0,
-    /** Bedtime fades started tonight; only the first [BedtimeConfig.maxNudgesPerNight] nudge. */
+    /** Bedtime fades started tonight; after the first, the shorter second threshold applies. */
     val bedtimeFades: Int = 0,
-    /** This fade keeps dimming but no longer shows the nudge (nightly limit reached). */
-    val nudgeSuppressed: Boolean = false,
+    /** When the current stretch of counting began (watched app opened, screen unlocked); not persisted. */
+    val countingSinceMs: Long? = null,
 ) {
     fun isWatched(config: GuidanceConfig): Boolean =
         foregroundPackage != null && foregroundPackage in config.watchedPackages

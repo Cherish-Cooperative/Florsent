@@ -51,7 +51,7 @@ Florsent 不封鎖任何 App，只在你滑太久的時候，溫柔地提醒你�
 練習結束後，Florsent 留給你一句簡單的話，例如「放下手機，去倒杯水，慢慢喝完」。按下「回到生活」，畫面恢復原樣，接下來一段時間不再提醒你。
 
 ■ 睡前，慢慢放下手機
-Florsent 會先觀察一週，看你晚上通常幾點放下手機。看得出規律時，問你一次要不要在那之前提醒你。答應之後時間就固定下來。睡前的提醒會換成「該準備休息了嗎？」，並帶你做 4-7-8 放鬆呼吸。一個晚上最多提醒兩次。作息不規律，也可以自己選時間，或者不用。
+Florsent 會先觀察一週，看你晚上通常幾點放下手機。看得出規律時，問你一次要不要在那之前提醒你。答應之後時間就固定下來。睡前的提醒會換成「該準備休息了嗎？」，並帶你做 4-7-8 放鬆呼吸。呼吸完會安靜 30 分鐘。作息不規律，也可以自己選時間，或者不用。
 
 ■ 看看最近的自己
 今天、近 7 天、最常用的 App，還有一兩句話說說你最近的樣子，例如「這週比上週少滑了 1 小時」。沒有評分，也沒有排名。
@@ -106,7 +106,7 @@ Tap the prompt to start breathing right away. A lotus opens as you breathe in an
 Afterwards Florsent leaves you with one simple suggestion, such as "Put the phone down, pour a glass of water and drink it slowly." Tap "Back to life" and the screen returns to normal, with a quiet period before any further reminder.
 
 ■ Winding down at night
-For the first week Florsent observes when you usually put the phone down at night. Once a pattern is clear, it asks once whether you would like a reminder before that time; if you agree, the time stays fixed. Bedtime reminders ask "Time to wind down?" and lead into 4-7-8 breathing, at most twice a night. Irregular schedule? Pick your own time, or skip it.
+For the first week Florsent observes when you usually put the phone down at night. Once a pattern is clear, it asks once whether you would like a reminder before that time; if you agree, the time stays fixed. Bedtime reminders ask "Time to wind down?" and lead into 4-7-8 breathing, followed by 30 quiet minutes. Irregular schedule? Pick your own time, or skip it.
 
 ■ A look at your recent days
 Today, the last seven days and your most used apps, with a sentence or two about how things are going, such as "1 h less scrolling than last week." No scores, no rankings.

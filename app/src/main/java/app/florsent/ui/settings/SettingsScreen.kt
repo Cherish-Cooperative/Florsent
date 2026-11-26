@@ -66,6 +66,7 @@ import app.florsent.ui.components.FlorsentTopBar
 import app.florsent.ui.components.NavigationRow
 import app.florsent.ui.components.SoftCard
 import app.florsent.ui.components.clockText
+import app.florsent.ui.components.zenAccessSteps
 import app.florsent.ui.theme.supportsDynamicColor
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.SharingStarted
@@ -455,7 +456,7 @@ private fun ZenGrayscaleRow(enabled: Boolean, vm: SettingsViewModel, onOpenAcces
         AlertDialog(
             onDismissRequest = { showExplain = false },
             title = { Text(stringResource(R.string.zen_access_title)) },
-            text = { Text(stringResource(R.string.zen_access_body)) },
+            text = { Text(stringResource(R.string.zen_access_body) + "\n\n" + zenAccessSteps()) },
             confirmButton = {
                 TextButton(onClick = {
                     showExplain = false

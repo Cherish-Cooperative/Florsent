@@ -44,7 +44,6 @@ class GuidanceStateStore(private val dataStore: DataStore<Preferences>) : Guidan
             bedtimeWindowStartMs = p[Keys.BEDTIME_WINDOW]?.takeIf { it >= 0 },
             bedtimeUsedMs = p[Keys.BEDTIME_USED] ?: 0,
             bedtimeFades = (p[Keys.BEDTIME_FADES] ?: 0L).toInt(),
-            nudgeSuppressed = (p[Keys.NUDGE_SUPPRESSED] ?: 0L) == 1L,
         )
     }
 
@@ -63,7 +62,7 @@ class GuidanceStateStore(private val dataStore: DataStore<Preferences>) : Guidan
             p[Keys.BEDTIME_WINDOW] = state.bedtimeWindowStartMs ?: -1
             p[Keys.BEDTIME_USED] = state.bedtimeUsedMs
             p[Keys.BEDTIME_FADES] = state.bedtimeFades.toLong()
-            p[Keys.NUDGE_SUPPRESSED] = if (state.nudgeSuppressed) 1L else 0L
+            p.remove(Keys.LEGACY_NUDGE_SUPPRESSED)
         }
     }
 
@@ -81,6 +80,7 @@ class GuidanceStateStore(private val dataStore: DataStore<Preferences>) : Guidan
         val BEDTIME_WINDOW = longPreferencesKey("bedtime_window_start_ms")
         val BEDTIME_USED = longPreferencesKey("bedtime_used_ms")
         val BEDTIME_FADES = longPreferencesKey("bedtime_fades")
-        val NUDGE_SUPPRESSED = longPreferencesKey("nudge_suppressed")
+        /** Written by 0.8 to 0.10 (the nightly nudge limit, since removed); cleared on the next save. */
+        val LEGACY_NUDGE_SUPPRESSED = longPreferencesKey("nudge_suppressed")
     }
 }

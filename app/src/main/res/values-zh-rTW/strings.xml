@@ -34,7 +34,7 @@
 
     <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
     <string name="disclosure_title">使用無障礙服務</string>
-    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除\n\n不讀取畫面內容和你輸入的文字，資料只存在這支手機上\n\n接著請在系統的無障礙設定中開啟「Florsent 漸進引導」</string>
+    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除\n\n不讀取畫面內容和你輸入的文字，資料只存在這支手機上</string>
     <string name="disclosure_accept">同意，前往設定</string>
     <string name="disclosure_decline">暫時不要</string>
 
@@ -109,6 +109,26 @@
         <item>深深吸一口氣，聞聞空氣裡有什麼味道</item>
         <item>留意眼前最亮的那個顏色，靜靜看它一會兒</item>
         <item>跟身邊的人說說話，或抬頭看看天空</item>
+        <item>數一數，現在身邊有幾種不同的聲音</item>
+        <item>把手掌搓熱，輕輕蓋在眼睛上</item>
+        <item>慢慢轉轉脖子，左邊一圈，右邊一圈</item>
+        <item>看看窗外，現在的天空是什麼顏色？</item>
+        <item>鬆開下巴，讓牙齒輕輕分開</item>
+        <item>動動腳趾，感覺它們在鞋子或襪子裡</item>
+        <item>走到窗邊或門口，吹一下外面的風</item>
+        <item>找一樣很久沒注意的東西，好好看它一眼</item>
+        <item>想想今天誰對你好過，就算只是一個微笑</item>
+        <item>把手放在胸口，感覺它跟著呼吸起伏</item>
+        <item>喝一口水，感覺它一路滑下去</item>
+        <item>慢慢走到另一個房間，再走回來</item>
+        <item>握緊拳頭數到五，再慢慢鬆開</item>
+        <item>想一個最近很想見的人，約個時間見面吧</item>
+        <item>坐直一點，讓頭頂輕輕往上延伸</item>
+        <item>摸摸手臂，感覺袖子的布料</item>
+        <item>看看身邊的植物，或想一棵你喜歡的樹</item>
+        <item>剛剛滑過的東西，還記得哪一則？其他的就放下吧</item>
+        <item>把桌上的一樣東西收好</item>
+        <item>閉上眼睛，數五次呼吸</item>
     </string-array>
 
     <!-- Onboarding -->
@@ -130,7 +150,10 @@
     <string name="onboarding_doesnt_1">不讀取畫面上的文字和內容</string>
     <string name="onboarding_doesnt_2">不記錄你輸入的任何東西</string>
     <string name="onboarding_doesnt_3">不上傳任何資料，只存在這支手機上</string>
-    <string name="onboarding_enable_hint">接著在系統的無障礙設定中開啟「Florsent 漸進引導」</string>
+    <string name="enable_steps_samsung">接著在「協助工具」裡點「已安裝的應用程式」（有些機型叫「已安裝的服務」），選「Florsent 漸進引導」並開啟。找不到的話，在設定上方的搜尋欄輸入 Florsent</string>
+    <string name="enable_steps_generic">接著在無障礙設定裡找到「Florsent 漸進引導」（通常在「已下載的應用程式」底下），點進去開啟。找不到的話，在設定上方的搜尋欄輸入 Florsent</string>
+    <string name="enable_restricted_hint">如果開關是灰色的，或出現「受限制的設定」：先到 App 資訊，點右上角的 ⋮ 選「允許受限制的設定」，再回來開啟</string>
+    <string name="enable_open_app_info">開啟 App 資訊</string>
     <string name="onboarding_service_ready">已經開啟，一切就緒</string>
     <string name="onboarding_begin">開始</string>
     <string name="onboarding_next">下一步</string>
@@ -144,7 +167,9 @@
     <string name="settings_zen_grayscale_hint">不影響通知和鈴聲，需要零打擾存取權</string>
     <string name="settings_zen_grayscale_lost">零打擾存取權已關閉，目前只會變淡</string>
     <string name="zen_access_title">需要「零打擾」存取權</string>
-    <string name="zen_access_body">Florsent 只會建立「Florsent 漸進灰階」模式，淡到底時把畫面切成黑白，不更動通知或其他模式\n\n接著請在系統設定中允許 Florsent 存取</string>
+    <string name="zen_access_body">Florsent 只會建立「Florsent 漸進灰階」模式，淡到底時把畫面切成黑白，不更動通知或其他模式</string>
+    <string name="zen_access_steps_samsung">接著在清單裡找到 Florsent 並允許。打開的不是清單的話，在設定上方的搜尋欄輸入「勿擾」找找看</string>
+    <string name="zen_access_steps_generic">接著在清單裡找到 Florsent 並允許。打開的不是清單的話，在設定上方的搜尋欄輸入「零打擾」找找看</string>
     <string name="zen_access_confirm">前往設定</string>
     <string name="zen_access_cancel">取消</string>
     <string name="zen_rule_name">Florsent 漸進灰階</string>
@@ -234,7 +259,7 @@
     <string name="bedtime_status_no_record">沒有記錄使用時段，可以自己選時間</string>
     <string name="bedtime_current">每晚 %1$s 起，累計滑 %2$d 分鐘會提醒你休息</string>
     <string name="bedtime_current_off">睡前引導未開啟</string>
-    <string name="bedtime_note">每晚最多提醒兩次</string>
+    <string name="bedtime_note">呼吸完會安靜 30 分鐘，之後再滑 7 分鐘就會再提醒</string>
     <string name="bedtime_choose_time">選擇想睡的時間</string>
     <string name="bedtime_change_time">更改時間</string>
     <string name="bedtime_use_learned">改用最近的作息（%s）</string>
@@ -252,6 +277,16 @@
         <item>想一件今天值得感謝的小事</item>
         <item>把被子拉好，讓身體暖暖的</item>
         <item>閉上眼睛，聽聽房間裡安靜的聲音</item>
+        <item>把明天要做的一件事寫在紙上，然後就放下</item>
+        <item>刷牙、洗臉，讓身體知道該睡了</item>
+        <item>從腳趾開始，一路往上讓身體放鬆</item>
+        <item>換上舒服的睡衣</item>
+        <item>鬧鐘設好了，就不用再看手機了</item>
+        <item>拉上窗簾，讓房間暗下來</item>
+        <item>今天辛苦了，剩下的交給明天</item>
+        <item>翻幾頁紙本書，看到想睡為止</item>
+        <item>讓呼吸慢下來，吐氣比吸氣再長一點</item>
+        <item>躺下來伸個懶腰，讓背貼著床</item>
     </string-array>
 
     <!-- Nudge overlay -->

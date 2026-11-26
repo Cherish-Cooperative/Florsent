@@ -29,7 +29,7 @@ import app.florsent.AppContainer
 import app.florsent.data.UserSettings
 import app.florsent.domain.GuidanceEvent
 import app.florsent.service.audio.BreathingSoundscape
-import app.florsent.service.effect.ZenGrayscale
+import app.florsent.util.SystemSettings
 import app.florsent.ui.apps.LocalIconPeek
 import app.florsent.ui.apps.WatchedAppsScreen
 import app.florsent.ui.apps.WatchedAppsViewModel
@@ -254,7 +254,7 @@ fun FlorsentAppUi(
                             vm = vm,
                             onBack = back,
                             onOpenAccessibilitySettings = onOpenAccessibilitySettings,
-                            onOpenZenAccessSettings = { context.startActivity(ZenGrayscale.accessSettingsIntent()) },
+                            onOpenZenAccessSettings = { SystemSettings.openZenAccess(context) },
                         )
                         else -> SettingsHomeScreen(
                             state = state,

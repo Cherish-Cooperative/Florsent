@@ -14,7 +14,7 @@ enum class GuidanceContext { Day, Bedtime }
  *
  * @param anchorMinuteOfDay intended bedtime as minutes after local midnight (e.g. 23:40 = 1420).
  * @param thresholdMs watched-app use inside the window before the first gentle fade.
- * @param secondThresholdMs use after the first bedtime quiet time before the second (last) nudge.
+ * @param secondThresholdMs use after a bedtime quiet time before the next fade and nudge.
  */
 data class BedtimeConfig(
     val anchorMinuteOfDay: Int,
@@ -22,7 +22,6 @@ data class BedtimeConfig(
     val secondThresholdMs: Long = 7 * MINUTE_MS,
     val cooldownMs: Long = 30 * MINUTE_MS,
     val leadMinutes: Int = 30,
-    val maxNudgesPerNight: Int = 2,
 ) {
     init {
         require(anchorMinuteOfDay in 0 until MINUTES_PER_DAY) { "anchor must be a minute of the day" }

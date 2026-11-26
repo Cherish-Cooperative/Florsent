@@ -3,7 +3,6 @@ package app.florsent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +15,7 @@ import app.florsent.ui.FlorsentAppUi
 import app.florsent.ui.Route
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.florsent.ui.theme.FlorsentTheme
+import app.florsent.util.SystemSettings
 
 class MainActivity : ComponentActivity() {
 
@@ -45,9 +45,7 @@ class MainActivity : ComponentActivity() {
                     requestedRoute = requestedRoute,
                     onRouteConsumed = { requestedRoute = null },
                     onStartPreview = { moveTaskToBack(true) },
-                    onOpenAccessibilitySettings = {
-                        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                    },
+                    onOpenAccessibilitySettings = { SystemSettings.openAccessibility(this) },
                     onGoToLauncher = {
                         startActivity(
                             Intent(Intent.ACTION_MAIN)

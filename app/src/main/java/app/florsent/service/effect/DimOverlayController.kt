@@ -46,7 +46,7 @@ class DimOverlayController(
             targetAlpha = 0f
             v.animate()
                 .alpha(0f)
-                .setDuration(FADE_OUT_MS)
+                .setDuration(EXIT_MS)
                 .setInterpolator(DecelerateInterpolator())
                 .withEndAction { if (targetAlpha == 0f) detach() }
                 .start()
@@ -115,6 +115,9 @@ class DimOverlayController(
         const val DEFAULT_MAX_ALPHA = 0.6f
         private const val STEP_MS = 1_000L
         private const val FADE_OUT_MS = 450L
+
+        /** Leaving the app: the screen clears slowly, together with the rain's fade-out. */
+        const val EXIT_MS = 2_000L
         private const val MIN_VISIBLE_ALPHA = 0.002f
         private const val EPSILON = 0.0005f
     }

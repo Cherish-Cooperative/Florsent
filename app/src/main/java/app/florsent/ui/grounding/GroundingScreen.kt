@@ -26,10 +26,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -40,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.florsent.R
 import app.florsent.ui.breathe.BreathingFlower
-import kotlin.random.Random
 
 /**
  * "Back to the present": one short sensory prompt, lots of space, one clear way out.
@@ -54,7 +55,9 @@ fun GroundingScreen(
     onReturnToLife: () -> Unit,
 ) {
     val prompts = stringArrayResource(if (bedtime) R.array.grounding_prompts_bedtime else R.array.grounding_prompts)
-    var index by rememberSaveable { mutableIntStateOf(Random.nextInt(prompts.size)) }
+    val context = LocalContext.current
+    val history = remember(bedtime) { PromptHistory(context, if (bedtime) "recent_bedtime" else "recent_day") }
+    var index by rememberSaveable { mutableIntStateOf(history.pick(prompts.size)) }
 
     BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
     Column(
@@ -91,7 +94,7 @@ fun GroundingScreen(
             )
         }
         Spacer(Modifier.height(16.dp))
-        TextButton(onClick = { index = nextIndex(index, prompts.size) }) {
+        TextButton(onClick = { index = history.pick(prompts.size) }) {
             Text(stringResource(R.string.grounding_another), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.weight(1.3f))
@@ -115,10 +118,4 @@ fun GroundingScreen(
         }
     }
     }
-}
-
-private fun nextIndex(current: Int, size: Int): Int {
-    if (size <= 1) return current
-    val next = Random.nextInt(size - 1)
-    return if (next >= current) next + 1 else next
 }

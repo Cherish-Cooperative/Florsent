@@ -4,10 +4,8 @@ import android.app.AutomaticZenRule
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.provider.Settings
 import android.service.notification.Condition
 import android.service.notification.ZenDeviceEffects
 import android.util.Log
@@ -105,8 +103,6 @@ object ZenGrayscale {
 
     fun hasAccess(context: Context): Boolean =
         runCatching { manager(context).isNotificationPolicyAccessGranted }.getOrDefault(false)
-
-    fun accessSettingsIntent(): Intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
 
     /** The id of our rule if it exists. Requires notification-policy access. */
     fun findRule(context: Context): String? =

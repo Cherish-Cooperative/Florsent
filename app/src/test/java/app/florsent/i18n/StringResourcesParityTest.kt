@@ -66,8 +66,8 @@ class StringResourcesParityTest {
     @Test
     fun `arrays have the same number of sentences`() {
         en.arrays.forEach { (key, items) -> assertEquals(key, items.size, zh.arrays.getValue(key).size) }
-        assertEquals(12, en.arrays.getValue("grounding_prompts").size)
-        assertEquals(8, en.arrays.getValue("grounding_prompts_bedtime").size)
+        assertEquals(32, en.arrays.getValue("grounding_prompts").size)
+        assertEquals(18, en.arrays.getValue("grounding_prompts_bedtime").size)
     }
 
     @Test
