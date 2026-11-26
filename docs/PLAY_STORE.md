@@ -1,6 +1,6 @@
 # Florsent Google Play 上架資料包
 
-這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.10.2（versionCode 14）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
+這份文件整理上架 Google Play 需要填寫和準備的內容，對應版本 0.11.0（versionCode 15）。商店文字可以直接貼進 Play Console，表單答案附上理由，審核人員或之後接手的人才知道為什麼這樣填。
 
 - 套件名稱：`app.florsent`（上架後不能再改）
 - 介面語言：繁體中文、英文（跟隨系統，或在 App 內「設定 > 進階 > 語言 / Language」切換；Android 13 以上也可在系統的「App 語言」設定）
@@ -289,6 +289,32 @@ Google 要求影片呈現：揭露頁與同意流程、在系統設定中開啟�
 截圖拍攝提醒：用模擬器拍時，可以照 [TECHNICAL.md](TECHNICAL.md) 的方式放入假資料，讓洞察頁和睡前邀請卡有內容。不要用真實使用者的手機截圖。
 
 ## 版本說明
+
+### 0.11.0（zh-TW）
+
+封閉測試人員已經裝了 0.10.2，所以這裡只寫 0.10.2 之後的改動。
+
+```
+・雨聲音量固定，滑 Reels 時不會一下消失、一下冒出來
+・離開 App 時畫面和雨聲一起慢慢淡出；再打開時從乾淨的畫面慢慢變濃
+・按「回到生活」後會關掉螢幕，可以在設定中關閉
+・睡前每次變淡，都能點進深呼吸
+・提醒的圓點像呼吸燈一樣明暗；打字時提醒會移到上方，也可以上下拖動
+・呼吸的花會跟著吸氣吐氣開合，文字變小了
+・三星等手機開啟無障礙服務的說明更清楚
+```
+
+### 0.11.0（en-US）
+
+```
+• The rain stays at one steady volume while you swipe through Reels
+• Leaving an app fades the screen and rain out gently; coming back, the fade builds up slowly
+• “Back to life” now turns the screen off (you can turn this off in Settings)
+• Every bedtime fade now offers a breathing break
+• The reminder's dot glows like a breathing light, and it moves up while you type
+• The breathing flower opens and closes with each breath, with quieter text
+• Clearer setup steps on Samsung and other phones
+```
 
 ### 0.10.2（zh-TW）
 

@@ -5,7 +5,7 @@ import kotlin.random.Random
 
 /**
  * Picks the next grounding prompt so the same few never come back soon. Plain random picks from a
- * few dozen sentences repeat surprisingly often (a tester felt there were only five or six), so the
+ * dozen sentences repeat surprisingly often (a tester felt there were only five or six), so the
  * most recent picks, about two thirds of the list, are left out until the rest have had a turn.
  */
 object PromptPicker {

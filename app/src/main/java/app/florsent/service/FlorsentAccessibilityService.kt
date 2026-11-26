@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
@@ -152,6 +153,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
         coordinator.dispatch(GuidanceEvent.ScreenChanged(usable, coordinator.now()))
 
         isShutDown = false
+        connected = this
         coordinator.setServiceRunning(true)
         renderJob = scope.launch {
             // Layer toggles are part of the key so switching one applies even at a steady level.
@@ -169,6 +171,9 @@ class FlorsentAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         markScreenInUseIfUnlocked()
+        // The keyboard opening is announced by the keyboard app's own window. Florsent ignores it as
+        // a foreground app, but moves the reminder out of the way of typing.
+        if (event.packageName?.toString() in ignoredPackages) nudge?.onKeyboardShown()
         val pkg = ForegroundPolicy.resolve(event.packageName, event.className, packageName, ignoredPackages)
             ?: return
         DebugLog.d { "window event pkg=${event.packageName} class=${event.className} -> $pkg" }
@@ -218,6 +223,7 @@ class FlorsentAccessibilityService : AccessibilityService() {
         if (isShutDown) return
         DebugLog.d { "service shutdown (overlays released)" }
         isShutDown = true
+        if (connected === this) connected = null
         renderJob?.cancel()
         renderJob = null
         effects?.release()
@@ -234,7 +240,19 @@ class FlorsentAccessibilityService : AccessibilityService() {
         coordinator.setServiceRunning(false)
     }
 
-    private companion object {
+    companion object {
+        /** The connected service, so "Back to life" can turn the screen off; null when it is off. */
+        @Volatile private var connected: FlorsentAccessibilityService? = null
+
+        /**
+         * Turns the screen off (the same as a press of the power button), Android 9 and later. The
+         * user asked for it by tapping "Back to life"; false when the service is not running.
+         */
+        fun lockScreen(): Boolean {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
+            return connected?.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN) == true
+        }
+
         /** No sound during calls or while the phone is ringing. */
         val CALL_MODES = setOf(AudioManager.MODE_IN_CALL, AudioManager.MODE_IN_COMMUNICATION, AudioManager.MODE_RINGTONE)
     }

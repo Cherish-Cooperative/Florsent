@@ -38,7 +38,7 @@
 
     <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
     <string name="disclosure_title">Accessibility service</string>
-    <string name="disclosure_body">Florsent uses an accessibility service to know which app you\'re using, so it can count time, fade the screen and show reminders. It also keeps 30 days of usage sessions and screen-on times on this phone to learn your rhythm, and you can clear them anytime\n\nIt never reads screen content or anything you type. Your data stays on this phone</string>
+    <string name="disclosure_body">Florsent uses an accessibility service to know which app you\'re using, so it can count time, fade the screen, show reminders and turn the screen off when you tap “Back to life”. It also keeps 30 days of usage sessions and screen-on times on this phone to learn your rhythm, and you can clear them anytime\n\nIt never reads screen content or anything you type. Your data stays on this phone</string>
     <string name="disclosure_accept">Agree and open settings</string>
     <string name="disclosure_decline">Not now</string>
 
@@ -58,7 +58,7 @@
     <string name="settings_fade_sound">Soft rain while fading</string>
     <string name="settings_fade_sound_hint">Other audio gets quieter, never paused</string>
     <string name="settings_cue_hint">A soft chime as you switch breath</string>
-    <string name="settings_return_home">Go to home screen when done</string>
+    <string name="settings_return_home">Turn off the screen after breathing</string>
     <string name="settings_service">Accessibility service</string>
     <string name="settings_service_on">On</string>
     <string name="settings_service_off">Off, tap to open settings</string>
@@ -114,26 +114,6 @@
         <item>Take a deep breath and notice what the air smells like</item>
         <item>Find the brightest color in front of you and rest your eyes on it</item>
         <item>Talk to someone nearby, or look up at the sky</item>
-        <item>Count how many different sounds you can hear right now</item>
-        <item>Rub your palms warm and rest them gently over your eyes</item>
-        <item>Slowly roll your neck, once to the left, once to the right</item>
-        <item>Look outside: what color is the sky right now?</item>
-        <item>Unclench your jaw and let your teeth part a little</item>
-        <item>Wiggle your toes and feel them inside your shoes or socks</item>
-        <item>Step to a window or door and feel the air outside</item>
-        <item>Find something you haven\'t noticed in a while and really look at it</item>
-        <item>Think of someone who was kind to you today, even if it was just a smile</item>
-        <item>Rest a hand on your chest and feel it rise and fall</item>
-        <item>Take a sip of water and feel it go all the way down</item>
-        <item>Walk slowly to another room and back</item>
-        <item>Make a tight fist for a count of five, then slowly let go</item>
-        <item>Think of someone you\'d like to see soon, and plan a time to meet</item>
-        <item>Sit up a little and let the top of your head reach gently upward</item>
-        <item>Run a hand along your arm and feel the fabric of your sleeve</item>
-        <item>Look at the nearest plant, or picture a tree you like</item>
-        <item>Of everything you just scrolled past, what do you still remember? Let the rest go</item>
-        <item>Put one thing on the table back where it belongs</item>
-        <item>Close your eyes and count five breaths</item>
     </string-array>
 
     <!-- Onboarding -->
@@ -149,7 +129,7 @@
     <string name="onboarding_does_title">What Florsent does</string>
     <string name="onboarding_does_1">Reads only the name of the app in front</string>
     <string name="onboarding_does_2">Counts time in the apps you watch</string>
-    <string name="onboarding_does_3">Shows the fade and the breathing reminder</string>
+    <string name="onboarding_does_3">Shows the fade and the breathing reminder, and turns the screen off when you tap “Back to life”</string>
     <string name="onboarding_does_4">Keeps 30 days of usage sessions and screen-on times on this phone to learn your rhythm. Clear them anytime</string>
     <string name="onboarding_doesnt_title">What Florsent never does</string>
     <string name="onboarding_doesnt_1">Read text or content on your screen</string>
@@ -283,16 +263,6 @@
         <item>Think of one small thing you\'re grateful for today</item>
         <item>Pull up the covers and let yourself get warm</item>
         <item>Close your eyes and listen to the quiet of the room</item>
-        <item>Write one thing for tomorrow on paper, then let it go</item>
-        <item>Brush your teeth and wash your face so your body knows it\'s time to sleep</item>
-        <item>Starting from your toes, let each part of your body relax in turn</item>
-        <item>Change into something comfortable to sleep in</item>
-        <item>Once the alarm is set, there\'s no need to check the phone again</item>
-        <item>Draw the curtains and let the room go dark</item>
-        <item>You did enough today. The rest can wait for tomorrow</item>
-        <item>Read a few pages of a paper book until you feel sleepy</item>
-        <item>Let your breathing slow down, each breath out a little longer than the one in</item>
-        <item>Lie down, stretch, and let your back sink into the bed</item>
     </string-array>
 
     <!-- Nudge overlay -->
@@ -302,5 +272,5 @@
 
     <!-- Accessibility service -->
     <string name="accessibility_service_label">Florsent Gentle Guidance</string>
-    <string name="accessibility_service_description">Only used to know which app you\'re using, so Florsent can count time, fade the screen and show reminders, and keep 30 days of usage sessions and screen-on times on this phone to learn your rhythm. It never reads screen content or what you type, and your data never leaves this phone</string>
+    <string name="accessibility_service_description">Only used to know which app you\'re using, so Florsent can count time, fade the screen, show reminders, turn the screen off when you tap “Back to life”, and keep 30 days of usage sessions and screen-on times on this phone to learn your rhythm. It never reads screen content or what you type, and your data never leaves this phone</string>
 </resources>

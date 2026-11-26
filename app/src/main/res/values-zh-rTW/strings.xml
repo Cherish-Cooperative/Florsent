@@ -34,7 +34,7 @@
 
     <!-- Prominent disclosure (Google Play AccessibilityService policy) -->
     <string name="disclosure_title">使用無障礙服務</string>
-    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除\n\n不讀取畫面內容和你輸入的文字，資料只存在這支手機上</string>
+    <string name="disclosure_body">Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化和提醒、在你按下「回到生活」時關掉螢幕，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除\n\n不讀取畫面內容和你輸入的文字，資料只存在這支手機上</string>
     <string name="disclosure_accept">同意，前往設定</string>
     <string name="disclosure_decline">暫時不要</string>
 
@@ -54,7 +54,7 @@
     <string name="settings_fade_sound">變淡時播放柔和雨聲</string>
     <string name="settings_fade_sound_hint">其他聲音會暫時變小，不會被暫停</string>
     <string name="settings_cue_hint">換氣時輕響一聲</string>
-    <string name="settings_return_home">完成後回到手機桌面</string>
+    <string name="settings_return_home">呼吸完關掉螢幕</string>
     <string name="settings_service">無障礙服務</string>
     <string name="settings_service_on">已開啟</string>
     <string name="settings_service_off">未開啟，輕觸前往設定</string>
@@ -109,26 +109,6 @@
         <item>深深吸一口氣，聞聞空氣裡有什麼味道</item>
         <item>留意眼前最亮的那個顏色，靜靜看它一會兒</item>
         <item>跟身邊的人說說話，或抬頭看看天空</item>
-        <item>數一數，現在身邊有幾種不同的聲音</item>
-        <item>把手掌搓熱，輕輕蓋在眼睛上</item>
-        <item>慢慢轉轉脖子，左邊一圈，右邊一圈</item>
-        <item>看看窗外，現在的天空是什麼顏色？</item>
-        <item>鬆開下巴，讓牙齒輕輕分開</item>
-        <item>動動腳趾，感覺它們在鞋子或襪子裡</item>
-        <item>走到窗邊或門口，吹一下外面的風</item>
-        <item>找一樣很久沒注意的東西，好好看它一眼</item>
-        <item>想想今天誰對你好過，就算只是一個微笑</item>
-        <item>把手放在胸口，感覺它跟著呼吸起伏</item>
-        <item>喝一口水，感覺它一路滑下去</item>
-        <item>慢慢走到另一個房間，再走回來</item>
-        <item>握緊拳頭數到五，再慢慢鬆開</item>
-        <item>想一個最近很想見的人，約個時間見面吧</item>
-        <item>坐直一點，讓頭頂輕輕往上延伸</item>
-        <item>摸摸手臂，感覺袖子的布料</item>
-        <item>看看身邊的植物，或想一棵你喜歡的樹</item>
-        <item>剛剛滑過的東西，還記得哪一則？其他的就放下吧</item>
-        <item>把桌上的一樣東西收好</item>
-        <item>閉上眼睛，數五次呼吸</item>
     </string-array>
 
     <!-- Onboarding -->
@@ -144,7 +124,7 @@
     <string name="onboarding_does_title">Florsent 會做的事</string>
     <string name="onboarding_does_1">只讀取目前在前景的 App 名稱</string>
     <string name="onboarding_does_2">計算留意的 App 用了多久</string>
-    <string name="onboarding_does_3">在畫面上顯示淡化效果和呼吸提醒</string>
+    <string name="onboarding_does_3">在畫面上顯示淡化效果和呼吸提醒，按下「回到生活」時幫你關掉螢幕</string>
     <string name="onboarding_does_4">在手機上保存 30 天的使用時段與螢幕開關時間來學習作息，隨時可以清除</string>
     <string name="onboarding_doesnt_title">Florsent 不會做的事</string>
     <string name="onboarding_doesnt_1">不讀取畫面上的文字和內容</string>
@@ -277,16 +257,6 @@
         <item>想一件今天值得感謝的小事</item>
         <item>把被子拉好，讓身體暖暖的</item>
         <item>閉上眼睛，聽聽房間裡安靜的聲音</item>
-        <item>把明天要做的一件事寫在紙上，然後就放下</item>
-        <item>刷牙、洗臉，讓身體知道該睡了</item>
-        <item>從腳趾開始，一路往上讓身體放鬆</item>
-        <item>換上舒服的睡衣</item>
-        <item>鬧鐘設好了，就不用再看手機了</item>
-        <item>拉上窗簾，讓房間暗下來</item>
-        <item>今天辛苦了，剩下的交給明天</item>
-        <item>翻幾頁紙本書，看到想睡為止</item>
-        <item>讓呼吸慢下來，吐氣比吸氣再長一點</item>
-        <item>躺下來伸個懶腰，讓背貼著床</item>
     </string-array>
 
     <!-- Nudge overlay -->
@@ -296,5 +266,5 @@
 
     <!-- Accessibility service -->
     <string name="accessibility_service_label">Florsent 漸進引導</string>
-    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計時、顯示淡化和提醒，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息。不讀取畫面內容或你輸入的文字，資料不會離開這支手機</string>
+    <string name="accessibility_service_description">只用來知道你正在用哪個 App，計時、顯示淡化和提醒、在你按下「回到生活」時關掉螢幕，並在手機上保存 30 天的使用時段與螢幕開關時間來學習作息。不讀取畫面內容或你輸入的文字，資料不會離開這支手機</string>
 </resources>

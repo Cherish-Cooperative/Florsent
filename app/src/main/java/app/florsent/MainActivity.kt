@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.florsent.data.AppLocales
 import app.florsent.domain.GuidanceEvent
+import app.florsent.service.FlorsentAccessibilityService
 import app.florsent.ui.FlorsentAppUi
 import app.florsent.ui.Route
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,12 +47,15 @@ class MainActivity : ComponentActivity() {
                     onRouteConsumed = { requestedRoute = null },
                     onStartPreview = { moveTaskToBack(true) },
                     onOpenAccessibilitySettings = { SystemSettings.openAccessibility(this) },
-                    onGoToLauncher = {
+                    onLeavePhone = {
+                        // Back to the home screen, then the screen goes off: after unlocking, the
+                        // phone opens where life left off, not on Florsent.
                         startActivity(
                             Intent(Intent.ACTION_MAIN)
                                 .addCategory(Intent.CATEGORY_HOME)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                         )
+                        FlorsentAccessibilityService.lockScreen()
                     },
                 )
             }

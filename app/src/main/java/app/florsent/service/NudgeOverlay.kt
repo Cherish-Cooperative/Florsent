@@ -36,7 +36,9 @@ import kotlin.math.abs
  * background activity launch.
  *
  * Its dot glows and dims slowly like a breathing light. The pill can be dragged up or down (not
- * sideways) when it covers something the user wants to tap; the height is remembered.
+ * sideways) when it covers something the user wants to tap; the height is remembered. When the
+ * keyboard opens it glides up to about a fifth of the way down the screen, clear of the text field
+ * and the keys, and stays there until it goes away (closing the keyboard announces nothing).
  */
 class NudgeOverlay(
     private val service: AccessibilityService,
@@ -50,6 +52,9 @@ class NudgeOverlay(
     private var pill: View? = null
     private var message: TextView? = null
     private var breathing: ValueAnimator? = null
+    private var raise: ValueAnimator? = null
+    /** Moved up for the keyboard during this appearance; not saved as the user's height. */
+    private var raisedForKeyboard = false
     private var visible = false
     private var bedtime = false
 
@@ -66,8 +71,28 @@ class NudgeOverlay(
 
     private fun messageRes() = if (bedtime) R.string.nudge_message_bedtime else R.string.nudge_message
 
+    /** The keyboard came up: move above it, once per appearance. */
+    fun onKeyboardShown() {
+        if (!visible || raisedForKeyboard || root == null) return
+        val lp = params ?: return
+        val height = root?.height?.takeIf { it > 0 } ?: return
+        val target = (screenHeight() * (1f - KEYBOARD_TOP_FRACTION)).toInt() - height
+        raisedForKeyboard = true
+        if (target <= lp.y) return // already high enough (dragged up by the user)
+        raise?.cancel()
+        raise = ValueAnimator.ofInt(lp.y, target).apply {
+            duration = RAISE_MS
+            interpolator = DecelerateInterpolator(2f)
+            addUpdateListener { moveTo(it.animatedValue as Int) }
+            start()
+        }
+    }
+
     fun release() {
         visible = false
+        raisedForKeyboard = false
+        raise?.cancel()
+        raise = null
         breathing?.cancel()
         breathing = null
         pill?.animate()?.cancel()
@@ -104,6 +129,7 @@ class NudgeOverlay(
             .translationY(0f)
             .setDuration(ENTER_MS)
             .setInterpolator(DecelerateInterpolator(2f))
+            .setUpdateListener { root?.invalidate() } // the shadow is drawn by the container
             .start()
     }
 
@@ -115,6 +141,7 @@ class NudgeOverlay(
             .translationY(dp(40f))
             .setDuration(EXIT_MS)
             .setInterpolator(AccelerateInterpolator())
+            .setUpdateListener { root?.invalidate() }
             .withEndAction { if (!visible) release() }
             .start()
     }
@@ -125,18 +152,17 @@ class NudgeOverlay(
     /** Highest window offset: the pill stays below the status bar. */
     private fun maxOffset(): Int {
         val height = root?.height?.takeIf { it > 0 } ?: return Int.MAX_VALUE // not measured yet
-        val screen: Int
-        val top: Int
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val metrics = windowManager.currentWindowMetrics
-            screen = metrics.bounds.height()
-            top = metrics.windowInsets.getInsets(WindowInsets.Type.statusBars()).top
+        val top = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            windowManager.currentWindowMetrics.windowInsets.getInsets(WindowInsets.Type.statusBars()).top
         } else {
-            screen = service.resources.displayMetrics.heightPixels
-            top = dp(24f).toInt()
+            dp(24f).toInt()
         }
-        return (screen - top - height).coerceAtLeast(minOffset())
+        return (screenHeight() - top - height).coerceAtLeast(minOffset())
     }
+
+    private fun screenHeight(): Int =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) windowManager.currentWindowMetrics.bounds.height()
+        else service.resources.displayMetrics.heightPixels
 
     private fun moveTo(offset: Int) {
         val container = root ?: return
@@ -163,6 +189,35 @@ class NudgeOverlay(
         private var downRawY = 0f
         private var downOffset = 0
         private var dragging = false
+        private val shadowPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = 0xFF000000.toInt()
+        }
+        private val shadowRect = android.graphics.RectF()
+
+        init {
+            setWillNotDraw(false)
+        }
+
+        /**
+         * A soft shadow under the pill made of a few stacked, slightly larger rounded rectangles at
+         * low opacity. Plain drawing, so it is identical every frame and cannot flicker.
+         */
+        override fun dispatchDraw(canvas: android.graphics.Canvas) {
+            val p = pill
+            if (p != null && p.alpha > 0f) {
+                val radius = dp(28f)
+                for (i in SHADOW_STEPS downTo 1) {
+                    val spread = dp(SHADOW_STEP_DP) * i
+                    shadowRect.set(
+                        p.left - spread, p.top - spread + dp(2f) + p.translationY,
+                        p.right + spread, p.bottom + spread + dp(2f) + p.translationY,
+                    )
+                    shadowPaint.alpha = (SHADOW_ALPHA * p.alpha).toInt()
+                    canvas.drawRoundRect(shadowRect, radius + spread, radius + spread, shadowPaint)
+                }
+            }
+            super.dispatchDraw(canvas)
+        }
 
         override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
             when (ev.actionMasked) {
@@ -172,6 +227,7 @@ class NudgeOverlay(
                     dragging = false
                 }
                 MotionEvent.ACTION_MOVE -> if (!dragging && abs(ev.rawY - downRawY) > slop) {
+                    raise?.cancel()
                     dragging = true
                     parent?.requestDisallowInterceptTouchEvent(true)
                 }
@@ -218,7 +274,8 @@ class NudgeOverlay(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             background = RippleDrawable(ColorStateList.valueOf(ripple), pillShape, null)
-            elevation = dp(6f)
+            // No elevation: the live shadow flickered while the breathing dot redrew the pill. The
+            // container draws a fixed soft shadow instead (DragFrame.dispatchDraw).
             setPadding(dp(20f).toInt(), dp(6f).toInt(), dp(6f).toInt(), dp(6f).toInt())
             isClickable = true
             isFocusable = true
@@ -324,6 +381,12 @@ class NudgeOverlay(
         const val ENTER_MS = 520L
         const val EXIT_MS = 260L
         const val DOT_BREATH_MS = 4_000L
+        /** With the keyboard up, the pill's top sits this far down the screen. */
+        const val KEYBOARD_TOP_FRACTION = 0.2f
+        const val RAISE_MS = 360L
+        const val SHADOW_STEPS = 6
+        const val SHADOW_STEP_DP = 1.4f
+        const val SHADOW_ALPHA = 9
         const val DOT_DIM = 0.3f
         const val PREFS = "nudge_overlay"
         const val KEY_LIFT = "lift_px"

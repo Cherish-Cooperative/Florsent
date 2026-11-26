@@ -1,6 +1,6 @@
 # Florsent 隱私權政策／Privacy Policy
 
-生效日期／Effective date：2026-11-24
+生效日期／Effective date：2026-11-27
 
 [繁體中文](#繁體中文) ・ [English](#english)
 
@@ -53,12 +53,13 @@ Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體�
 
 - 偵測目前在前景的是哪一個 App，只用來計算你選擇留意的 App 的使用時間。
 - 在畫面上顯示漸進的淡化效果，以及「停下來深呼吸一下？」的提醒。
+- 呼吸練習結束、你按下「回到生活」時關掉螢幕（等同按一下電源鍵）。這項可以在「設定」中關閉。
 
 **範圍限制：**
 
 - 只接收「視窗狀態改變」（`TYPE_WINDOW_STATE_CHANGED`）事件，從中只讀取 App 的套件名稱；螢幕開關與解鎖的時間來自系統廣播。
 - 已設定為不讀取視窗內容（`canRetrieveWindowContent=false`），因此無法看到畫面上的文字、圖片或你輸入的內容。
-- 不執行任何手勢，也不代替你操作手機。
+- 不執行任何手勢。唯一的系統動作是上面說的關掉螢幕，而且只在你按下「回到生活」時發生。
 - 取得的資訊不會離開你的手機。
 
 **同意與關閉：** 開啟前，本 App 會先顯示上述說明，你同意後才會帶你到系統設定。你可以隨時在「設定 > 無障礙」中關閉這項服務，關閉後計時與畫面效果會立即停止。
@@ -79,7 +80,7 @@ Florsent（以下稱「本 App」）是一個幫助使用者減少社群媒體�
 
 | 權限 | 用途 |
 |---|---|
-| 無障礙服務（`BIND_ACCESSIBILITY_SERVICE`） | 如上所述，偵測前景 App 並顯示淡化效果與提醒 |
+| 無障礙服務（`BIND_ACCESSIBILITY_SERVICE`） | 如上所述，偵測前景 App、顯示淡化效果與提醒，並在你按下「回到生活」時關掉螢幕 |
 | 通知政策存取權（`ACCESS_NOTIFICATION_POLICY`，選用） | Android 15 以上的灰階收尾功能 |
 | 查詢可啟動的 App（`<queries>`，非 `QUERY_ALL_PACKAGES`） | 列出 App 供你選擇 |
 | Shizuku API（`moe.shizuku.manager.permission.API_V23`，選用） | 與你自行安裝的 Shizuku 溝通，用於進階的逐 App 去飽和 |
@@ -168,12 +169,13 @@ The App's core features require you to turn on the "Florsent 漸進引導" (Flor
 
 - To detect which app is in the foreground, used only to count the time spent in the apps you chose to watch.
 - To show the gradual fading effect and the "Take a breath?" reminder on screen.
+- To turn the screen off (the same as pressing the power button) when you tap "Back to life" after a breathing exercise. You can turn this off in Settings.
 
 **Limits:**
 
 - It receives only window-state-change events (`TYPE_WINDOW_STATE_CHANGED`) and reads only the app's package name from them; screen on/off and unlock times come from system broadcasts.
 - It is configured not to retrieve window content (`canRetrieveWindowContent=false`), so it cannot see on-screen text, images or anything you type.
-- It performs no gestures and never operates the phone on your behalf.
+- It performs no gestures. Its only system action is turning the screen off as described above, and only when you tap "Back to life".
 - Nothing it learns ever leaves your phone.
 
 **Consent and turning it off:** Before the service is turned on, the App shows the explanation above and only takes you to system settings after you agree. You can turn the service off at any time under Settings > Accessibility; counting and screen effects stop immediately.
@@ -194,7 +196,7 @@ If you install and start Shizuku yourself and turn on "let apps fade to gray" in
 
 | Permission | Purpose |
 |---|---|
-| Accessibility service (`BIND_ACCESSIBILITY_SERVICE`) | As described above: detect the foreground app and show the fade and reminder |
+| Accessibility service (`BIND_ACCESSIBILITY_SERVICE`) | As described above: detect the foreground app, show the fade and reminder, and turn the screen off when you tap "Back to life" |
 | Notification policy access (`ACCESS_NOTIFICATION_POLICY`, optional) | The grayscale finish on Android 15 and later |
 | Querying launchable apps (`<queries>`, not `QUERY_ALL_PACKAGES`) | Listing apps for you to choose from |
 | Shizuku API (`moe.shizuku.manager.permission.API_V23`, optional) | Talking to the Shizuku app you installed, for the advanced per-app desaturation |

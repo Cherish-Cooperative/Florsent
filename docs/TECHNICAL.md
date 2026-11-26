@@ -67,7 +67,7 @@ app.florsent
 ├── service/
 │   ├── FlorsentAccessibilityService  只監聽 TYPE_WINDOW_STATE_CHANGED；承載 overlay 視窗
 │   ├── GuidanceCoordinator  全域狀態、tick 排程、持久化節流
-│   ├── NudgeOverlay        浮出提醒（plain View；圓點像呼吸燈明暗，可上下拖動，記住高度）
+│   ├── NudgeOverlay        浮出提醒（plain View；圓點像呼吸燈明暗，可上下拖動並記住高度，鍵盤出現時移到上方）
 │   ├── effect/             VisualEffectController 與三層實作、SaturationSession
 │   ├── shizuku/            ShizukuSaturation、PlatformShizukuClient、ShellService（AIDL）
 │   └── audio/              BreathingSound／BreathingSoundscape
@@ -218,7 +218,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - 時段內的累計與 session／每日額度並行，三者取最先超過的那個。
 - 每次淡化都會出現提醒，沒有每晚次數上限。v0.10 以前一晚第三次起只淡化、不提醒，實際用起來畫面已經很濃卻沒有地方可以點進呼吸，像是壞掉，所以拿掉了。
 - 淡化開始時凍結情境（`GuidanceContext`）：白天開始的淡化進入時段後仍是白天的文字，反之亦然。
-- 睡前情境下：提醒文字「該準備休息了嗎？」，點下去固定用 4-7-8 呼吸，結束時是睡前版的 grounding 與「去休息吧」按鈕（直接回桌面）。
+- 睡前情境下：提醒文字「該準備休息了嗎？」，點下去固定用 4-7-8 呼吸，結束時是睡前版的 grounding 與「去休息吧」按鈕（回桌面並關掉螢幕）。
 - 首頁在時段開始前 3 小時內顯示「今晚 23:10 起會溫和提醒你休息」。
 
 ## 使用洞察與設定架構
@@ -239,7 +239,7 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 | 留意的 App | 勾選要計時的 App |
 | 使用額度 | 單次、每日、安靜時間 |
 | 睡前引導 | 時段、可以滑多久、關閉 |
-| 呼吸與聲音 | 呼吸練習環境音、變淡時播放柔和雨聲、提示音、完成後回桌面 |
+| 呼吸與聲音 | 呼吸練習環境音、變淡時播放柔和雨聲、提示音、完成後回桌面並關掉螢幕 |
 | 進階 | 外觀、無障礙服務、黑白收尾、Shizuku、使用紀錄與清除 |
 
 沒有「智慧自動引導」總開關，也沒有自動調整的每日額度（會形成自我收緊的迴圈）。預設值合理，學到東西時只邀請一次。
@@ -259,6 +259,16 @@ GuidanceCoordinator.dispatch()  ──►  GuidanceEngine.reduce(state, event, c
 - `TYPE_ACCESSIBILITY_OVERLAY`、全螢幕、`FLAG_NOT_TOUCHABLE`，覆蓋狀態列與導覽列。這是受信任的視窗，透明度再高也不會擋住觸控（`TYPE_APPLICATION_OVERLAY` 超過 0.8 會被擋）。
 - 顏色 `#858585`，最高透明度 0.6。混入中間灰會同時降低對比與飽和度。
 - 每次 `render` 用一秒的線性 `ViewPropertyAnimator` 銜接，所以以螢幕刷新率連續變化；`hasOverlappingRendering() = false`，避免全螢幕離屏圖層。強度回到 0 時移除視窗。
+
+### 提醒膠囊（`NudgeOverlay`）
+
+- 圓點像呼吸燈，約 4 秒變亮、4 秒變暗。膠囊可以上下拖（不能左右），高度記在 SharedPreferences，存的是離底部的距離。
+- 陰影不用 `elevation`：圓點每一幀重畫膠囊時，系統即時算的陰影會閃。改由外層 `DragFrame.dispatchDraw` 畫幾層低透明度的圓角矩形，每一幀都一樣。進出場動畫時外層跟著 `invalidate()`。
+- 鍵盤出現時移到上方：鍵盤開啟會送出鍵盤 App 自己的 `TYPE_WINDOW_STATE_CHANGED`（class `SoftInputWindow`），前景判斷本來就忽略它，這時讓膠囊在 0.36 秒內滑到螢幕上方約 20% 的位置，不擋輸入框和按鍵。鍵盤關閉不會送任何事件，膠囊自己的視窗也收不到鍵盤 insets（模擬器實測），所以膠囊留在上方直到這次提醒消失，下次出現回到使用者記住的高度。只有鍵盤本身，不會讓提醒消失。
+
+### 回到生活：關掉螢幕
+
+- 「完成後關掉螢幕」（預設開，沿用原本「回到桌面」的設定鍵）：先回桌面，再用無障礙服務的 `GLOBAL_ACTION_LOCK_SCREEN`（Android 9+）關掉螢幕，等同按一下電源鍵。解鎖後看到的是桌面，不是 Florsent。睡前的「去休息吧」一律關螢幕。服務沒開或 Android 8 時只回桌面。這是無障礙服務唯一的系統動作，說明、服務描述與 PRIVACY.md 都寫明了，只在使用者按下按鈕時發生。
 
 ### 第二層：Zen 灰階收尾（Android 15+）
 
@@ -489,7 +499,7 @@ adb shell dumpsys color_display        # 看 App Saturation 區段
 實機上的注意事項：
 
 - `uiautomator dump` 在實機上同樣會暫時解除 Florsent 的無障礙服務，首頁會短暫切成「服務未開啟」的版面，按鈕位置往下移約 170 px。用 dump 的座標去點，會點到下一顆按鈕。實機請用截圖量座標。
-- 驗證時只截 Florsent 自己在前景的畫面；預覽會回到使用者的桌面，用 `dumpsys window` 觀察 overlay 就好，不要截圖。
+- 驗證時只截 Florsent 自己在前景的畫面；預覽會回到使用者的桌面，用 `dumpsys window` 觀察 overlay 就好，不要截圖。`topResumedActivity` 是 Florsent 也不保證畫面上就是 Florsent（應用程式抽屜可能蓋在上面），實機上不要用截圖找按鈕座標，改在自己的模擬器上做。
 
 ## Google Play 上架
 
