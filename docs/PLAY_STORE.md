@@ -48,7 +48,7 @@ Florsent 不封鎖任何 App，只在你滑太久的時候，溫柔地提醒你�
 點一下提醒，直接進入呼吸練習。畫面中央的蓮花吸氣時展開、吐氣時收合，跟著它就好。有四種節奏可以選：等長呼吸、盒式呼吸、4-7-8 放鬆呼吸、共振呼吸。換階段時手機會輕輕震動，也可以打開溫暖的頌缽長音。
 
 ■ 回到生活當下
-練習結束後，Florsent 留給你一句簡單的話，例如「放下手機，去倒杯水，慢慢喝完」。按下「回到生活」，畫面恢復原樣，接下來一段時間不再提醒你。
+練習結束後，Florsent 留給你一句簡單的話，例如「放下手機，去倒杯水，慢慢喝完」。按下「回到生活」，螢幕會關掉，讓你真的放下手機，接下來一段時間不再提醒你。不想關螢幕，可以在設定中關閉。
 
 ■ 睡前，慢慢放下手機
 Florsent 會先觀察一週，看你晚上通常幾點放下手機。看得出規律時，問你一次要不要在那之前提醒你。答應之後時間就固定下來。睡前的提醒會換成「該準備休息了嗎？」，並帶你做 4-7-8 放鬆呼吸。呼吸完會安靜 30 分鐘。作息不規律，也可以自己選時間，或者不用。
@@ -66,7 +66,7 @@ Florsent 會先觀察一週，看你晚上通常幾點放下手機。看得出�
 ・沒有廣告，沒有追蹤工具，不需要註冊帳號
 
 ■ 需要的權限
-Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化效果和提醒。它只讀取前景 App 的名稱，不讀取畫面內容，也不會替你操作手機。開啟前，App 會先完整說明用途，由你決定。
+Florsent 透過無障礙服務知道你正在用哪個 App，用來計時、顯示淡化效果和提醒。它只讀取前景 App 的名稱，不讀取畫面內容。唯一會做的系統動作，是在你按下「回到生活」時關掉螢幕。開啟前，App 會先完整說明用途，由你決定。
 
 ■ 進階選項（都是選用）
 ・Android 15 以上：畫面淡到底時，透過系統的「模式」整個變成黑白，不影響通知和鈴聲
@@ -103,7 +103,7 @@ Choose how long a session in social apps can be and how much time you want in a 
 Tap the prompt to start breathing right away. A lotus opens as you breathe in and closes as you breathe out. Pick from four rhythms: equal breathing, box breathing, 4-7-8 relaxation and resonance breathing. Soft haptics mark each phase, and an optional warm singing-bowl drone plays in the background.
 
 ■ Back to the present
-Afterwards Florsent leaves you with one simple suggestion, such as "Put the phone down, pour a glass of water and drink it slowly." Tap "Back to life" and the screen returns to normal, with a quiet period before any further reminder.
+Afterwards Florsent leaves you with one simple suggestion, such as "Put the phone down, pour a glass of water and drink it slowly." Tap "Back to life" and the screen turns off so you can really put the phone down (you can turn this off in Settings), with a quiet period before any further reminder.
 
 ■ Winding down at night
 For the first week Florsent observes when you usually put the phone down at night. Once a pattern is clear, it asks once whether you would like a reminder before that time; if you agree, the time stays fixed. Bedtime reminders ask "Time to wind down?" and lead into 4-7-8 breathing, followed by 30 quiet minutes. Irregular schedule? Pick your own time, or skip it.
@@ -118,7 +118,7 @@ Today, the last seven days and your most used apps, with a sentence or two about
 • No ads, no trackers, no account
 
 ■ Permissions
-Florsent uses an accessibility service only to know which app is in the foreground, so it can count time, fade the screen and show reminders. It does not read screen content and never acts on your behalf. Before you turn it on, the app explains exactly what it does and lets you decide.
+Florsent uses an accessibility service only to know which app is in the foreground, so it can count time, fade the screen and show reminders. It does not read screen content. Its only system action is turning the screen off when you tap "Back to life". Before you turn it on, the app explains exactly what it does and lets you decide.
 
 ■ Optional extras
 • Android 15 and later: turn the screen fully grayscale at the end of a fade through the system's Modes, without affecting notifications or calls
@@ -214,11 +214,12 @@ Florsent helps people reduce compulsive social-media use through gentle, gradual
 The AccessibilityService is used for one purpose: to know which app is currently in the foreground (package name only, from TYPE_WINDOW_STATE_CHANGED events). With that, Florsent:
 1. counts how long the user has been in the apps they chose to watch;
 2. when a user-set time budget is exceeded, gradually fades the screen with an accessibility overlay and shows a small "Take a breath?" prompt;
-3. opens a breathing exercise when the user taps the prompt.
+3. opens a breathing exercise when the user taps the prompt;
+4. when the user taps "Back to life" after the exercise, turns the screen off with GLOBAL_ACTION_LOCK_SCREEN (the same as pressing the power button). The user can turn this off in Settings.
 
 With the user's separate consent, Florsent also keeps a 30-day on-device history of watched-app sessions and screen-on times to learn when the user usually puts the phone down at night and to offer an optional bedtime reminder. This history never leaves the device (the app has no internet permission) and can be cleared in Settings at any time.
 
-The service does not retrieve window content (canRetrieveWindowContent=false), does not read text or user input, does not perform gestures or actions on the user's behalf, and does not block any app.
+The service does not retrieve window content (canRetrieveWindowContent=false), does not read text or user input, performs no gestures, performs no action other than the screen-off described above (only on the user's tap), and does not block any app.
 
 Before the user enables the service, a prominent in-app disclosure explains exactly what is read and why, and the user must tap "Agree and open settings" before being taken to the system accessibility settings. Declining keeps the app usable for breathing exercises.
 ```
